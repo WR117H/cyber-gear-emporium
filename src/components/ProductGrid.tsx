@@ -5,7 +5,7 @@ import { Product } from '@/types/product';
 
 interface ProductGridProps {
   products: Product[];
-  onAddToCart: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
 }
 
 const ProductGrid = ({ products, onAddToCart }: ProductGridProps) => {
@@ -13,9 +13,9 @@ const ProductGrid = ({ products, onAddToCart }: ProductGridProps) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map(product => (
         <Link key={product.id} to={`/product/${product.id}`} className="block">
-          <div className="bg-black border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/30 h-full">
+          <div className="bg-black border border-white/10 rounded-lg overflow-hidden transition-all duration-300 hover:border-white/30 h-full">
             <div className="p-3">
-              <div className="aspect-video mb-3 rounded-lg overflow-hidden bg-muted">
+              <div className="aspect-video mb-3 rounded-md overflow-hidden bg-muted">
                 <img 
                   src={product.image} 
                   alt={product.name}
