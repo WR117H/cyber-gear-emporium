@@ -11,23 +11,23 @@ const Index = () => {
   const featuredProducts = mockProducts.filter(product => product.featured).slice(0, 3);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-cyber-navy text-cyber-light py-16 px-4">
+        <section className="bg-black text-white py-16 px-4">
           <div className="max-w-5xl mx-auto text-center">
             {/* Logo/Icon */}
             <div className="mx-auto mb-6 w-12 h-12 relative">
-              <div className="absolute inset-0 bg-cyber-blue/20 rounded-full blur-lg"></div>
+              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
               <div className="relative flex items-center justify-center w-full h-full">
-                <Star className="w-8 h-8 text-cyber-blue" />
+                <Star className="w-8 h-8 text-white" />
               </div>
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              All you want from a <span className="text-cyber-blue">gadget store</span>
+              All you want from a <span className="text-white">gadget store</span>
             </h1>
             
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-muted-foreground">
@@ -35,12 +35,12 @@ const Index = () => {
               Celebrated for built-in security. Welcome to the platform developers love.
             </p>
             
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild variant="default" className="bg-cyber-blue text-cyber-navy hover:bg-cyber-blue/80">
+            <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
+              <Button asChild variant="default" size="lg" className="rounded-full">
                 <a href="#gadgets">GITHUB</a>
               </Button>
               
-              <Button asChild variant="outline" className="border-cyber-blue/30 text-cyber-light hover:bg-cyber-blue/10">
+              <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-full">
                 <a href="#about">About</a>
               </Button>
             </div>
@@ -52,23 +52,23 @@ const Index = () => {
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold">Our gadgets</h2>
-              <Link to="/products" className="text-cyber-blue hover:underline">See more</Link>
+              <Link to="/products" className="text-white hover:underline">See more</Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {featuredProducts.map(product => (
                 <Link key={product.id} to={`/product/${product.id}`}>
-                  <div className="bg-card/80 border border-cyber-blue/20 rounded-lg overflow-hidden transition-all duration-300 hover:border-cyber-blue/40">
-                    <div className="p-4">
-                      <div className="aspect-square mb-4 rounded-md overflow-hidden bg-muted">
+                  <div className="bg-black border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/30">
+                    <div className="p-3">
+                      <div className="aspect-video mb-3 rounded-lg overflow-hidden bg-muted">
                         <img 
                           src={product.image} 
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="text-center">
-                        <h3 className="font-medium">{product.name}</h3>
+                      <div className="text-left px-1">
+                        <h3 className="font-medium text-sm">{product.name}</h3>
                       </div>
                     </div>
                   </div>
@@ -79,13 +79,13 @@ const Index = () => {
         </section>
         
         {/* Login/Sign Up Section */}
-        <section className="py-8 px-4 bg-muted">
+        <section className="py-8 px-4 bg-black border-t border-white/10">
           <div className="max-w-6xl mx-auto flex justify-end">
-            <div className="flex gap-2">
-              <Button variant="outline" className="border-cyber-blue/30 text-cyber-light hover:bg-cyber-blue/10">
+            <div className="flex gap-4 w-full max-w-xs">
+              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-full">
                 Login
               </Button>
-              <Button className="bg-cyber-blue text-cyber-navy hover:bg-cyber-blue/80">
+              <Button className="bg-white text-black hover:bg-white/90 rounded-full">
                 SignUp
               </Button>
             </div>
@@ -101,8 +101,8 @@ const Index = () => {
               {['Network', 'Wireless', 'Hardware', 'Software', 'Forensics'].map((category, index) => (
                 <Link key={index} to={`/products?category=${category.toLowerCase()}`}>
                   <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyber-blue/20 to-cyber-purple/20 flex items-center justify-center mb-2 border border-cyber-blue/30">
-                      <ShoppingCart className="w-8 h-8 text-cyber-blue" />
+                    <div className="w-20 h-20 rounded-full bg-black border border-white/20 flex items-center justify-center mb-2">
+                      <ShoppingCart className="w-8 h-8 text-white" />
                     </div>
                     <span className="text-center">{category}</span>
                   </div>
@@ -113,20 +113,20 @@ const Index = () => {
         </section>
         
         {/* Featured Content */}
-        <section className="py-12 px-4 bg-gradient-to-b from-cyber-navy to-background">
+        <section className="py-12 px-4 bg-black border-t border-white/10">
           <div className="max-w-6xl mx-auto">
             <div className="mb-6">
               <h2 className="text-3xl font-bold mb-2">Top Releases</h2>
               <p className="text-muted-foreground">Check out our newest security tools and gadgets</p>
             </div>
             
-            <div className="relative overflow-hidden rounded-lg aspect-video mb-6">
+            <div className="relative overflow-hidden rounded-xl aspect-video mb-6">
               <img 
                 src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200"
                 alt="Featured content"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-cyber-navy/90 to-transparent flex items-end">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex items-end">
                 <div className="p-6">
                   <h3 className="text-3xl md:text-4xl font-bold mb-2">MOMENTS</h3>
                   <p className="text-lg md:text-xl mb-4">Catch the most exciting releases from our latest drop.</p>
@@ -136,7 +136,7 @@ const Index = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="bg-card rounded-lg overflow-hidden">
+                <div key={item} className="bg-black border border-white/10 rounded-xl overflow-hidden">
                   <div className="aspect-video bg-muted">
                     <img 
                       src={`https://images.unsplash.com/photo-152637468${item * 4}-7f61d4dc18c${item}?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600`}
@@ -144,11 +144,27 @@ const Index = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="p-3">
-                    <p className="font-medium">Product release v{item}.0</p>
+                  <div className="p-3 text-left">
+                    <p className="font-medium text-sm">Product release v{item}.0</p>
                   </div>
                 </div>
               ))}
+            </div>
+            
+            <div className="mt-12 max-w-md mx-auto">
+              <Button className="bg-white text-black hover:bg-white/90 rounded-full w-full py-6 text-lg">
+                Renew Apple TV+
+              </Button>
+              <p className="text-center mt-4 text-muted-foreground">$9.99/month until canceled</p>
+              
+              <div className="flex justify-center mt-8 space-x-2">
+                {[...Array(8)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/30'}`}
+                  ></div>
+                ))}
+              </div>
             </div>
           </div>
         </section>

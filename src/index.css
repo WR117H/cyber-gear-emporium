@@ -5,35 +5,35 @@
 
 @layer base {
   :root {
-    --background: 217 51% 10%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
 
-    --card: 217 51% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 217 51% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 180 100% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 270 95% 66%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 217 51% 16%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 270 95% 66%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 51% 20%;
-    --input: 217 51% 20%;
-    --ring: 180 100% 50%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 70%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 }
 
@@ -43,36 +43,33 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    background-image: linear-gradient(to bottom, rgba(10, 25, 41, 0.97), rgba(10, 25, 41, 0.97)), var(--cyber-grid);
-    --cyber-grid: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233f87f5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    @apply bg-black text-foreground;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.97), rgba(0, 0, 0, 0.97));
   }
 }
 
 @layer components {
   .cyber-button {
-    @apply bg-cyber-navy border border-cyber-blue text-cyber-blue rounded px-6 py-3 
-           transition-all duration-300 hover:bg-cyber-blue hover:text-cyber-navy
-           focus:outline-none focus:ring-2 focus:ring-cyber-blue focus:ring-opacity-50
+    @apply bg-black border border-white text-white rounded-full px-6 py-3 
+           transition-all duration-300 hover:bg-white hover:text-black
+           focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50
            active:transform active:scale-95;
   }
   
   .cyber-card {
-    @apply bg-card/70 backdrop-blur-sm border border-cyber-blue/20 rounded-lg overflow-hidden 
-           hover:border-cyber-blue/40 transition-all duration-300 shadow-lg;
+    @apply bg-card/70 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden 
+           hover:border-white/40 transition-all duration-300 shadow-lg;
   }
   
   .cyber-input {
-    @apply bg-cyber-navy/50 border border-cyber-blue/30 text-cyber-light rounded-md px-4 py-2
-           focus:border-cyber-blue focus:ring-1 focus:ring-cyber-blue focus:outline-none;
+    @apply bg-black/50 border border-white/30 text-white rounded-md px-4 py-2
+           focus:border-white focus:ring-1 focus:ring-white focus:outline-none;
   }
 
-  .glow {
-    @apply relative;
-  }
-  
-  .glow::before {
-    content: '';
-    @apply absolute inset-0 rounded-lg -z-10 blur-lg opacity-40 bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-blue;
+  .app-button {
+    @apply bg-white text-black font-medium rounded-full py-3 px-6 w-full
+           transition-all duration-300 hover:bg-white/90 
+           focus:outline-none focus:ring-2 focus:ring-white;
   }
 }
+
