@@ -33,7 +33,7 @@
     --input: 0 0% 20%;
     --ring: 0 0% 70%;
 
-    --radius: 0.4rem;
+    --radius: 0.25rem;
   }
 }
 
@@ -43,21 +43,24 @@
   }
 
   body {
-    @apply bg-black text-foreground;
+    @apply bg-black text-foreground font-sans;
     background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.97), rgba(0, 0, 0, 0.97));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.015em;
   }
 }
 
 @layer components {
   .cyber-button {
-    @apply bg-black border border-white text-white rounded-md px-6 py-3 
+    @apply bg-black border border-white text-white rounded px-6 py-3 
            transition-all duration-300 hover:bg-white hover:text-black
            focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50
            active:transform active:scale-95;
   }
   
   .cyber-card {
-    @apply bg-card/70 backdrop-blur-sm border border-white/20 rounded-md overflow-hidden 
+    @apply bg-card/70 backdrop-blur-sm border border-white/20 rounded overflow-hidden 
            hover:border-white/40 transition-all duration-300 shadow-lg;
   }
   
@@ -67,7 +70,7 @@
   }
 
   .app-button {
-    @apply bg-white text-black font-medium rounded-md py-3 px-6 w-full
+    @apply bg-white text-black font-medium rounded py-3 px-6 w-full
            transition-all duration-300 hover:bg-white/90 
            focus:outline-none focus:ring-2 focus:ring-white;
   }
