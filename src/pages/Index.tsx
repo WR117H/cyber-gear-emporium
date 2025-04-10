@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -6,10 +5,8 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { mockProducts } from '@/data/products';
 import { ShoppingCart, Star, Info } from 'lucide-react';
-
 const Index = () => {
   const featuredProducts = mockProducts.filter(product => product.featured).slice(0, 3);
-
   return <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
@@ -72,82 +69,16 @@ const Index = () => {
         </section>
         
         {/* Login/Sign Up Section */}
-        <section className="py-8 px-4 bg-black border-t border-white/10">
-          <div className="max-w-6xl mx-auto flex justify-end">
-            <div className="flex gap-4 w-full max-w-xs">
-              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-[14px]">
-                Login
-              </Button>
-              <Button className="bg-white text-black hover:bg-white/90 rounded-[14px]">
-                SignUp
-              </Button>
-            </div>
-          </div>
-        </section>
+        
         
         {/* Featured Categories */}
-        <section className="py-12 px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold mb-8">Browse Categories</h2>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {['Network', 'Wireless', 'Hardware', 'Software', 'Forensics'].map((category, index) => <Link key={index} to={`/products?category=${category.toLowerCase()}`}>
-                  <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-full bg-black border border-white/20 flex items-center justify-center mb-2">
-                      <ShoppingCart className="w-8 h-8 text-white" />
-                    </div>
-                    <span className="text-center">{category}</span>
-                  </div>
-                </Link>)}
-            </div>
-          </div>
-        </section>
+        
         
         {/* Featured Content */}
-        <section className="py-12 px-4 bg-black border-t border-white/10">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-3xl font-bold mb-2">Top Releases</h2>
-              <p className="text-muted-foreground">Check out our newest security tools and gadgets</p>
-            </div>
-            
-            <div className="relative overflow-hidden rounded-xl aspect-video mb-6">
-              <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200" alt="Featured content" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex items-end">
-                <div className="p-6">
-                  <h3 className="text-3xl md:text-4xl font-bold mb-2">MOMENTS</h3>
-                  <p className="text-lg md:text-xl mb-4">Catch the most exciting releases from our latest drop.</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[1, 2, 3].map(item => <div key={item} className="bg-black border border-white/10 rounded-xl overflow-hidden">
-                  <div className="aspect-video bg-muted">
-                    <img src={`https://images.unsplash.com/photo-152637468${item * 4}-7f61d4dc18c${item}?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600`} alt={`Content ${item}`} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-3 text-left">
-                    <p className="font-medium text-sm">Product release v{item}.0</p>
-                  </div>
-                </div>)}
-            </div>
-            
-            <div className="mt-12 max-w-md mx-auto">
-              <Button className="bg-white text-black hover:bg-white/90 rounded-[14px] w-full py-6 text-lg">
-                Renew Apple TV+
-              </Button>
-              <p className="text-center mt-4 text-muted-foreground">$9.99/month until canceled</p>
-              
-              <div className="flex justify-center mt-8 space-x-2">
-                {[...Array(8)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/30'}`}></div>)}
-              </div>
-            </div>
-          </div>
-        </section>
+        
       </main>
       
       <Footer />
     </div>;
 };
-
 export default Index;
