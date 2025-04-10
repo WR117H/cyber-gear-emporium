@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -5,8 +6,10 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { mockProducts } from '@/data/products';
 import { ShoppingCart, Star, Info } from 'lucide-react';
+
 const Index = () => {
   const featuredProducts = mockProducts.filter(product => product.featured).slice(0, 3);
+  
   return <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
@@ -68,17 +71,11 @@ const Index = () => {
           </div>
         </section>
         
-        {/* Login/Sign Up Section */}
-        
-        
-        {/* Featured Categories */}
-        
-        
-        {/* Featured Content */}
-        
+        {/* I've removed the "Browse Categories" and "Top Releases" sections as requested */}
       </main>
       
       <Footer />
     </div>;
 };
+
 export default Index;
