@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -5,8 +6,10 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { mockProducts } from '@/data/products';
 import { ShoppingCart, Star, Info } from 'lucide-react';
+
 const Index = () => {
   const featuredProducts = mockProducts.filter(product => product.featured).slice(0, 3);
+
   return <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
@@ -32,11 +35,11 @@ const Index = () => {
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
-              <Button asChild variant="default" size="lg" className="rounded-full">
-                <a href="#gadgets" className="mx-0 my-0 px-0 py-0\n">GITHUB</a>
+              <Button asChild variant="default" size="lg" className="rounded-[14px]">
+                <a href="#gadgets" className="mx-0 my-0 px-0 py-0">GITHUB</a>
               </Button>
               
-              <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-full">
+              <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-[14px]">
                 <a href="#about">About</a>
               </Button>
             </div>
@@ -72,10 +75,10 @@ const Index = () => {
         <section className="py-8 px-4 bg-black border-t border-white/10">
           <div className="max-w-6xl mx-auto flex justify-end">
             <div className="flex gap-4 w-full max-w-xs">
-              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-full">
+              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-[14px]">
                 Login
               </Button>
-              <Button className="bg-white text-black hover:bg-white/90 rounded-full">
+              <Button className="bg-white text-black hover:bg-white/90 rounded-[14px]">
                 SignUp
               </Button>
             </div>
@@ -130,7 +133,7 @@ const Index = () => {
             </div>
             
             <div className="mt-12 max-w-md mx-auto">
-              <Button className="bg-white text-black hover:bg-white/90 rounded-full w-full py-6 text-lg">
+              <Button className="bg-white text-black hover:bg-white/90 rounded-[14px] w-full py-6 text-lg">
                 Renew Apple TV+
               </Button>
               <p className="text-center mt-4 text-muted-foreground">$9.99/month until canceled</p>
@@ -146,4 +149,5 @@ const Index = () => {
       <Footer />
     </div>;
 };
+
 export default Index;
