@@ -31,9 +31,9 @@ const Index = () => {
               Celebrated for built-in security. Welcome to the platform developers love.
             </p>
             
-            <div className="">
+            <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
               <Button asChild variant="default" size="lg" className="rounded-full">
-                <a href="#gadgets" className="bg-zinc-300flex flex-wrap justify-center gap-4 max-w-md mx-0 px-0 py-0 round-sm\n">GITHUB</a>
+                <a href="#gadgets" className="\n">GITHUB</a>
               </Button>
               
               <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-full">
