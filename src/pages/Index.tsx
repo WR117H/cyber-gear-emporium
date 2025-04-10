@@ -33,7 +33,7 @@ const Index = () => {
             
             <div className="">
               <Button asChild variant="default" size="lg" className="rounded-full">
-                <a href="#gadgets">GITHUB</a>
+                <a href="#gadgets" className="bg-zinc-300flex flex-wrap justify-center gap-4 max-w-md mx-0 px-0 py-0 round-sm\n">GITHUB</a>
               </Button>
               
               <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-full">
