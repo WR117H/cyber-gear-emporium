@@ -13,7 +13,7 @@ const ProductGrid = ({ products, onAddToCart }: ProductGridProps) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map(product => (
         <Link key={product.id} to={`/product/${product.id}`} className="block">
-          <div className="bg-black border border-white/10 rounded overflow-hidden transition-all duration-300 hover:border-white/30 h-full">
+          <div className="bg-black border border-white/10 rounded-[14px] overflow-hidden transition-all duration-300 hover:border-white/30 h-full">
             <div className="p-3">
               <div className="aspect-video mb-3 rounded-sm overflow-hidden bg-muted">
                 <img 

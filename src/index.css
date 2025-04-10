@@ -33,7 +33,7 @@
     --input: 0 0% 20%;
     --ring: 0 0% 70%;
 
-    --radius: 0.25rem;
+    --radius: 0.875rem;
   }
 }
 
@@ -53,24 +53,24 @@
 
 @layer components {
   .cyber-button {
-    @apply bg-black border border-white text-white rounded px-6 py-3 
+    @apply bg-black border border-white text-white rounded-[14px] px-6 py-3 
            transition-all duration-300 hover:bg-white hover:text-black
            focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50
            active:transform active:scale-95;
   }
   
   .cyber-card {
-    @apply bg-card/70 backdrop-blur-sm border border-white/20 rounded overflow-hidden 
+    @apply bg-card/70 backdrop-blur-sm border border-white/20 rounded-[14px] overflow-hidden 
            hover:border-white/40 transition-all duration-300 shadow-lg;
   }
   
   .cyber-input {
-    @apply bg-black/50 border border-white/30 text-white rounded-sm px-4 py-2
+    @apply bg-black/50 border border-white/30 text-white rounded-[14px] px-4 py-2
            focus:border-white focus:ring-1 focus:ring-white focus:outline-none;
   }
 
   .app-button {
-    @apply bg-white text-black font-medium rounded py-3 px-6 w-full
+    @apply bg-white text-black font-medium rounded-[14px] py-3 px-6 w-full
            transition-all duration-300 hover:bg-white/90 
            focus:outline-none focus:ring-2 focus:ring-white;
   }
