@@ -16,7 +16,7 @@ const Index = () => {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="text-white py-16 px-4 relative">
+        <section className="text-white py-10 px-4 relative">
           <div className="max-w-5xl mx-auto text-center relative z-10">
             {/* Logo/Icon */}
             <div className="mx-auto mb-6 w-12 h-12 relative">
@@ -36,7 +36,7 @@ const Index = () => {
             
             <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
               <Button asChild variant="default" size="lg" className="rounded-[14px]">
-                <a href="#gadgets">GITHUB</a>
+                <a href="https://github.com/WR117H" target="_blank" rel="noopener noreferrer">GITHUB</a>
               </Button>
               
               <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-[14px]">
@@ -50,9 +50,9 @@ const Index = () => {
         <NewReleasesSlider />
         
         {/* Gadgets Section */}
-        <section id="gadgets" className="py-12 px-4 bg-black">
+        <section id="gadgets" className="py-8 px-4 bg-black">
           <div className="max-w-6xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-5">
               <h2 className="text-2xl font-bold text-white">Our gadgets</h2>
               <Link to="/products" className="text-white hover:underline">See more</Link>
             </div>

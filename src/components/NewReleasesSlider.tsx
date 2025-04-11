@@ -23,9 +23,9 @@ const NewReleasesSlider = () => {
   };
 
   return (
-    <section className="py-12 px-4 bg-black">
+    <section className="py-7 px-4 bg-black">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-5xl font-bold text-white mb-8">New Releases</h2>
+        <h2 className="text-5xl font-bold text-white mb-5">New Releases</h2>
         
         <Carousel className="w-full">
           <CarouselContent className="-ml-2 md:-ml-4">
@@ -44,7 +44,7 @@ const NewReleasesSlider = () => {
                         </div>
                       </Card>
                     </Link>
-                    <div className="mt-3">
+                    <div className="mt-2">
                       <p className="text-gray-400 uppercase text-sm tracking-wider">{category}</p>
                       <Link to={`/product/${product.id}`} className="text-white text-2xl font-bold hover:underline">
                         {product.name}
@@ -58,7 +58,7 @@ const NewReleasesSlider = () => {
               ))
             ))}
           </CarouselContent>
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end mt-3">
             <CarouselPrevious className="relative inset-0 translate-y-0 mr-2" />
             <CarouselNext className="relative inset-0 translate-y-0" />
           </div>
