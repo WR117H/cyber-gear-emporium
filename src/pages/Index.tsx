@@ -6,36 +6,20 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { mockProducts } from '@/data/products';
 import { ShoppingCart, Star, Info } from 'lucide-react';
+import NewReleasesSlider from '@/components/NewReleasesSlider';
 
 const Index = () => {
   const featuredProducts = mockProducts.filter(product => product.featured).slice(0, 3);
   
-  return <div className="min-h-screen flex flex-col">
-      <div className="absolute inset-0 bg-cyber-gradient z-[-1]"></div>
+  return <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="text-white py-16 px-4 relative overflow-hidden hero-gradient">
-          <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
-          
+        <section className="text-white py-16 px-4 relative">
           <div className="max-w-5xl mx-auto text-center relative z-10">
-            <div className="flex justify-end mb-4 space-x-2">
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="rounded-[14px] bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button variant="outline" size="sm" className="rounded-[14px] bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20">
-                  SignUp
-                </Button>
-              </Link>
-            </div>
-            
             {/* Logo/Icon */}
             <div className="mx-auto mb-6 w-12 h-12 relative">
-              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
               <div className="relative flex items-center justify-center w-full h-full">
                 <Star className="w-8 h-8 text-white" />
               </div>
@@ -52,18 +36,21 @@ const Index = () => {
             
             <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
               <Button asChild variant="default" size="lg" className="rounded-[14px]">
-                <a href="#gadgets" className="mx-0 my-0 px-0 py-0">GITHUB</a>
+                <a href="#gadgets">GITHUB</a>
               </Button>
               
               <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-[14px]">
-                <a href="#about">About</a>
+                <Link to="/login">Login/SignUp</Link>
               </Button>
             </div>
           </div>
         </section>
         
+        {/* New Releases Slider */}
+        <NewReleasesSlider />
+        
         {/* Gadgets Section */}
-        <section id="gadgets" className="py-12 px-4 subtle-gradient-blue">
+        <section id="gadgets" className="py-12 px-4 bg-black">
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-white">Our gadgets</h2>
@@ -72,7 +59,7 @@ const Index = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {featuredProducts.map(product => <Link key={product.id} to={`/product/${product.id}`}>
-                  <div className="card-gradient border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/30">
+                  <div className="border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/30 bg-black">
                     <div className="p-3">
                       <div className="aspect-video mb-3 rounded-lg overflow-hidden bg-muted">
                         <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
