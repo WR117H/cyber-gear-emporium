@@ -60,11 +60,12 @@ const Login = () => {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="absolute inset-0 bg-cyber-gradient z-[-1]"></div>
+      <div className="absolute inset-0 bg-black z-[-1]"></div>
       <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+      <div className="absolute inset-0 hero-gradient"></div>
       
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10">
+        <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10 card-gradient">
           <div className="text-center">
             <Link to="/" className="inline-block mb-8">
               <Button variant="ghost" size="sm" className="rounded-full">

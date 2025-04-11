@@ -16,7 +16,7 @@ const Index = () => {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="text-white py-16 px-4 relative overflow-hidden">
+        <section className="text-white py-16 px-4 relative overflow-hidden hero-gradient">
           <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
           
           <div className="max-w-5xl mx-auto text-center relative z-10">
@@ -63,7 +63,7 @@ const Index = () => {
         </section>
         
         {/* Gadgets Section */}
-        <section id="gadgets" className="py-12 px-4">
+        <section id="gadgets" className="py-12 px-4 subtle-gradient-blue">
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-white">Our gadgets</h2>
@@ -72,7 +72,7 @@ const Index = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {featuredProducts.map(product => <Link key={product.id} to={`/product/${product.id}`}>
-                  <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/30">
+                  <div className="card-gradient border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-white/30">
                     <div className="p-3">
                       <div className="aspect-video mb-3 rounded-lg overflow-hidden bg-muted">
                         <img src={product.image} alt={product.name} className="w-full h-full object-cover" />

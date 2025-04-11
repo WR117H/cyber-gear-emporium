@@ -73,6 +73,8 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <div className="absolute inset-0 bg-black z-[-1]"></div>
+      <div className="absolute inset-0 subtle-gradient-purple"></div>
       <Navbar />
       
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,7 +85,7 @@ const Cart = () => {
         {cartItems.length > 0 ? (
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="bg-card/70 backdrop-blur-sm border border-cyber-blue/20 rounded-lg overflow-hidden p-6">
+              <div className="card-gradient border border-cyber-blue/20 rounded-lg overflow-hidden p-6">
                 <h2 className="text-lg font-semibold mb-4">Cart Items</h2>
                 
                 {cartItems.map(item => (
@@ -98,7 +100,7 @@ const Cart = () => {
             </div>
             
             <div>
-              <div className="bg-card/70 backdrop-blur-sm border border-cyber-blue/20 rounded-lg overflow-hidden p-6 sticky top-24">
+              <div className="card-gradient border border-cyber-blue/20 rounded-lg overflow-hidden p-6 sticky top-24">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
                 
                 <div className="space-y-4">
