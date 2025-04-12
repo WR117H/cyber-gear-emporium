@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -10,13 +10,38 @@ import { useToast } from '@/components/ui/use-toast';
 import { mockProducts } from '@/data/products';
 import { Product } from '@/types/product';
 import { 
-  ArrowLeft, Search, Plus, Edit, Trash2, Eye
+  ArrowLeft, Search, Plus, Edit, Trash2, Eye, LogOut
 } from 'lucide-react';
+import { setAdminAuthenticated } from '@/utils/adminAuth';
+import { useNavigate } from 'react-router-dom';
+
+// Storage key for products
+const PRODUCTS_STORAGE_KEY = 'admin_products';
 
 export default function ProductManager() {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Initialize products from localStorage or fallback to mock data
+  useEffect(() => {
+    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (storedProducts) {
+      setProducts(JSON.parse(storedProducts));
+    } else {
+      // First time setup - use mock data
+      setProducts(mockProducts);
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
+    }
+  }, []);
+  
+  // Update localStorage whenever products change
+  useEffect(() => {
+    if (products.length > 0) {
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+    }
+  }, [products]);
 
   const filteredProducts = products.filter((product) => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,12 +50,20 @@ export default function ProductManager() {
   );
 
   const handleDeleteProduct = (id: string) => {
-    // In a real app, this would make an API call to delete the product
     setProducts(products.filter(product => product.id !== id));
     toast({
       title: "Product deleted",
       description: "The product has been successfully deleted.",
     });
+  };
+  
+  const handleLogout = () => {
+    setAdminAuthenticated(false);
+    toast({
+      title: "Logged out",
+      description: "You've been logged out of the admin panel"
+    });
+    navigate('/admin/login');
   };
 
   return (
@@ -54,6 +87,10 @@ export default function ProductManager() {
                 New Product
               </Button>
             </Link>
+            <Button variant="ghost" onClick={handleLogout} size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
         

@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Admin/Dashboard";
 import ProductManager from "./pages/Admin/ProductManager";
 import ProductForm from "./pages/Admin/ProductForm";
+import AdminLogin from "./pages/Admin/AdminLogin";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -33,10 +35,27 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           
           {/* Admin routes */}
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/products" element={<ProductManager />} />
-          <Route path="/admin/products/new" element={<ProductForm />} />
-          <Route path="/admin/products/edit/:id" element={<ProductForm />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={
+            <ProtectedAdminRoute>
+              <Dashboard />
+            </ProtectedAdminRoute>
+          } />
+          <Route path="/admin/products" element={
+            <ProtectedAdminRoute>
+              <ProductManager />
+            </ProtectedAdminRoute>
+          } />
+          <Route path="/admin/products/new" element={
+            <ProtectedAdminRoute>
+              <ProductForm />
+            </ProtectedAdminRoute>
+          } />
+          <Route path="/admin/products/edit/:id" element={
+            <ProtectedAdminRoute>
+              <ProductForm />
+            </ProtectedAdminRoute>
+          } />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

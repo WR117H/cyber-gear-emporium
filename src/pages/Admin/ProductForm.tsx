@@ -1,27 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/use-toast';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -29,16 +33,19 @@ import { ArrowLeft, Save, Trash2, Plus } from 'lucide-react';
 import { mockProducts } from '@/data/products';
 import { Product } from '@/types/product';
 
+// Storage key for products
+const PRODUCTS_STORAGE_KEY = 'admin_products';
+
+// Form validation schema
 const productSchema = z.object({
-  name: z.string().min(2, { message: 'Product name must be at least 2 characters long' }),
-  description: z.string().min(10, { message: 'Description must be at least 10 characters long' }),
-  price: z.coerce.number().positive({ message: 'Price must be a positive number' }),
-  image: z.string().url({ message: 'Please enter a valid image URL' }),
-  category: z.string().min(1, { message: 'Please select a category' }),
-  inStock: z.coerce.number().int().nonnegative({ message: 'Stock must be zero or a positive number' }),
-  featured: z.boolean(),
-  isNew: z.boolean(),
-  // We'll handle specifications separately as they can be dynamic
+  name: z.string().min(2, { message: "Product name must be at least 2 characters" }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+  price: z.coerce.number().positive({ message: "Price must be positive" }),
+  category: z.string().min(1, { message: "Please select a category" }),
+  image: z.string().url({ message: "Please enter a valid image URL" }),
+  inStock: z.coerce.number().min(0, { message: "Stock can't be negative" }),
+  featured: z.boolean().optional().default(false),
+  isNew: z.boolean().optional().default(false),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -47,238 +54,229 @@ export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isEditMode = id !== 'new';
+  const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const [specifications, setSpecifications] = useState<{ key: string; value: string }[]>([]);
-  const [specKey, setSpecKey] = useState('');
-  const [specValue, setSpecValue] = useState('');
-  
-  // Available product categories
-  const categories = ['network', 'wireless', 'hardware', 'software'];
-  
-  // Find the product to edit if in edit mode
-  const productToEdit = isEditMode 
-    ? mockProducts.find(p => p.id === id)
-    : null;
-  
+  // Load products from localStorage
+  useEffect(() => {
+    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (storedProducts) {
+      setProducts(JSON.parse(storedProducts));
+    } else {
+      setProducts(mockProducts);
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
+    }
+  }, []);
+
+  // Find product if editing
+  const isEditMode = !!id;
+  const existingProduct = isEditMode ? products.find(p => p.id === id) : undefined;
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: productToEdit ? {
-      name: productToEdit.name,
-      description: productToEdit.description,
-      price: productToEdit.price,
-      image: productToEdit.image,
-      category: productToEdit.category,
-      inStock: productToEdit.inStock,
-      featured: productToEdit.featured,
-      isNew: productToEdit.isNew,
+    defaultValues: existingProduct ? {
+      name: existingProduct.name,
+      description: existingProduct.description,
+      price: existingProduct.price,
+      category: existingProduct.category,
+      image: existingProduct.image,
+      inStock: existingProduct.inStock,
+      featured: existingProduct.featured,
+      isNew: existingProduct.isNew,
     } : {
-      name: '',
-      description: '',
+      name: "",
+      description: "",
       price: 0,
-      image: '',
-      category: '',
+      category: "",
+      image: "",
       inStock: 0,
       featured: false,
-      isNew: true,
-    },
+      isNew: false,
+    }
   });
-  
-  // Initialize specifications if editing an existing product
-  useEffect(() => {
-    if (productToEdit?.specifications) {
-      const specs = Object.entries(productToEdit.specifications).map(([key, value]) => ({
-        key,
-        value: value.toString(),
-      }));
-      setSpecifications(specs);
+
+  const onSubmit = async (data: ProductFormValues) => {
+    setIsLoading(true);
+
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      if (isEditMode && existingProduct) {
+        // Update existing product
+        const updatedProducts = products.map(p => {
+          if (p.id === id) {
+            return {
+              ...p,
+              ...data
+            };
+          }
+          return p;
+        });
+        
+        setProducts(updatedProducts);
+        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(updatedProducts));
+        
+        toast({
+          title: "Product updated",
+          description: `${data.name} has been updated successfully.`
+        });
+      } else {
+        // Create new product with generated ID
+        const newProduct = {
+          id: `${Date.now()}`,
+          ...data,
+          // Add default values for any fields not in the form
+          specifications: {},
+          compatibleWith: []
+        };
+        
+        const updatedProducts = [...products, newProduct];
+        setProducts(updatedProducts);
+        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(updatedProducts));
+        
+        toast({
+          title: "Product created",
+          description: `${data.name} has been added to your store.`
+        });
+      }
+
+      // Redirect back to product list
+      navigate('/admin/products');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was a problem saving the product.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [productToEdit]);
-  
-  const addSpecification = () => {
-    if (specKey.trim() && specValue.trim()) {
-      setSpecifications([...specifications, { key: specKey, value: specValue }]);
-      setSpecKey('');
-      setSpecValue('');
+  };
+
+  const handleDelete = async () => {
+    if (!isEditMode || !existingProduct) return;
+
+    setIsLoading(true);
+
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Filter out the product to delete
+      const updatedProducts = products.filter(p => p.id !== id);
+      setProducts(updatedProducts);
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(updatedProducts));
+      
+      toast({
+        title: "Product deleted",
+        description: `${existingProduct.name} has been removed from your store.`
+      });
+
+      // Redirect back to products list
+      navigate('/admin/products');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was a problem deleting the product.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  const removeSpecification = (index: number) => {
-    const newSpecs = specifications.filter((_, i) => i !== index);
-    setSpecifications(newSpecs);
-  };
-  
-  const onSubmit = (data: ProductFormValues) => {
-    // Create the specifications object
-    const specs: Record<string, string> = {};
-    specifications.forEach(spec => {
-      specs[spec.key] = spec.value;
-    });
-    
-    // Create the product object
-    const productData: Partial<Product> = {
-      ...data,
-      specifications: specs,
-      // Generate a unique ID if creating a new product
-      id: isEditMode ? id : Math.random().toString(36).substring(2, 11),
-    };
-    
-    console.log('Saving product:', productData);
-    
-    // In a real application, this would make an API call to save the product
-    toast({
-      title: isEditMode ? 'Product updated' : 'Product created',
-      description: isEditMode 
-        ? 'The product has been updated successfully.' 
-        : 'The product has been created successfully.',
-    });
-    
-    // Navigate back to product manager
-    navigate('/admin/products');
-  };
-  
+
   return (
     <div className="bg-black min-h-screen">
       <div className="container mx-auto py-8 px-4">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">
-              {isEditMode ? 'Edit Product' : 'New Product'}
+              {isEditMode ? "Edit Product" : "Add New Product"}
             </h1>
             <p className="text-muted-foreground">
-              {isEditMode ? 'Update product details' : 'Add a new product to your store'}
+              {isEditMode 
+                ? "Update your product information" 
+                : "Create a new product listing"}
             </p>
           </div>
-          <Link to="/admin/products">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Products
-            </Button>
-          </Link>
+          <div className="space-x-2">
+            <Link to="/admin/products">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Products
+              </Button>
+            </Link>
+            {isEditMode && (
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleDelete}
+                disabled={isLoading}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Product
+              </Button>
+            )}
+          </div>
         </div>
         
-        <div className="bg-secondary/50 rounded-lg p-6 border border-white/10">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Product Name</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter product name" 
-                          className="bg-white/10 border-white/20 text-white" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Price ($)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01" 
-                          placeholder="99.99" 
-                          className="bg-white/10 border-white/20 text-white" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter product description" 
-                        className="bg-white/10 border-white/20 text-white resize-none min-h-32" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Image URL</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://example.com/image.jpg" 
-                          className="bg-white/10 border-white/20 text-white" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter a URL for the product image
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Category</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+        <Card className="bg-card/50 border-white/10">
+          <CardContent className="pt-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Product Name</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
+                          <Input className="bg-white/10 border-white/20 text-white" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          {categories.map(category => (
-                            <SelectItem key={category} value={category}>
-                              {category.charAt(0).toUpperCase() + category.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Category</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="network">Network</SelectItem>
+                            <SelectItem value="wireless">Wireless</SelectItem>
+                            <SelectItem value="hardware">Hardware</SelectItem>
+                            <SelectItem value="software">Software</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
                 <FormField
                   control={form.control}
-                  name="inStock"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Stock Quantity</FormLabel>
+                      <FormLabel className="text-white">Description</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
+                        <Textarea 
+                          rows={4}
                           className="bg-white/10 border-white/20 text-white" 
                           {...field} 
                         />
@@ -288,110 +286,121 @@ export default function ProductForm() {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="featured"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/20 p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-white">Featured Product</FormLabel>
-                        <FormDescription>
-                          Display this product on the homepage
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="isNew"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/20 p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-white">New Product</FormLabel>
-                        <FormDescription>
-                          Mark this product as new
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-white">Specifications</h3>
-                {specifications.map((spec, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Input
-                      value={spec.key}
-                      disabled
-                      className="flex-1 bg-white/10 border-white/20 text-white"
-                    />
-                    <Input
-                      value={spec.value}
-                      disabled
-                      className="flex-1 bg-white/10 border-white/20 text-white"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => removeSpecification(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                
-                <div className="flex items-center space-x-2">
-                  <Input
-                    placeholder="Specification name"
-                    value={specKey}
-                    onChange={(e) => setSpecKey(e.target.value)}
-                    className="flex-1 bg-white/10 border-white/20 text-white"
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Price ($)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            className="bg-white/10 border-white/20 text-white" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Input
-                    placeholder="Specification value"
-                    value={specValue}
-                    onChange={(e) => setSpecValue(e.target.value)}
-                    className="flex-1 bg-white/10 border-white/20 text-white"
+                  
+                  <FormField
+                    control={form.control}
+                    name="inStock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Stock Quantity</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            className="bg-white/10 border-white/20 text-white" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={addSpecification}
+                  
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Image URL</FormLabel>
+                        <FormControl>
+                          <Input className="bg-white/10 border-white/20 text-white" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-white/10 p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-white">
+                            Featured Product
+                          </FormLabel>
+                          <FormDescription className="text-muted-foreground">
+                            This product will appear in the featured section
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isNew"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-white/10 p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-white">
+                            New Release
+                          </FormLabel>
+                          <FormDescription className="text-muted-foreground">
+                            Mark this product as a new release
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button 
+                    type="submit" 
+                    className="bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy"
+                    disabled={isLoading}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Save className="h-4 w-4 mr-2" />
+                    {isLoading ? "Saving..." : "Save Product"}
                   </Button>
                 </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  className="bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {isEditMode ? 'Update Product' : 'Create Product'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
