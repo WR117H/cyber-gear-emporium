@@ -6,42 +6,43 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
-import { mockProducts } from '@/data/products';
+import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/types/product';
 import { 
   ArrowLeft, Search, Plus, Edit, Trash2, Eye, LogOut
 } from 'lucide-react';
 import { setAdminAuthenticated } from '@/utils/adminAuth';
 import { useNavigate } from 'react-router-dom';
-
-// Storage key for products
-const PRODUCTS_STORAGE_KEY = 'admin_products';
+import { fetchProducts, deleteProduct } from '@/utils/productDatabase';
 
 export default function ProductManager() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Initialize products from localStorage or fallback to mock data
+  // Load products from Supabase
   useEffect(() => {
-    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-    if (storedProducts) {
-      setProducts(JSON.parse(storedProducts));
-    } else {
-      // First time setup - use mock data
-      setProducts(mockProducts);
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
-    }
-  }, []);
-  
-  // Update localStorage whenever products change
-  useEffect(() => {
-    if (products.length > 0) {
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
-    }
-  }, [products]);
+    const loadProducts = async () => {
+      setIsLoading(true);
+      try {
+        const productsData = await fetchProducts();
+        setProducts(productsData);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        toast({
+          title: "Error loading products",
+          description: "Could not load products. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProducts();
+  }, [toast]);
 
   const filteredProducts = products.filter((product) => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,12 +50,31 @@ export default function ProductManager() {
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(product => product.id !== id));
-    toast({
-      title: "Product deleted",
-      description: "The product has been successfully deleted.",
-    });
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const success = await deleteProduct(id);
+      
+      if (success) {
+        setProducts(products.filter(product => product.id !== id));
+        toast({
+          title: "Product deleted",
+          description: "The product has been successfully deleted.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete product. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while deleting the product.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleLogout = () => {
@@ -106,71 +126,85 @@ export default function ProductManager() {
           </div>
         </div>
         
-        <div className="rounded-md border border-white/10 overflow-hidden">
-          <Table>
-            <TableHeader className="bg-secondary">
-              <TableRow>
-                <TableHead className="text-white">Product</TableHead>
-                <TableHead className="text-white">Category</TableHead>
-                <TableHead className="text-white text-right">Price</TableHead>
-                <TableHead className="text-white text-center">In Stock</TableHead>
-                <TableHead className="text-white text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id} className="bg-card/50">
-                  <TableCell className="font-medium text-white">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded overflow-hidden">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <span>{product.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {product.category}
-                  </TableCell>
-                  <TableCell className="text-right text-white">
-                    ${product.price.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      product.inStock > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                    }`}>
-                      {product.inStock > 0 ? `${product.inStock} in stock` : 'Out of stock'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Link to={`/product/${product.id}`}>
-                        <Button variant="ghost" size="icon">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link to={`/admin/products/edit/${product.id}`}>
-                        <Button variant="ghost" size="icon">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <p className="text-white">Loading products...</p>
+          </div>
+        ) : (
+          <div className="rounded-md border border-white/10 overflow-hidden">
+            <Table>
+              <TableHeader className="bg-secondary">
+                <TableRow>
+                  <TableHead className="text-white">Product</TableHead>
+                  <TableHead className="text-white">Category</TableHead>
+                  <TableHead className="text-white text-right">Price</TableHead>
+                  <TableHead className="text-white text-center">In Stock</TableHead>
+                  <TableHead className="text-white text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <TableRow key={product.id} className="bg-card/50">
+                      <TableCell className="font-medium text-white">
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 rounded overflow-hidden">
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <span>{product.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {product.category}
+                      </TableCell>
+                      <TableCell className="text-right text-white">
+                        ${product.price.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          product.inStock > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {product.inStock > 0 ? `${product.inStock} in stock` : 'Out of stock'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Link to={`/product/${product.id}`}>
+                            <Button variant="ghost" size="icon">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link to={`/admin/products/edit/${product.id}`}>
+                            <Button variant="ghost" size="icon">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDeleteProduct(product.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No products found. Try adjusting your search or add a new product.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </div>
   );
