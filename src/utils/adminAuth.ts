@@ -1,5 +1,5 @@
 
-import { supabase } from './supabaseClient';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 // Admin table name in Supabase
 const ADMIN_TABLE = 'admins';
@@ -9,6 +9,12 @@ const ADMIN_PASSWORD = "admin123";
 
 export const checkAdminPassword = async (password: string): Promise<boolean> => {
   try {
+    // If Supabase is not configured, fall back to local password check
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase not configured. Using local admin password.');
+      return password === ADMIN_PASSWORD;
+    }
+    
     // Check if the provided password matches an admin in the database
     const { data, error } = await supabase
       .from(ADMIN_TABLE)

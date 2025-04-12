@@ -1,9 +1,19 @@
 
-import { supabase } from './supabaseClient';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
 export const signUp = async (email: string, password: string, name: string) => {
   try {
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Error",
+        description: "Authentication is not available at this time",
+        variant: "destructive",
+      });
+      return { success: false, error: new Error("Supabase not configured") };
+    }
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -42,6 +52,16 @@ export const signUp = async (email: string, password: string, name: string) => {
 
 export const signIn = async (email: string, password: string) => {
   try {
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Error",
+        description: "Authentication is not available at this time",
+        variant: "destructive",
+      });
+      return { success: false, error: new Error("Supabase not configured") };
+    }
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -75,6 +95,16 @@ export const signIn = async (email: string, password: string) => {
 
 export const signOut = async () => {
   try {
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      localStorage.removeItem("user");
+      toast({
+        title: "Logged out",
+        description: "You've been successfully logged out",
+      });
+      return { success: true };
+    }
+    
     const { error } = await supabase.auth.signOut();
     
     if (error) {
@@ -105,6 +135,11 @@ export const signOut = async () => {
 
 export const getCurrentUser = async () => {
   try {
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      return { user: null, error: new Error("Supabase not configured") };
+    }
+    
     const { data, error } = await supabase.auth.getUser();
     
     if (error) {
