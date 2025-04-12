@@ -165,7 +165,12 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
 const getLocalProducts = (): Product[] => {
   const storedProducts = localStorage.getItem('admin_products');
   if (storedProducts) {
-    return JSON.parse(storedProducts);
+    try {
+      return JSON.parse(storedProducts);
+    } catch (e) {
+      console.error('Error parsing stored products:', e);
+      return mockProducts;
+    }
   }
   return mockProducts;
 };

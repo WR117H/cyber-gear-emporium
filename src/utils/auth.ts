@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
@@ -6,12 +5,17 @@ export const signUp = async (email: string, password: string, name: string) => {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
+      console.warn('Supabase not configured: Using mock authentication for signup');
+      // Mock successful signup
       toast({
-        title: "Error",
-        description: "Authentication is not available at this time",
-        variant: "destructive",
+        title: "Development Mode",
+        description: "Supabase not configured. Using mock authentication.",
       });
-      return { success: false, error: new Error("Supabase not configured") };
+      
+      // Store mock user in localStorage for development
+      localStorage.setItem('user', JSON.stringify({ email, name }));
+      
+      return { success: true, data: { user: { email, user_metadata: { name } } } };
     }
     
     const { data, error } = await supabase.auth.signUp({
@@ -54,12 +58,17 @@ export const signIn = async (email: string, password: string) => {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
+      console.warn('Supabase not configured: Using mock authentication for signin');
+      // Mock successful login
       toast({
-        title: "Error",
-        description: "Authentication is not available at this time",
-        variant: "destructive",
+        title: "Development Mode",
+        description: "Supabase not configured. Using mock authentication.",
       });
-      return { success: false, error: new Error("Supabase not configured") };
+      
+      // Store mock user in localStorage for development
+      localStorage.setItem('user', JSON.stringify({ email }));
+      
+      return { success: true, data: { user: { email } } };
     }
     
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -137,7 +146,8 @@ export const getCurrentUser = async () => {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
-      return { user: null, error: new Error("Supabase not configured") };
+      const storedUser = localStorage.getItem('user');
+      return { user: storedUser ? JSON.parse(storedUser) : null, error: null };
     }
     
     const { data, error } = await supabase.auth.getUser();
