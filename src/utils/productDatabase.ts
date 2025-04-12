@@ -9,6 +9,7 @@ const PRODUCTS_TABLE = 'products';
 // Fetch all products from Supabase
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
+    // Check if Supabase is properly configured first
     if (!isSupabaseConfigured()) {
       console.warn('Supabase not configured. Using local data instead.');
       return getLocalProducts();
@@ -20,6 +21,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 
     if (error) {
       console.error('Error fetching products:', error);
+      // Fallback to localStorage if Supabase fails
       return getLocalProducts();
     }
 
@@ -32,6 +34,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
     return mockProducts;
   } catch (err) {
     console.error('Error in fetchProducts:', err);
+    // Fallback to localStorage
     return getLocalProducts();
   }
 };
@@ -39,6 +42,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 // Initialize Supabase with mock products if empty
 export const initializeProducts = async (): Promise<void> => {
   try {
+    // Don't attempt initialization if Supabase isn't configured
     if (!isSupabaseConfigured()) {
       return;
     }
@@ -71,6 +75,7 @@ export const initializeProducts = async (): Promise<void> => {
 // Create a new product
 export const createProduct = async (product: Omit<Product, 'id'>): Promise<Product | null> => {
   try {
+    // Don't attempt to use Supabase if not configured
     if (!isSupabaseConfigured()) {
       const newProduct = { ...product, id: `prod_${Date.now()}` };
       const localProducts = getLocalProducts();
@@ -99,6 +104,7 @@ export const createProduct = async (product: Omit<Product, 'id'>): Promise<Produ
 // Update an existing product
 export const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
   try {
+    // Don't attempt to use Supabase if not configured
     if (!isSupabaseConfigured()) {
       const localProducts = getLocalProducts();
       const updatedProducts = localProducts.map(p => 
@@ -130,6 +136,7 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
 // Delete a product
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
+    // Don't attempt to use Supabase if not configured
     if (!isSupabaseConfigured()) {
       const localProducts = getLocalProducts();
       const filteredProducts = localProducts.filter(p => p.id !== id);
