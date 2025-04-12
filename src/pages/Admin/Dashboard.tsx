@@ -1,0 +1,104 @@
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Package, Users, DollarSign, Settings } from 'lucide-react';
+
+export default function Dashboard() {
+  return (
+    <div className="bg-black min-h-screen">
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Manage your store</p>
+          </div>
+          <Link to="/">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Store
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-secondary border-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Products</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">12</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-secondary border-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">324</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-secondary border-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">$9,876</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-secondary border-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Orders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">43</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Package className="h-5 w-5 mr-2 text-cyber-blue" />
+                Product Management
+              </CardTitle>
+              <CardDescription>Manage your product catalog</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Add, edit, and remove products from your store.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/products" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Manage Products
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="h-5 w-5 mr-2 text-cyber-blue" />
+                User Management
+              </CardTitle>
+              <CardDescription>Manage your user database</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Add, edit, and manage user accounts.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/users" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Manage Users
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

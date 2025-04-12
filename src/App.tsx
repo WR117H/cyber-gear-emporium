@@ -12,6 +12,9 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Admin/Dashboard";
+import ProductManager from "./pages/Admin/ProductManager";
+import ProductForm from "./pages/Admin/ProductForm";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +31,13 @@ const App = () => (
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/products" element={<ProductManager />} />
+          <Route path="/admin/products/new" element={<ProductForm />} />
+          <Route path="/admin/products/edit/:id" element={<ProductForm />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
