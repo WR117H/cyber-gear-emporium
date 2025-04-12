@@ -1,3 +1,4 @@
+
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 

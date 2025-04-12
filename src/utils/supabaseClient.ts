@@ -5,16 +5,26 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Create Supabase client
+// Define a placeholder URL and key for development/fallback
+const PLACEHOLDER_URL = 'https://placeholder-project.supabase.co';
+const PLACEHOLDER_KEY = 'placeholder-anon-key';
+
+// Create Supabase client with better error handling
 export const supabase = createClient(
-  // Always provide a valid URL, even if it's just a placeholder
-  supabaseUrl || 'https://placeholder-project.supabase.co',
-  supabaseAnonKey || 'placeholder-anon-key'
+  // Always provide a valid URL string, even if it's just a placeholder
+  supabaseUrl || PLACEHOLDER_URL,
+  supabaseAnonKey || PLACEHOLDER_KEY
 );
 
 // Utility function to check if Supabase is properly configured
 export const isSupabaseConfigured = (): boolean => {
   return !!supabaseUrl && !!supabaseAnonKey && 
-         supabaseUrl !== 'https://placeholder-project.supabase.co' &&
-         supabaseAnonKey !== 'placeholder-anon-key';
+         supabaseUrl !== PLACEHOLDER_URL &&
+         supabaseAnonKey !== PLACEHOLDER_KEY;
 };
+
+// Log configuration status to help with debugging
+console.log('Supabase configuration status:', 
+  isSupabaseConfigured() ? 'Configured correctly' : 'Not configured properly');
+console.log('Using URL:', supabaseUrl || PLACEHOLDER_URL);
+
