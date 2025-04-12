@@ -26,12 +26,11 @@ const Index = () => {
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              All you want from a <span className="text-cyber-blue">gadget store</span>
+              StealthByte <span className="text-cyber-blue">Pen-testing gears</span>
             </h1>
             
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-muted-foreground">
-              Harnessed for productivity. Designed for collaboration.
-              Celebrated for built-in security. Welcome to the platform developers love.
+              Pentest gears for the curious, the bold, and the ones who don't wait for per******n.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
