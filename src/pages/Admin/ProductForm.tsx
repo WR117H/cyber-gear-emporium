@@ -123,10 +123,17 @@ export default function ProductForm() {
         });
       } else {
         // Create new product with generated ID
-        const newProduct = {
+        // Fix: Ensure all required fields are included and explicitly typed
+        const newProduct: Product = {
           id: `${Date.now()}`,
-          ...data,
-          // Add default values for any fields not in the form
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          category: data.category,
+          image: data.image,
+          inStock: data.inStock,
+          featured: data.featured || false,
+          isNew: data.isNew || false,
           specifications: {},
           compatibleWith: []
         };
