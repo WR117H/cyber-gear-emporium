@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import ProductGrid from '@/components/ProductGrid';
 import Footer from '@/components/Footer';
+import { mockProducts } from '@/data/products';
 import { Filter, SortDesc, SortAsc } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -23,50 +24,25 @@ import {
 } from '@/components/ui/sheet';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { Product } from '@/types/product';
-import { fetchProducts } from '@/utils/productDatabase';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
   
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState(mockProducts);
+  const [filteredProducts, setFilteredProducts] = useState(mockProducts);
   const [sortOption, setSortOption] = useState('featured');
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     categoryParam ? [categoryParam] : []
   );
-  const [isLoading, setIsLoading] = useState(true);
   
   const { toast } = useToast();
   
-  // Load products from database
-  useEffect(() => {
-    const loadProducts = async () => {
-      setIsLoading(true);
-      try {
-        const productsData = await fetchProducts();
-        setProducts(productsData);
-      } catch (error) {
-        console.error('Error loading products:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load products. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadProducts();
-  }, [toast]);
-  
   // Filter and sort products
   useEffect(() => {
-    let result = [...products];
+    let result = [...mockProducts];
     
     // Filter by category
     if (selectedCategories.length > 0) {
@@ -104,7 +80,7 @@ const Products = () => {
     }
     
     setFilteredProducts(result);
-  }, [sortOption, priceRange, inStockOnly, selectedCategories, products]);
+  }, [sortOption, priceRange, inStockOnly, selectedCategories]);
   
   // Handle category filter changes
   const handleCategoryChange = (category: string) => {
@@ -116,7 +92,7 @@ const Products = () => {
   };
   
   // Handle adding to cart
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: any) => {
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
@@ -143,7 +119,7 @@ const Products = () => {
                 : 'All Products'}
             </h1>
             <p className="text-muted-foreground">
-              {isLoading ? 'Loading products...' : `${filteredProducts.length} products available`}
+              {filteredProducts.length} products available
             </p>
           </div>
           
@@ -239,11 +215,7 @@ const Products = () => {
           </div>
         </div>
         
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <h3 className="text-xl font-medium mb-2">Loading products...</h3>
-          </div>
-        ) : filteredProducts.length > 0 ? (
+        {filteredProducts.length > 0 ? (
           <ProductGrid products={filteredProducts} onAddToCart={handleAddToCart} />
         ) : (
           <div className="flex flex-col items-center justify-center py-12">

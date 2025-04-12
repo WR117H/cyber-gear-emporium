@@ -25,13 +25,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Save, Trash2, Plus } from 'lucide-react';
+import { mockProducts } from '@/data/products';
 import { Product } from '@/types/product';
-import { fetchProducts, createProduct, updateProduct, deleteProduct } from '@/utils/productDatabase';
+
+// Storage key for products
+const PRODUCTS_STORAGE_KEY = 'admin_products';
 
 // Form validation schema
 const productSchema = z.object({
@@ -52,54 +55,34 @@ export default function ProductForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  // Load product if editing
+  // Load products from localStorage
   useEffect(() => {
-    const loadProduct = async () => {
-      if (!id) return;
-      
-      try {
-        const products = await fetchProducts();
-        const existingProduct = products.find(p => p.id === id);
-        
-        if (existingProduct) {
-          setProduct(existingProduct);
-        } else {
-          toast({
-            title: "Product not found",
-            description: "The requested product could not be found",
-            variant: "destructive"
-          });
-          navigate('/admin/products');
-        }
-      } catch (error) {
-        console.error('Error loading product:', error);
-        toast({
-          title: "Error",
-          description: "Could not load product details",
-          variant: "destructive"
-        });
-      }
-    };
-    
-    loadProduct();
-  }, [id, navigate, toast]);
+    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (storedProducts) {
+      setProducts(JSON.parse(storedProducts));
+    } else {
+      setProducts(mockProducts);
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
+    }
+  }, []);
 
   // Find product if editing
   const isEditMode = !!id;
+  const existingProduct = isEditMode ? products.find(p => p.id === id) : undefined;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: product ? {
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      category: product.category,
-      image: product.image,
-      inStock: product.inStock,
-      featured: product.featured,
-      isNew: product.isNew,
+    defaultValues: existingProduct ? {
+      name: existingProduct.name,
+      description: existingProduct.description,
+      price: existingProduct.price,
+      category: existingProduct.category,
+      image: existingProduct.image,
+      inStock: existingProduct.inStock,
+      featured: existingProduct.featured,
+      isNew: existingProduct.isNew,
     } : {
       name: "",
       description: "",
@@ -109,38 +92,40 @@ export default function ProductForm() {
       inStock: 0,
       featured: false,
       isNew: false,
-    },
-    values: product ? {
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      category: product.category,
-      image: product.image,
-      inStock: product.inStock,
-      featured: product.featured,
-      isNew: product.isNew,
-    } : undefined,
+    }
   });
 
   const onSubmit = async (data: ProductFormValues) => {
     setIsLoading(true);
 
     try {
-      if (isEditMode && id) {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      if (isEditMode && existingProduct) {
         // Update existing product
-        const updatedProduct = await updateProduct(id, data);
+        const updatedProducts = products.map(p => {
+          if (p.id === id) {
+            return {
+              ...p,
+              ...data
+            };
+          }
+          return p;
+        });
         
-        if (updatedProduct) {
-          toast({
-            title: "Product updated",
-            description: `${data.name} has been updated successfully.`
-          });
-        } else {
-          throw new Error("Failed to update product");
-        }
+        setProducts(updatedProducts);
+        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(updatedProducts));
+        
+        toast({
+          title: "Product updated",
+          description: `${data.name} has been updated successfully.`
+        });
       } else {
-        // Create new product
-        const newProductData: Omit<Product, 'id'> = {
+        // Create new product with generated ID
+        // Fix: Ensure all required fields are included and explicitly typed
+        const newProduct: Product = {
+          id: `${Date.now()}`,
           name: data.name,
           description: data.description,
           price: data.price,
@@ -153,11 +138,9 @@ export default function ProductForm() {
           compatibleWith: []
         };
         
-        const newProduct = await createProduct(newProductData);
-        
-        if (!newProduct) {
-          throw new Error("Failed to create product");
-        }
+        const updatedProducts = [...products, newProduct];
+        setProducts(updatedProducts);
+        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(updatedProducts));
         
         toast({
           title: "Product created",
@@ -168,7 +151,6 @@ export default function ProductForm() {
       // Redirect back to product list
       navigate('/admin/products');
     } catch (error) {
-      console.error('Error saving product:', error);
       toast({
         title: "Error",
         description: "There was a problem saving the product.",
@@ -180,26 +162,27 @@ export default function ProductForm() {
   };
 
   const handleDelete = async () => {
-    if (!isEditMode || !id) return;
+    if (!isEditMode || !existingProduct) return;
 
     setIsLoading(true);
 
     try {
-      const success = await deleteProduct(id);
-      
-      if (!success) {
-        throw new Error("Failed to delete product");
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Filter out the product to delete
+      const updatedProducts = products.filter(p => p.id !== id);
+      setProducts(updatedProducts);
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(updatedProducts));
       
       toast({
         title: "Product deleted",
-        description: `The product has been removed from your store.`
+        description: `${existingProduct.name} has been removed from your store.`
       });
 
       // Redirect back to products list
       navigate('/admin/products');
     } catch (error) {
-      console.error('Error deleting product:', error);
       toast({
         title: "Error",
         description: "There was a problem deleting the product.",
@@ -209,15 +192,6 @@ export default function ProductForm() {
       setIsLoading(false);
     }
   };
-
-  // Show loading state while product is being fetched
-  if (isEditMode && !product) {
-    return (
-      <div className="bg-black min-h-screen flex items-center justify-center">
-        <p className="text-white">Loading product details...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-black min-h-screen">
