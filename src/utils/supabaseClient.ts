@@ -1,13 +1,9 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables for Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://sfnifgnevvoxceiqjrdi.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmbmlmZ25ldnZveGNlaXFqcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MzI0NDEsImV4cCI6MjA2MDAwODQ0MX0.s5l7nU39_QYsETZMJr6v4iAhy8ocR8a6F9y8irFAEvQ';
 
-// Define a placeholder URL and key for development/fallback
-const PLACEHOLDER_URL = 'https://placeholder-project.supabase.co';
-const PLACEHOLDER_KEY = 'placeholder-anon-key';
 
 // Create Supabase client with better error handling
 // The empty string check is critical - createClient requires non-empty strings
