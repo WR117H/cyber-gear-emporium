@@ -10,6 +10,7 @@ const PLACEHOLDER_URL = 'https://placeholder-project.supabase.co';
 const PLACEHOLDER_KEY = 'placeholder-anon-key';
 
 // Create Supabase client with better error handling
+// The empty string check is critical - createClient requires non-empty strings
 export const supabase = createClient(
   // Always provide a valid URL string, even if it's just a placeholder
   supabaseUrl || PLACEHOLDER_URL,
@@ -27,4 +28,3 @@ export const isSupabaseConfigured = (): boolean => {
 console.log('Supabase configuration status:', 
   isSupabaseConfigured() ? 'Configured correctly' : 'Not configured properly');
 console.log('Using URL:', supabaseUrl || PLACEHOLDER_URL);
-
