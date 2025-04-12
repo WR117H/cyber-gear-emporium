@@ -1,11 +1,35 @@
 
-// Simple password protection for admin access
-// In a real app, this would use proper authentication
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
-const ADMIN_PASSWORD = "admin123"; // This is the password you'll use to access admin pages
+// Admin table name in Supabase
+const ADMIN_TABLE = 'admins';
 
-export const checkAdminPassword = (password: string): boolean => {
-  return password === ADMIN_PASSWORD;
+// Fallback admin password for development
+const ADMIN_PASSWORD = "admin123"; 
+
+export const checkAdminPassword = async (password: string): Promise<boolean> => {
+  try {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase not configured. Using local admin password.');
+      return password === ADMIN_PASSWORD;
+    }
+    
+    const { data, error } = await supabase
+      .from(ADMIN_TABLE)
+      .select('*')
+      .eq('password', password)
+      .single();
+
+    if (error) {
+      console.error('Error checking admin password:', error);
+      return password === ADMIN_PASSWORD;
+    }
+
+    return !!data;
+  } catch (err) {
+    console.error('Error in admin authentication:', err);
+    return password === ADMIN_PASSWORD;
+  }
 };
 
 export const setAdminAuthenticated = (isAuthenticated: boolean): void => {
