@@ -25,7 +25,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Plus } from 'lucide-react';
 import { mockProducts } from '@/data/products';
 import { Product } from '@/types/product';
 
