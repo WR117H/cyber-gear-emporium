@@ -8,18 +8,36 @@ import { mockProducts } from '@/data/products';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, CreditCard, Bitcoin } from 'lucide-react';
 import CryptoPayment from '@/components/CryptoPayment';
+import { CartItemType } from '@/types/cart';
 
 const Cart = () => {
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState<'credit' | 'crypto' | null>(null);
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
 
-  // For demo purposes, just use some mock products as cart items
-  const cartItems = mockProducts.slice(0, 3);
+  // Convert mock products to cart items with quantity
+  const cartItems: CartItemType[] = mockProducts.slice(0, 3).map(product => ({
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    image: product.image,
+    quantity: 1
+  }));
   
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = 15;
   const total = subtotal + shipping;
+  
+  const handleUpdateQuantity = (id: string, quantity: number) => {
+    // This would update the cart state in a real application
+    console.log(`Updated quantity for ${id} to ${quantity}`);
+  };
+
+  const handleRemoveItem = (id: string) => {
+    // This would remove the item from cart in a real application
+    console.log(`Removed item ${id} from cart`);
+  };
   
   const handlePaymentComplete = () => {
     setIsPaymentComplete(true);
@@ -58,7 +76,12 @@ const Cart = () => {
               {cartItems.length > 0 ? (
                 <div className="space-y-6">
                   {cartItems.map(item => (
-                    <CartItem key={item.id} product={item} />
+                    <CartItem 
+                      key={item.id} 
+                      item={item} 
+                      onUpdateQuantity={handleUpdateQuantity}
+                      onRemove={handleRemoveItem}
+                    />
                   ))}
                 </div>
               ) : (
