@@ -2,7 +2,6 @@
 import React from 'react';
 import { ArrowRight, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import TonWalletConnector from '@/components/TonWalletConnector';
 import { Link } from 'react-router-dom';
 
 const HeroSection = () => {
