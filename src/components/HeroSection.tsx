@@ -2,6 +2,7 @@
 import React from 'react';
 import { ArrowRight, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import TonWalletConnector from '@/components/TonWalletConnector';
 import { Link } from 'react-router-dom';
 
 const HeroSection = () => {
@@ -21,6 +22,10 @@ const HeroSection = () => {
               Equip yourself with cutting-edge penetration testing gear designed for security professionals. 
               From wireless analyzers to custom hardware, we've got the tools you need to secure networks.
             </p>
+            <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+              <TonWalletConnector />
+            </div>
+
             
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
               <Button 
