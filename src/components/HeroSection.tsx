@@ -3,6 +3,7 @@ import React from 'react';
 import { ArrowRight, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import TonWalletConnector from '@/components/TonWalletConnector';
 
 const HeroSection = () => {
   return (
@@ -41,6 +42,9 @@ const HeroSection = () => {
                   <Github className="mr-2" /> GitHub
                 </a>
               </Button>
+              <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+                <TonWalletConnector />
+              </div>
             </div>
           </div>
         </div>
