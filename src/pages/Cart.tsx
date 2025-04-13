@@ -1,169 +1,199 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import CartItem from '@/components/CartItem';
-import { ShoppingCart, ArrowRight, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { CartItemType } from '@/types/cart';
+import CartItem from '@/components/CartItem';
 import { mockProducts } from '@/data/products';
-import { useToast } from '@/hooks/use-toast';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, ArrowLeft, CreditCard, Bitcoin } from 'lucide-react';
+import CryptoPayment from '@/components/CryptoPayment';
 
 const Cart = () => {
-  // In a real application, this would come from a global cart state
-  const [cartItems, setCartItems] = useState<CartItemType[]>([
-    {
-      id: '1',
-      name: mockProducts[0].name,
-      description: mockProducts[0].description,
-      price: mockProducts[0].price,
-      image: mockProducts[0].image,
-      quantity: 1
-    },
-    {
-      id: '3',
-      name: mockProducts[2].name,
-      description: mockProducts[2].description,
-      price: mockProducts[2].price,
-      image: mockProducts[2].image,
-      quantity: 2
-    }
-  ]);
+  const navigate = useNavigate();
+  const [paymentMethod, setPaymentMethod] = useState<'credit' | 'crypto' | null>(null);
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+
+  // For demo purposes, just use some mock products as cart items
+  const cartItems = mockProducts.slice(0, 3);
   
-  const [subtotal, setSubtotal] = useState(0);
-  const [shipping, setShipping] = useState(15);
-  const [total, setTotal] = useState(0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const shipping = 15;
+  const total = subtotal + shipping;
   
-  const { toast } = useToast();
-  
-  // Calculate totals
-  useEffect(() => {
-    const newSubtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    setSubtotal(newSubtotal);
-    setTotal(newSubtotal + shipping);
-  }, [cartItems, shipping]);
-  
-  // Update quantity
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
-  };
-  
-  // Remove item
-  const handleRemoveItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-    toast({
-      title: "Item removed",
-      description: "Item has been removed from your cart.",
-    });
-  };
-  
-  // Checkout
-  const handleCheckout = () => {
-    toast({
-      title: "Checkout process",
-      description: "This would proceed to payment in a real e-commerce store.",
-    });
+  const handlePaymentComplete = () => {
+    setIsPaymentComplete(true);
+    setTimeout(() => {
+      navigate('/');
+    }, 3000);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="absolute inset-0 bg-black z-[-1]"></div>
-      <div className="absolute inset-0 subtle-gradient-purple"></div>
+    <div className="min-h-screen flex flex-col bg-black">
       <Navbar />
       
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8 flex items-center">
-          <ShoppingCart className="mr-2 h-6 w-6" /> Shopping Cart
-        </h1>
+      <main className="flex-grow container mx-auto py-8 px-4">
+        <div className="mb-6">
+          <Button variant="outline" asChild size="sm">
+            <Link to="/products">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Continue Shopping
+            </Link>
+          </Button>
+        </div>
         
-        {cartItems.length > 0 ? (
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="card-gradient border border-cyber-blue/20 rounded-lg overflow-hidden p-6">
-                <h2 className="text-lg font-semibold mb-4">Cart Items</h2>
-                
-                {cartItems.map(item => (
-                  <CartItem 
-                    key={item.id}
-                    item={item}
-                    onUpdateQuantity={handleUpdateQuantity}
-                    onRemove={handleRemoveItem}
-                  />
-                ))}
-              </div>
+        <h1 className="text-3xl font-bold text-white mb-8">Your Cart</h1>
+        
+        {isPaymentComplete ? (
+          <div className="p-8 border border-cyber-blue/30 rounded-xl text-center bg-cyber-navy/20 max-w-xl mx-auto">
+            <div className="w-16 h-16 mx-auto mb-4 bg-cyber-blue/20 rounded-full flex items-center justify-center">
+              <ShoppingBag className="h-8 w-8 text-cyber-blue" />
             </div>
-            
-            <div>
-              <div className="card-gradient border border-cyber-blue/20 rounded-lg overflow-hidden p-6 sticky top-24">
-                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">${shipping.toFixed(2)}</span>
-                  </div>
-                  
-                  <Separator className="my-2 bg-cyber-blue/20" />
-                  
-                  <div className="flex justify-between items-center font-bold">
-                    <span>Total</span>
-                    <span className="text-cyber-blue text-xl">${total.toFixed(2)}</span>
-                  </div>
-                  
-                  <Button 
-                    className="w-full bg-cyber-blue text-cyber-navy hover:bg-cyber-green mt-6"
-                    size="lg"
-                    onClick={handleCheckout}
-                  >
-                    <CreditCard className="mr-2 h-5 w-5" />
-                    Checkout
-                  </Button>
-                  
-                  <Link to="/products">
-                    <Button 
-                      variant="link" 
-                      className="w-full text-cyber-blue mt-2"
-                    >
-                      Continue Shopping
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Thank you for your order!</h2>
+            <p className="text-muted-foreground mb-6">Your payment was successful and your order is being processed.</p>
+            <p className="text-sm text-white">Redirecting to homepage...</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="bg-cyber-blue/10 rounded-full p-6 mb-6">
-              <ShoppingCart className="h-12 w-12 text-cyber-blue" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              {cartItems.length > 0 ? (
+                <div className="space-y-6">
+                  {cartItems.map(item => (
+                    <CartItem key={item.id} product={item} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-8 border border-white/10 rounded-xl">
+                  <p className="text-white mb-4">Your cart is empty</p>
+                  <Button asChild>
+                    <Link to="/products">Browse Products</Link>
+                  </Button>
+                </div>
+              )}
             </div>
             
-            <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Looks like you haven't added any products to your cart yet.
-              Browse our collection to find the perfect gear for your needs!
-            </p>
-            
-            <Button 
-              asChild
-              className="bg-cyber-blue text-cyber-navy hover:bg-cyber-green"
-              size="lg"
-            >
-              <Link to="/products">
-                Browse Products <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+            <div className="lg:col-span-1">
+              {cartItems.length > 0 && !paymentMethod && (
+                <div className="border border-white/10 rounded-xl p-6 bg-card/30 backdrop-blur-sm">
+                  <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="text-white">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-white">${shipping.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-white/10 pt-2 mt-2">
+                      <div className="flex justify-between font-semibold">
+                        <span className="text-white">Total</span>
+                        <span className="text-white">${total.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 pt-4">
+                    <h3 className="text-white font-medium mb-2">Select payment method</h3>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start" 
+                      onClick={() => setPaymentMethod('credit')}
+                    >
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Credit Card
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start" 
+                      onClick={() => setPaymentMethod('crypto')}
+                    >
+                      <Bitcoin className="mr-2 h-4 w-4" />
+                      Cryptocurrency
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {paymentMethod === 'credit' && (
+                <div className="border border-white/10 rounded-xl p-6 space-y-4 bg-card/30 backdrop-blur-sm">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Credit Card Payment
+                  </h2>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
+                        Card Number
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="1234 5678 9012 3456"
+                        className="cyber-input w-full"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">
+                          Expiration Date
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="MM/YY"
+                          className="cyber-input w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">
+                          CVC
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="123"
+                          className="cyber-input w-full"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
+                        Name on Card
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="John Doe"
+                        className="cyber-input w-full"
+                      />
+                    </div>
+                    
+                    <Button 
+                      variant="cyber"
+                      className="w-full"
+                      onClick={handlePaymentComplete}
+                    >
+                      Pay ${total.toFixed(2)}
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => setPaymentMethod(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {paymentMethod === 'crypto' && (
+                <CryptoPayment 
+                  amount={total} 
+                  onComplete={handlePaymentComplete} 
+                />
+              )}
+            </div>
           </div>
         )}
       </main>

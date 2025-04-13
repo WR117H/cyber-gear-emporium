@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -46,12 +46,11 @@ const HeroSection = () => {
               
               <Button 
                 asChild
-                variant="outline" 
-                className="border-cyber-blue text-cyber-blue hover:bg-cyber-blue/10" 
+                variant="github" 
                 size="lg"
               >
-                <a href="#featured">
-                  Featured Gear
+                <a href="https://github.com/WR117H" target="_blank" rel="noopener noreferrer">
+                  <Github className="mr-2" /> GitHub
                 </a>
               </Button>
             </div>
