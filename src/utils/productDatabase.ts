@@ -55,9 +55,14 @@ export const initializeProducts = async (): Promise<void> => {
     
     // If no products, insert mock products
     if (count === 0) {
+      const productsWithIds = mockProducts.map(product => ({
+        ...product,
+        id: product.id || `prod_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+      }));
+      
       const { error } = await supabase
         .from(PRODUCTS_TABLE)
-        .insert(mockProducts);
+        .insert(productsWithIds);
       
       if (error) {
         console.error('Error initializing products:', error);
@@ -71,8 +76,11 @@ export const initializeProducts = async (): Promise<void> => {
 // Create a new product
 export const createProduct = async (product: Omit<Product, 'id'>): Promise<Product | null> => {
   try {
+    const newProductId = `prod_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const newProduct = { ...product, id: newProductId };
+    
     if (!isSupabaseConfigured()) {
-      const newProduct = { ...product, id: `prod_${Date.now()}` };
+      console.log('Creating product in local storage');
       const localProducts = getLocalProducts();
       localStorage.setItem('admin_products', JSON.stringify([...localProducts, newProduct]));
       return newProduct;
@@ -80,13 +88,16 @@ export const createProduct = async (product: Omit<Product, 'id'>): Promise<Produ
     
     const { data, error } = await supabase
       .from(PRODUCTS_TABLE)
-      .insert([{ ...product, id: `prod_${Date.now()}` }])
+      .insert([newProduct])
       .select()
       .single();
     
     if (error) {
-      console.error('Error creating product:', error);
-      return null;
+      console.error('Error creating product in Supabase:', error);
+      // Fall back to local storage
+      const localProducts = getLocalProducts();
+      localStorage.setItem('admin_products', JSON.stringify([...localProducts, newProduct]));
+      return newProduct;
     }
     
     return data as Product;
@@ -100,12 +111,19 @@ export const createProduct = async (product: Omit<Product, 'id'>): Promise<Produ
 export const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
   try {
     if (!isSupabaseConfigured()) {
+      console.log('Updating product in local storage');
       const localProducts = getLocalProducts();
-      const updatedProducts = localProducts.map(p => 
-        p.id === id ? { ...p, ...updates } : p
-      );
+      const productToUpdate = localProducts.find(p => p.id === id);
+      
+      if (!productToUpdate) {
+        console.error('Product not found in local storage');
+        return null;
+      }
+      
+      const updatedProduct = { ...productToUpdate, ...updates };
+      const updatedProducts = localProducts.map(p => p.id === id ? updatedProduct : p);
       localStorage.setItem('admin_products', JSON.stringify(updatedProducts));
-      return { ...localProducts.find(p => p.id === id), ...updates } as Product;
+      return updatedProduct;
     }
     
     const { data, error } = await supabase
@@ -116,8 +134,19 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
       .single();
     
     if (error) {
-      console.error('Error updating product:', error);
-      return null;
+      console.error('Error updating product in Supabase:', error);
+      // Fall back to local storage
+      const localProducts = getLocalProducts();
+      const productToUpdate = localProducts.find(p => p.id === id);
+      
+      if (!productToUpdate) {
+        return null;
+      }
+      
+      const updatedProduct = { ...productToUpdate, ...updates };
+      const updatedProducts = localProducts.map(p => p.id === id ? updatedProduct : p);
+      localStorage.setItem('admin_products', JSON.stringify(updatedProducts));
+      return updatedProduct;
     }
     
     return data as Product;
@@ -131,6 +160,7 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
     if (!isSupabaseConfigured()) {
+      console.log('Deleting product from local storage');
       const localProducts = getLocalProducts();
       const filteredProducts = localProducts.filter(p => p.id !== id);
       localStorage.setItem('admin_products', JSON.stringify(filteredProducts));
@@ -143,8 +173,12 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
       .eq('id', id);
     
     if (error) {
-      console.error('Error deleting product:', error);
-      return false;
+      console.error('Error deleting product from Supabase:', error);
+      // Fall back to local storage
+      const localProducts = getLocalProducts();
+      const filteredProducts = localProducts.filter(p => p.id !== id);
+      localStorage.setItem('admin_products', JSON.stringify(filteredProducts));
+      return true;
     }
     
     return true;

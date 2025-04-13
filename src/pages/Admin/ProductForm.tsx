@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
@@ -29,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { Product } from '@/types/product';
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from '@/utils/productDatabase';
 
@@ -53,6 +52,7 @@ export default function ProductForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
+  const isEditMode = !!id;
 
   // Load product if editing
   useEffect(() => {
@@ -65,6 +65,7 @@ export default function ProductForm() {
         
         if (existingProduct) {
           setProduct(existingProduct);
+          console.log("Product loaded:", existingProduct);
         } else {
           toast({
             title: "Product not found",
@@ -86,21 +87,10 @@ export default function ProductForm() {
     loadProduct();
   }, [id, navigate, toast]);
 
-  // Find product if editing
-  const isEditMode = !!id;
-
+  // Initialize the form with default values or product data if editing
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: product ? {
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      category: product.category,
-      image: product.image,
-      inStock: product.inStock,
-      featured: product.featured,
-      isNew: product.isNew,
-    } : {
+    defaultValues: {
       name: "",
       description: "",
       price: 0,
@@ -109,18 +99,24 @@ export default function ProductForm() {
       inStock: 0,
       featured: false,
       isNew: false,
-    },
-    values: product ? {
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      category: product.category,
-      image: product.image,
-      inStock: product.inStock,
-      featured: product.featured,
-      isNew: product.isNew,
-    } : undefined,
+    }
   });
+
+  // Update form values when product is loaded
+  useEffect(() => {
+    if (product) {
+      form.reset({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+        image: product.image,
+        inStock: product.inStock,
+        featured: product.featured,
+        isNew: product.isNew,
+      });
+    }
+  }, [product, form]);
 
   const onSubmit = async (data: ProductFormValues) => {
     setIsLoading(true);
@@ -128,6 +124,7 @@ export default function ProductForm() {
     try {
       if (isEditMode && id) {
         // Update existing product
+        console.log("Updating product:", id, data);
         const updatedProduct = await updateProduct(id, data);
         
         if (updatedProduct) {
@@ -135,6 +132,7 @@ export default function ProductForm() {
             title: "Product updated",
             description: `${data.name} has been updated successfully.`
           });
+          navigate('/admin/products');
         } else {
           throw new Error("Failed to update product");
         }
@@ -153,6 +151,7 @@ export default function ProductForm() {
           compatibleWith: []
         };
         
+        console.log("Creating new product:", newProductData);
         const newProduct = await createProduct(newProductData);
         
         if (!newProduct) {
@@ -163,10 +162,8 @@ export default function ProductForm() {
           title: "Product created",
           description: `${data.name} has been added to your store.`
         });
+        navigate('/admin/products');
       }
-
-      // Redirect back to product list
-      navigate('/admin/products');
     } catch (error) {
       console.error('Error saving product:', error);
       toast({
@@ -185,6 +182,7 @@ export default function ProductForm() {
     setIsLoading(true);
 
     try {
+      console.log("Deleting product:", id);
       const success = await deleteProduct(id);
       
       if (!success) {
@@ -211,7 +209,7 @@ export default function ProductForm() {
   };
 
   // Show loading state while product is being fetched
-  if (isEditMode && !product) {
+  if (isEditMode && !product && isLoading) {
     return (
       <div className="bg-black min-h-screen flex items-center justify-center">
         <p className="text-white">Loading product details...</p>
@@ -282,6 +280,7 @@ export default function ProductForm() {
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="bg-white/10 border-white/20 text-white">
@@ -423,7 +422,7 @@ export default function ProductForm() {
                 <div className="flex justify-end">
                   <Button 
                     type="submit" 
-                    className="bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy"
+                    className="bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy w-auto"
                     disabled={isLoading}
                   >
                     <Save className="h-4 w-4 mr-2" />

@@ -89,25 +89,25 @@ export default function ProductManager() {
   return (
     <div className="bg-black min-h-screen">
       <div className="container mx-auto py-8 px-4">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-white">Product Management</h1>
             <p className="text-muted-foreground">Manage your product database</p>
           </div>
-          <div className="space-x-2">
+          <div className="flex flex-wrap gap-2">
             <Link to="/admin/dashboard">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-auto">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>
             </Link>
             <Link to="/admin/products/new">
-              <Button className="bg-cyber-blue text-cyber-navy hover:bg-cyber-blue/80">
+              <Button className="bg-cyber-blue text-cyber-navy hover:bg-cyber-blue/80 w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 New Product
               </Button>
             </Link>
-            <Button variant="ghost" onClick={handleLogout} size="sm">
+            <Button variant="ghost" onClick={handleLogout} size="sm" className="w-auto">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -174,12 +174,12 @@ export default function ProductManager() {
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
                           <Link to={`/product/${product.id}`}>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" className="w-auto h-auto">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
                           <Link to={`/admin/products/edit/${product.id}`}>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" className="w-auto h-auto">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
@@ -187,6 +187,7 @@ export default function ProductManager() {
                             variant="ghost" 
                             size="icon"
                             onClick={() => handleDeleteProduct(product.id)}
+                            className="w-auto h-auto"
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
