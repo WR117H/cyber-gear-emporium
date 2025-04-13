@@ -180,12 +180,11 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
         </div>
         
         {paymentStatus === 'pending' && (
-          <Button>
-{/*           onClick={verifyTransaction} 
+          <Button onClick={verifyTransaction} 
           className="w-full"
           variant="cyber"
-          Verify Payment */}
-            <TonWalletConnector />
+          Verify Payment>
+           Pay
           </Button>
       
         )}
