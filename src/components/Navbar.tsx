@@ -1,11 +1,17 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search, Image } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, ShoppingCart, Search, Image, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isAuthenticated, getCurrentUser, signOut } from '@/utils/auth';
+import { useToast } from '@/hooks/use-toast';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
   const categories = [
     { name: 'Network Tools', path: '/products?category=network' },
@@ -13,6 +19,35 @@ const Navbar = () => {
     { name: 'Hardware Kits', path: '/products?category=hardware' },
     { name: 'Software Tools', path: '/products?category=software' }
   ];
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const authStatus = await isAuthenticated();
+      setIsLoggedIn(authStatus);
+      
+      if (authStatus) {
+        const { user } = await getCurrentUser();
+        setUserData(user);
+      }
+    };
+    
+    checkAuthStatus();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setIsLoggedIn(false);
+      setUserData(null);
+      navigate('/');
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account"
+      });
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-black border-b border-white/10">
@@ -33,13 +68,31 @@ const Navbar = () => {
           </div>
           
           {/* Right side icons */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             {/* Search button - visible on desktop */}
-            <div className="hidden md:flex items-center mr-4">
+            <div className="hidden md:flex items-center">
               <Button variant="ghost" size="icon" className="text-white">
                 <Search className="h-5 w-5" />
               </Button>
             </div>
+            
+            {/* Auth/Profile buttons */}
+            {isLoggedIn ? (
+              <>
+                <Button variant="ghost" size="icon" className="text-white" onClick={() => navigate('/profile')}>
+                  <User className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-white" onClick={handleLogout}>
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 rounded-full">
+                  Login/SignUp
+                </Button>
+              </Link>
+            )}
             
             {/* Cart button */}
             <Link to="/cart" className="relative">
@@ -52,7 +105,7 @@ const Navbar = () => {
             </Link>
             
             {/* Mobile menu button */}
-            <div className="md:hidden ml-2">
+            <div className="md:hidden">
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-white"
@@ -90,6 +143,16 @@ const Navbar = () => {
                 {category.name}
               </Link>
             ))}
+            
+            {!isLoggedIn && (
+              <Link
+                to="/login"
+                className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
+                onClick={() => setIsOpen(false)}
+              >
+                Login/SignUp
+              </Link>
+            )}
           </div>
         </div>
       )}

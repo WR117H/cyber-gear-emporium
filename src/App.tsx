@@ -17,6 +17,7 @@ import ProductManager from "./pages/Admin/ProductManager";
 import ProductForm from "./pages/Admin/ProductForm";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

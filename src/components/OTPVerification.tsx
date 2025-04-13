@@ -7,18 +7,21 @@ import {
   InputOTPSeparator
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Mail, MailCheck } from 'lucide-react';
 
 interface OTPVerificationProps {
   length?: number;
   onVerify: (code: string) => void;
   isLoading?: boolean;
+  email?: string;
 }
 
 export function OTPVerification({ 
   length = 6, 
   onVerify,
-  isLoading = false 
+  isLoading = false,
+  email 
 }: OTPVerificationProps) {
   const [otp, setOtp] = useState("");
   const [resendTimeout, setResendTimeout] = useState(30);
@@ -40,7 +43,7 @@ export function OTPVerification({
   const handleResend = () => {
     toast({
       title: "Code resent!",
-      description: "A new verification code has been sent."
+      description: `A new verification code has been sent to ${email || "your email"}`,
     });
     setResendTimeout(30);
   };
@@ -53,10 +56,19 @@ export function OTPVerification({
   
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium text-white">Enter verification code</h3>
+      <div className="space-y-4 text-center">
+        <div className="mx-auto w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+          <MailCheck className="h-6 w-6 text-cyber-blue" />
+        </div>
+        
+        <h3 className="text-lg font-medium text-white">Check your email</h3>
+        {email && (
+          <p className="text-md text-cyber-blue font-medium">
+            {email}
+          </p>
+        )}
         <p className="text-sm text-muted-foreground">
-          We've sent a code to your email or phone number
+          We've sent a verification code to your email
         </p>
       </div>
       
@@ -80,9 +92,10 @@ export function OTPVerification({
         <Button 
           onClick={handleVerify} 
           disabled={otp.length !== length || isLoading}
-          className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy mt-4"
+          variant="cyber"
+          className="w-full mt-4"
         >
-          {isLoading ? "Verifying..." : "Verify"}
+          {isLoading ? "Verifying..." : "Verify Email"}
         </Button>
         
         <div className="text-sm text-center">

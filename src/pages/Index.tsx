@@ -34,11 +34,11 @@ const Index = () => {
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 max-w-md mx-auto">
-              <Button asChild variant="default" size="lg" className="rounded-[14px]">
+              <Button asChild variant="cyber" size="lg">
                 <a href="https://github.com/WR117H" target="_blank" rel="noopener noreferrer">GITHUB</a>
               </Button>
               
-              <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 rounded-[14px]">
+              <Button asChild variant="outline" size="lg" className="border-white/30 rounded-full">
                 <Link to="/login">Login/SignUp</Link>
               </Button>
             </div>

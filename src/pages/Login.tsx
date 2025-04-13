@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { Star, ArrowLeft } from 'lucide-react';
 import { signIn } from '@/utils/auth';
+import { OTPVerification } from '@/components/OTPVerification';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -22,6 +23,8 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -33,18 +36,60 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
+    setUserEmail(data.email);
     
     try {
+      // For demo purposes, let's assume we need OTP verification
+      // Comment this out and use the result.success logic for normal login
+      setShowOTP(true);
+      
+      // For actual login without OTP:
+      /*
       const result = await signIn(data.email, data.password);
       
       if (result.success) {
         navigate('/');
       }
+      */
     } catch (error) {
       toast({
         title: "Login failed",
         description: "An unexpected error occurred",
         variant: "destructive",
+      });
+      setShowOTP(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleOTPVerify = async (code: string) => {
+    setIsLoading(true);
+    
+    try {
+      // In a real app, you would validate the OTP code here
+      // For now, we'll just simulate a successful verification
+      const password = form.getValues("password");
+      const result = await signIn(userEmail, password);
+      
+      if (result.success) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!"
+        });
+        navigate('/');
+      } else {
+        toast({
+          title: "Verification failed",
+          description: "Invalid verification code",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Verification failed",
+        description: "An error occurred during verification",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -66,72 +111,85 @@ const Login = () => {
               </Button>
             </Link>
             
-            <div className="mx-auto mb-6 w-12 h-12 relative">
-              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-              <div className="relative flex items-center justify-center w-full h-full">
-                <Star className="w-8 h-8 text-white" />
-              </div>
-            </div>
-            
-            <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
-            <p className="text-muted-foreground mb-8">Sign in to your account</p>
+            {!showOTP && (
+              <>
+                <div className="mx-auto mb-6 w-12 h-12 relative">
+                  <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
+                  <div className="relative flex items-center justify-center w-full h-full">
+                    <Star className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
+                <p className="text-muted-foreground mb-8">Sign in to your account</p>
+              </>
+            )}
           </div>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Email</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="you@example.com" 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Password</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="••••••••" 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy" 
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing In..." : "Sign In"}
-              </Button>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link to="/signup" className="text-cyber-blue hover:underline">
-                  Sign up
-                </Link>
-              </div>
-            </form>
-          </Form>
+          {showOTP ? (
+            <OTPVerification 
+              onVerify={handleOTPVerify} 
+              isLoading={isLoading} 
+              email={userEmail}
+            />
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="you@example.com" 
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  variant="cyber"
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing In..." : "Sign In"}
+                </Button>
+                
+                <div className="text-center text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="text-cyber-blue hover:underline">
+                    Sign up
+                  </Link>
+                </div>
+              </form>
+            </Form>
+          )}
         </div>
       </div>
     </div>

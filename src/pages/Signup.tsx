@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { Star, ArrowLeft } from 'lucide-react';
 import { signUp } from '@/utils/auth';
+import { OTPVerification } from '@/components/OTPVerification';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -27,6 +28,9 @@ const Signup = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userData, setUserData] = useState<any>(null);
   
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -40,19 +44,63 @@ const Signup = () => {
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
+    setUserEmail(data.email);
     
     try {
+      // For demo purposes, let's assume we need OTP verification
+      setUserData({
+        name: data.name,
+        email: data.email,
+        password: data.password
+      });
+      setShowOTP(true);
+      
+      // For actual signup without OTP:
+      /*
       const result = await signUp(data.email, data.password, data.name);
       
       if (result.success) {
-        // Navigate to login page
         navigate('/login');
       }
+      */
     } catch (error) {
       toast({
         title: "Registration failed",
         description: "There was a problem creating your account",
         variant: "destructive",
+      });
+      setShowOTP(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleOTPVerify = async (code: string) => {
+    setIsLoading(true);
+    
+    try {
+      // In a real app, you would validate the OTP code here
+      // For now, we'll just simulate a successful verification
+      const result = await signUp(userData.email, userData.password, userData.name);
+      
+      if (result.success) {
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully"
+        });
+        navigate('/login');
+      } else {
+        toast({
+          title: "Verification failed",
+          description: "Invalid verification code",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Verification failed",
+        description: "An error occurred during verification",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -74,109 +122,122 @@ const Signup = () => {
               </Button>
             </Link>
             
-            <div className="mx-auto mb-6 w-12 h-12 relative">
-              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-              <div className="relative flex items-center justify-center w-full h-full">
-                <Star className="w-8 h-8 text-white" />
-              </div>
-            </div>
-            
-            <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
-            <p className="text-muted-foreground mb-8">Sign up to get started</p>
+            {!showOTP && (
+              <>
+                <div className="mx-auto mb-6 w-12 h-12 relative">
+                  <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
+                  <div className="relative flex items-center justify-center w-full h-full">
+                    <Star className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
+                <p className="text-muted-foreground mb-8">Sign up to get started</p>
+              </>
+            )}
           </div>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="John Doe" 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Email</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="you@example.com" 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Password</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="••••••••" 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="••••••••" 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy" 
-                disabled={isLoading}
-              >
-                {isLoading ? "Creating Account..." : "Sign Up"}
-              </Button>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link to="/login" className="text-cyber-blue hover:underline">
-                  Sign in
-                </Link>
-              </div>
-            </form>
-          </Form>
+          {showOTP ? (
+            <OTPVerification 
+              onVerify={handleOTPVerify} 
+              isLoading={isLoading} 
+              email={userEmail}
+            />
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="John Doe" 
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="you@example.com" 
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  variant="cyber"
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Creating Account..." : "Sign Up"}
+                </Button>
+                
+                <div className="text-center text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-cyber-blue hover:underline">
+                    Sign in
+                  </Link>
+                </div>
+              </form>
+            </Form>
+          )}
         </div>
       </div>
     </div>
