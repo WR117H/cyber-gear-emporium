@@ -35,16 +35,13 @@ const HeroSection = () => {
               
               <Button 
                 asChild
-                variant="outline" 
+                variant="github" 
                 size="lg"
-                className="bg-white text-black hover:bg-white/80"
               >
                 <a href="https://github.com/WR117H" target="_blank" rel="noopener noreferrer">
                   <Github className="mr-2" /> GitHub
                 </a>
               </Button>
-            </div>
-          </div>
             </div>
           </div>
         </div>
