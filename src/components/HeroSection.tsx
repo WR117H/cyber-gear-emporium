@@ -45,21 +45,6 @@ const HeroSection = () => {
               </Button>
             </div>
           </div>
-          
-          {/* Image */}
-          <div className="lg:w-1/2 relative">
-            <div>
-              <img 
-                src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200" 
-                alt="Cyber Security Equipment" 
-                className="rounded-lg shadow-2xl"
-              />
-            </div>
-            
-            {/* Floating Badge */}
-            <div className="absolute top-4 right-4 bg-cyber-navy/90 border border-cyber-blue/30 rounded-lg p-3 shadow-lg">
-              <div className="text-cyber-blue font-semibold">New Arrivals</div>
-              <div className="text-xs text-cyber-light">Just updated inventory</div>
             </div>
           </div>
         </div>
