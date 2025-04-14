@@ -3,7 +3,6 @@ import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useTONConnect } from '@/context/TONConnectProvider';
-import { TonConnectButton } from '@tonconnect/ui-react';
 
 interface CryptoPaymentProps {
   amount: number;
@@ -13,12 +12,17 @@ interface CryptoPaymentProps {
 const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'completed'>('pending');
   const { toast } = useToast();
-  const { isConnected, sendTransaction } = useTONConnect();
+  const { isConnected, sendTransaction, tonConnectUI } = useTONConnect();
 
   const exchangeRate = 0.3; // 1 USD ≈ 0.3 TON
   const cryptoAmount = (amount * exchangeRate).toFixed(2);
 
-  const handleSendPayment = async () => {
+  const handleClick = async () => {
+    if (!isConnected) {
+      tonConnectUI.openModal(); // Trigger wallet connect
+      return;
+    }
+
     try {
       setPaymentStatus('processing');
 
@@ -65,35 +69,24 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
           </p>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex flex-col items-center justify-center gap-4 mt-4">
-            <div className="w-full">
-              <TonConnectButton />
-            </div>
+        <div className="flex flex-col items-center justify-center gap-4 mt-4">
+          {paymentStatus === 'pending' && (
+            <Button onClick={handleClick} className="w-full mt-2" variant="cyber">
+              {isConnected ? 'Pay with TON' : 'Connect Wallet to Pay'}
+            </Button>
+          )}
 
-            {paymentStatus === 'pending' && (
-              <Button 
-                onClick={handleSendPayment} 
-                className="w-full mt-2"
-                variant="cyber"
-                disabled={!isConnected}
-              >
-                Pay with TON
-              </Button>
-            )}
+          {paymentStatus === 'processing' && (
+            <Button disabled className="w-full mt-2">
+              Processing payment...
+            </Button>
+          )}
 
-            {paymentStatus === 'processing' && (
-              <Button disabled className="w-full mt-2">
-                Processing payment...
-              </Button>
-            )}
-
-            {paymentStatus === 'completed' && (
-              <Button variant="cyber" className="w-full mt-2" onClick={onComplete}>
-                <Check className="mr-2 h-4 w-4" /> Payment confirmed
-              </Button>
-            )}
-          </div>
+          {paymentStatus === 'completed' && (
+            <Button variant="cyber" className="w-full mt-2" onClick={onComplete}>
+              <Check className="mr-2 h-4 w-4" /> Payment confirmed
+            </Button>
+          )}
         </div>
 
         <div className="text-sm text-muted-foreground space-y-1 mt-4">
