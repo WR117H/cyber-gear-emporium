@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,34 +15,19 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const { toast } = useToast();
   const { isConnected, sendTransaction } = useTONConnect();
 
-  // Updated TON/USD exchange rate (1 TON ≈ $3.30 as of April 2025)
-  const exchangeRate = 0.3; // TON/USD rate (approximately 1 TON = $3.30)
-  
+  const exchangeRate = 0.3; // 1 USD ≈ 0.3 TON
   const cryptoAmount = (amount * exchangeRate).toFixed(2);
-  
+
   const handleSendPayment = async () => {
     try {
       setPaymentStatus('processing');
-      
+
       toast({
         title: "Processing payment",
         description: "Please confirm the transaction in your TON wallet"
       });
 
-      // Check if wallet is connected
-      if (!isConnected) {
-        toast({
-          title: "Wallet not connected",
-          description: "Please connect your TON wallet first",
-          variant: "destructive"
-        });
-        setPaymentStatus('pending');
-        return;
-      }
-
-      // Send actual transaction using the TON Connect
       const success = await sendTransaction(parseFloat(cryptoAmount));
-      
       if (success) {
         setPaymentStatus('completed');
         toast({
@@ -56,7 +40,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
       } else {
         setPaymentStatus('pending');
       }
-      
+
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentStatus('pending');
@@ -80,13 +64,13 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
             </span>
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex flex-col items-center justify-center gap-4 mt-4">
             <div className="w-full">
               <TonConnectButton />
             </div>
-            
+
             {paymentStatus === 'pending' && (
               <Button 
                 onClick={handleSendPayment} 
@@ -97,13 +81,13 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
                 Pay with TON
               </Button>
             )}
-            
+
             {paymentStatus === 'processing' && (
               <Button disabled className="w-full mt-2">
                 Processing payment...
               </Button>
             )}
-            
+
             {paymentStatus === 'completed' && (
               <Button variant="cyber" className="w-full mt-2" onClick={onComplete}>
                 <Check className="mr-2 h-4 w-4" /> Payment confirmed
@@ -111,7 +95,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
             )}
           </div>
         </div>
-        
+
         <div className="text-sm text-muted-foreground space-y-1 mt-4">
           <p>1. Connect your TON wallet</p>
           <p>2. Send <span className="text-cyber-blue font-mono">{cryptoAmount} TON</span> to complete payment</p>
