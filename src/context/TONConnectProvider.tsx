@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { TonConnectUI } from '@tonconnect/ui-react';
+import { TonConnectUI, THEME } from '@tonconnect/ui-react';
 
 interface TONConnectContextType {
   tonConnectUI: TonConnectUI;
@@ -28,7 +28,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
       manifestUrl,
       buttonRootId: 'ton-connect-button',
       uiPreferences: {
-        theme: 'dark',
+        theme: THEME.DARK,
       }
     })
   );

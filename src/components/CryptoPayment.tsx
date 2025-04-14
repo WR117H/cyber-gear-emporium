@@ -60,9 +60,9 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
       });
 
       // Check if wallet is connected
-      const walletInfo = tonConnectUI.getWalletInfo();
+      const wallets = tonConnectUI.getWallets();
       
-      if (!walletInfo) {
+      if (!wallets || wallets.length === 0) {
         toast({
           title: "Wallet not connected",
           description: "Please connect your TON wallet first",
@@ -135,7 +135,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
                 onClick={handleSendPayment} 
                 className="w-full mt-2"
                 variant="cyber"
-                disabled={!tonConnectUI.getWalletInfo()}
+                disabled={!tonConnectUI.getWallets() || tonConnectUI.getWallets().length === 0}
               >
                 Pay with TON
               </Button>
