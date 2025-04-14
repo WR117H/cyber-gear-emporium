@@ -27,7 +27,9 @@ const FeaturedProducts = () => {
     loadProducts();
   }, []);
   
+  // This function is now just for showing the toast or analytics
   const handleAddToCart = (product: Product) => {
+    // The actual adding to cart is handled in the ProductCard component
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,

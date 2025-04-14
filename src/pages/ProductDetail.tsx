@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +9,7 @@ import { ShoppingCart, ArrowLeft, Shield, Truck, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useCart } from '@/context/CartContext';
 import {
   Tabs,
   TabsContent,
@@ -22,6 +22,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
+  const { addItem } = useCart();
   
   useEffect(() => {
     const foundProduct = mockProducts.find(p => p.id === id);
@@ -32,6 +33,15 @@ const ProductDetail = () => {
   
   const handleAddToCart = () => {
     if (product) {
+      addItem({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.image,
+        quantity: quantity
+      });
+      
       toast({
         title: "Added to cart",
         description: `${quantity} x ${product.name} has been added to your cart.`,
@@ -71,7 +81,6 @@ const ProductDetail = () => {
         </div>
         
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Product Image */}
           <div className="glow animate-pulse-glow">
             <div className="aspect-square bg-cyber-navy/50 rounded-lg overflow-hidden">
               <img 
@@ -82,7 +91,6 @@ const ProductDetail = () => {
             </div>
           </div>
           
-          {/* Product Details */}
           <div>
             <div className="mb-6">
               <div className="flex flex-wrap gap-2 mb-2">

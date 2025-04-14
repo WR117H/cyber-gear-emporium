@@ -5,13 +5,38 @@ import { ShoppingCart, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/product';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
 }
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+  const { addItem } = useCart();
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (product.inStock <= 0) return;
+    
+    // Add to cart using the context
+    addItem({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    });
+    
+    // Call the optional onAddToCart prop if provided (for additional handling like analytics)
+    if (onAddToCart) {
+      onAddToCart(product);
+    }
+  };
+  
   return (
     <div className="cyber-card group">
       <div className="relative overflow-hidden">
@@ -49,7 +74,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             variant="default"
             size="sm"
             className="bg-cyber-blue/20 text-cyber-blue hover:bg-cyber-blue hover:text-cyber-navy"
-            onClick={() => onAddToCart(product)}
+            onClick={handleAddToCart}
             disabled={product.inStock <= 0}
           >
             <ShoppingCart className="h-4 w-4 mr-1" /> Add to Cart
