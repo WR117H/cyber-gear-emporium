@@ -25,7 +25,7 @@ import Profile from "./pages/Profile";
 const queryClient = new QueryClient();
 
 // Update the manifest URL to point to a valid location
-const manifestUrl = 'https://raw.githubusercontent.com/ton-blockchain/ton-connect/main/example/public/tonconnect-manifest.json';
+const manifestUrl="https://cyber-gear-emporium.lovable.app/tonconnect-manifest.json";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
