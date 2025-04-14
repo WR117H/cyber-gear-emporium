@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useTonConnectUI } from '@tonconnect/ui-react';
+import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
 
 interface TONConnectContextType {
   tonConnectUI: ReturnType<typeof useTonConnectUI>[0];
@@ -28,7 +28,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
   React.useEffect(() => {
     setOptions({
       uiPreferences: {
-        theme: 'DARK'
+        theme: THEME.DARK
       }
     });
   }, [setOptions]);
