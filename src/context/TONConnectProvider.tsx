@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { TonConnectUI, THEME } from '@tonconnect/ui-react';
+import { TonConnectUI, THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
 
 interface TONConnectContextType {
   tonConnectUI: TonConnectUI;
@@ -26,7 +26,6 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
   const [tonConnectUI] = React.useState(
     () => new TonConnectUI({
       manifestUrl,
-      // Using TonConnectButton component directly without buttonRootId
       uiPreferences: {
         theme: THEME.DARK,
       }
@@ -35,7 +34,9 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
 
   return (
     <TONConnectContext.Provider value={{ tonConnectUI }}>
-      {children}
+      <TonConnectUIProvider manifestUrl={manifestUrl}>
+        {children}
+      </TonConnectUIProvider>
     </TONConnectContext.Provider>
   );
 }

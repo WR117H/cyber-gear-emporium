@@ -4,7 +4,7 @@ import { Copy, Check, ExternalLink, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useTONConnect } from '@/context/TONConnectProvider';
-import { TonConnectButton } from '@tonconnect/ui-react';
+import { TonConnectButton, useTonConnectUI } from '@tonconnect/ui-react';
 
 interface CryptoPaymentProps {
   amount: number;
@@ -17,6 +17,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const { toast } = useToast();
   const { tonConnectUI } = useTONConnect();
+  const [tonConnectUi] = useTonConnectUI();
 
   // TON wallet details
   const tonWalletAddress = 'UQD73-9drgEr9RzP7vog9DuXz3Bn6KWeVp60m6DjM9wFO_y3';
@@ -38,8 +39,8 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
     
     // Check initial connection status
     const checkInitialStatus = async () => {
-      const wallets = await tonConnectUI.getWallets();
-      setIsWalletConnected(wallets && wallets.length > 0);
+      const walletInfo = tonConnectUi.wallet;
+      setIsWalletConnected(!!walletInfo);
     };
     
     checkInitialStatus();
@@ -47,7 +48,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
     return () => {
       unsubscribe();
     };
-  }, [tonConnectUI]);
+  }, [tonConnectUI, tonConnectUi]);
   
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -71,9 +72,9 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
       });
 
       // Check if wallet is connected
-      const wallets = await tonConnectUI.getWallets();
+      const walletInfo = tonConnectUi.wallet;
       
-      if (!wallets || wallets.length === 0) {
+      if (!walletInfo) {
         toast({
           title: "Wallet not connected",
           description: "Please connect your TON wallet first",
