@@ -1,6 +1,5 @@
- 
-import React, { createContext, useContext, ReactNode, useCallback } from 'react';
-import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
+import React, { createContext, useContext, useMemo, useCallback } from 'react';
+import { useTonConnectUI, useTonWallet, THEME } from '@tonconnect/ui-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface TONConnectContextType {
@@ -9,25 +8,13 @@ interface TONConnectContextType {
   sendTransaction: (amount: number) => Promise<boolean>;
 }
 
-const TONConnectContext = createContext<TONConnectContextType | undefined>(undefined);
+const TONConnectContext = createContext<TONConnectContextType | null>(null);
 
-export function useTONConnect() {
-  const context = useContext(TONConnectContext);
-  if (!context) {
-    throw new Error("useTONConnect must be used within a TONConnectProvider");
-  }
-  return context;
-}
-
-interface TONConnectProviderProps {
-  children: ReactNode;
-}
-
-export function TONConnectProvider({ children }: TONConnectProviderProps) {
+export const TONConnectProvider = ({ children }: { children: React.ReactNode }) => {
   const [tonConnectUI, setOptions] = useTonConnectUI();
+  const wallet = useTonWallet();
   const { toast } = useToast();
-  
-  // Set theme preference once
+
   React.useEffect(() => {
     setOptions({
       uiPreferences: {
@@ -35,15 +22,11 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
       }
     });
   }, [setOptions]);
-  
-  // Check if wallet is connected
-  const isConnected = React.useMemo(() => {
-    return !!tonConnectUI.wallet;
-  }, [tonConnectUI.wallet]);
 
-  // Handle sending transactions
+  const isConnected = useMemo(() => !!wallet, [wallet]);
+
   const sendTransaction = useCallback(async (amount: number): Promise<boolean> => {
-    if (!isConnected) {
+    if (!wallet) {
       toast({
         title: "Wallet not connected",
         description: "Please connect your TON wallet first",
@@ -53,47 +36,44 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
     }
 
     try {
-      // For demo purposes - in a real app, you would specify an actual recipient address
-      // This creates a minimal valid transaction that transfers 0 TON to the wallet itself
       const transaction = {
-        validUntil: Math.floor(Date.now() / 1000) + 360, // Valid for 5 minutes
+        validUntil: Math.floor(Date.now() / 1000) + 360,
         messages: [
           {
-            address: tonConnectUI.wallet?.account.address || '',
-            amount: (amount * 1000000000).toString(), // Convert TON to nanoTON
+            address: 'UQDumOkL-njb-WFGwoVCTBurAnGoQ45EgI7yEpg17D_Udobf', // Receiver address
+            amount: (amount * 1e9).toString(), // nanoTON
           }
         ]
       };
 
       const result = await tonConnectUI.sendTransaction(transaction);
       if (result) {
-        toast({
-          title: "Transaction sent successfully!",
-          description: "Your payment is being processed",
-        });
+        toast({ title: "Transaction sent successfully!" });
         return true;
       } else {
-        toast({
-          title: "Transaction failed",
-          description: "Failed to send transaction",
-          variant: "destructive"
-        });
+        toast({ title: "Transaction failed", variant: "destructive" });
         return false;
       }
+
     } catch (error) {
-      console.error("Transaction error:", error);
       toast({
         title: "Transaction failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive"
       });
       return false;
     }
-  }, [isConnected, tonConnectUI, toast]);
+  }, [tonConnectUI, wallet, toast]);
 
   return (
     <TONConnectContext.Provider value={{ tonConnectUI, isConnected, sendTransaction }}>
       {children}
     </TONConnectContext.Provider>
   );
-}
+};
+
+export const useTONConnect = () => {
+  const context = useContext(TONConnectContext);
+  if (!context) throw new Error("useTONConnect must be used within a TONConnectProvider");
+  return context;
+};
