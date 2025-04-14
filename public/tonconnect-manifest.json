@@ -2,7 +2,7 @@
 {
   "url": "https://cyberhacker.com",
   "name": "CyberGear Store",
-  "iconUrl": "https://cyberhacker.com/favicon.ico",
+  "iconUrl": "https://raw.githubusercontent.com/ton-blockchain/ton-connect/main/example/public/favicon.ico",
   "termsOfUseUrl": "https://cyberhacker.com/terms",
   "privacyPolicyUrl": "https://cyberhacker.com/privacy"
 }

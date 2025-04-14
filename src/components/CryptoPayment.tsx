@@ -14,12 +14,12 @@ interface CryptoPaymentProps {
 const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'completed'>('pending');
   const { toast } = useToast();
-  const { tonConnectUI, isConnected } = useTONConnect();
+  const { isConnected, sendTransaction } = useTONConnect();
 
   // Updated TON/USD exchange rate (1 TON ≈ $3.30 as of April 2025)
-  const exchangeRate = 0.303; // TON/USD rate (approximately 1 TON = $3.30)
+  const exchangeRate = 0.3; // TON/USD rate (approximately 1 TON = $3.30)
   
-  const cryptoAmount = (amount * exchangeRate).toFixed(6);
+  const cryptoAmount = (amount * exchangeRate).toFixed(2);
   
   const handleSendPayment = async () => {
     try {
@@ -41,16 +41,21 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
         return;
       }
 
-      // Simulate transaction - in a real app, you would use the actual TONConnect SDK methods
-      // to create and send a real transaction
-      setTimeout(() => {
+      // Send actual transaction using the TON Connect
+      const success = await sendTransaction(parseFloat(cryptoAmount));
+      
+      if (success) {
         setPaymentStatus('completed');
         toast({
           title: "Payment successful!",
           description: "Your TON payment has been processed"
         });
-        onComplete();
-      }, 2000);
+        setTimeout(() => {
+          onComplete();
+        }, 2000);
+      } else {
+        setPaymentStatus('pending');
+      }
       
     } catch (error) {
       console.error('Payment error:', error);
