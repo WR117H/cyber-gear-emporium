@@ -1,4 +1,4 @@
-
+ 
 import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
 import { useToast } from '@/hooks/use-toast';
@@ -59,7 +59,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
         validUntil: Math.floor(Date.now() / 1000) + 360, // Valid for 5 minutes
         messages: [
           {
-            address: tonConnectUI.wallet?.account.address || '',
+            address: "UQDumOkL-njb-WFGwoVCTBurAnGoQ45EgI7yEpg17D_Udobf",
             amount: (amount * 1000000000).toString(), // Convert TON to nanoTON
           }
         ]
