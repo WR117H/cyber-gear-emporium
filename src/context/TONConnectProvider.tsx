@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { TonConnectUI, THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
+import { TonConnectUI, THEME } from '@tonconnect/ui-react';
 
 interface TONConnectContextType {
   tonConnectUI: TonConnectUI;
@@ -34,9 +34,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
 
   return (
     <TONConnectContext.Provider value={{ tonConnectUI }}>
-      <TonConnectUIProvider manifestUrl={manifestUrl}>
-        {children}
-      </TonConnectUIProvider>
+      {children}
     </TONConnectContext.Provider>
   );
 }
