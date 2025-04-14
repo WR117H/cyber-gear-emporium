@@ -1,8 +1,7 @@
-
 {
-  "url": "https://cyber-gear-emporium.lovable.app/",
-  "name": "CyberGear Store",
-  "iconUrl": "https://raw.githubusercontent.com/ton-blockchain/ton-connect/main/example/public/favicon.ico",
+  "url": "https://cyber-gear-emporium.lovable.app",
+  "name": "Cyber Gear Emporium",
+  "iconUrl": "https://cyber-gear-emporium.lovable.app/icon.png",
   "termsOfUseUrl": "https://cyber-gear-emporium.lovable.app/terms",
   "privacyPolicyUrl": "https://cyber-gear-emporium.lovable.app/privacy"
 }
