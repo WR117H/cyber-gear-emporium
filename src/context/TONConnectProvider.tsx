@@ -1,10 +1,10 @@
-import React, { createContext, useContext, ReactNode, useCallback, useEffect, useState } from 'react';
-import { useTonConnectUI, THEME, WalletInfoRemote } from '@tonconnect/ui-react';
+
+import React, { createContext, useContext, ReactNode, useCallback } from 'react';
+import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface TONConnectContextType {
   tonConnectUI: ReturnType<typeof useTonConnectUI>[0];
-  connectedWallet: WalletInfoRemote | null;
   isConnected: boolean;
   sendTransaction: (amount: number) => Promise<boolean>;
 }
@@ -26,30 +26,24 @@ interface TONConnectProviderProps {
 export function TONConnectProvider({ children }: TONConnectProviderProps) {
   const [tonConnectUI, setOptions] = useTonConnectUI();
   const { toast } = useToast();
-  const [wallet, setWallet] = useState<WalletInfoRemote | null>(null);
-
-  // Set UI theme
-  useEffect(() => {
+  
+  // Set theme preference once
+  React.useEffect(() => {
     setOptions({
       uiPreferences: {
         theme: THEME.DARK
       }
     });
   }, [setOptions]);
+  
+  // Check if wallet is connected
+  const isConnected = React.useMemo(() => {
+    return !!tonConnectUI.wallet;
+  }, [tonConnectUI.wallet]);
 
-  // Listen to wallet connection changes
-  useEffect(() => {
-    const unsubscribe = tonConnectUI.onStatusChange(walletInfo => {
-      setWallet(walletInfo);
-    });
-
-    return () => unsubscribe(); // Cleanup on unmount
-  }, [tonConnectUI]);
-
-  const isConnected = !!wallet;
-
+  // Handle sending transactions
   const sendTransaction = useCallback(async (amount: number): Promise<boolean> => {
-    if (!isConnected || !wallet) {
+    if (!isConnected) {
       toast({
         title: "Wallet not connected",
         description: "Please connect your TON wallet first",
@@ -59,12 +53,14 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
     }
 
     try {
+      // For demo purposes - in a real app, you would specify an actual recipient address
+      // This creates a minimal valid transaction that transfers 0 TON to the wallet itself
       const transaction = {
-        validUntil: Math.floor(Date.now() / 1000) + 360,
+        validUntil: Math.floor(Date.now() / 1000) + 360, // Valid for 5 minutes
         messages: [
           {
-            address: wallet.account.address,
-            amount: (amount * 1e9).toString(),
+            address: tonConnectUI.wallet?.account.address || '',
+            amount: (amount * 1000000000).toString(), // Convert TON to nanoTON
           }
         ]
       };
@@ -93,10 +89,10 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
       });
       return false;
     }
-  }, [isConnected, wallet, tonConnectUI, toast]);
+  }, [isConnected, tonConnectUI, toast]);
 
   return (
-    <TONConnectContext.Provider value={{ tonConnectUI, connectedWallet: wallet, isConnected, sendTransaction }}>
+    <TONConnectContext.Provider value={{ tonConnectUI, isConnected, sendTransaction }}>
       {children}
     </TONConnectContext.Provider>
   );
