@@ -1,9 +1,10 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { TonConnectUI, THEME } from '@tonconnect/ui-react';
+import { useTonConnectUI } from '@tonconnect/ui-react';
 
 interface TONConnectContextType {
-  tonConnectUI: TonConnectUI;
+  tonConnectUI: ReturnType<typeof useTonConnectUI>[0];
+  isConnected: boolean;
 }
 
 const TONConnectContext = createContext<TONConnectContextType | undefined>(undefined);
@@ -16,24 +17,29 @@ export function useTONConnect() {
   return context;
 }
 
-const manifestUrl = 'https://cyberhacker.com/tonconnect-manifest.json';
-
 interface TONConnectProviderProps {
   children: ReactNode;
 }
 
 export function TONConnectProvider({ children }: TONConnectProviderProps) {
-  const [tonConnectUI] = React.useState(
-    () => new TonConnectUI({
-      manifestUrl,
+  const [tonConnectUI, setOptions] = useTonConnectUI();
+  
+  // Set theme preference once
+  React.useEffect(() => {
+    setOptions({
       uiPreferences: {
-        theme: THEME.DARK,
+        theme: 'DARK'
       }
-    })
-  );
+    });
+  }, [setOptions]);
+  
+  // Check if wallet is connected
+  const isConnected = React.useMemo(() => {
+    return !!tonConnectUI.wallet;
+  }, [tonConnectUI.wallet]);
 
   return (
-    <TONConnectContext.Provider value={{ tonConnectUI }}>
+    <TONConnectContext.Provider value={{ tonConnectUI, isConnected }}>
       {children}
     </TONConnectContext.Provider>
   );

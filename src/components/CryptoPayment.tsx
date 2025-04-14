@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Copy, Check, ExternalLink, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useTONConnect } from '@/context/TONConnectProvider';
-import { TonConnectButton, useTonConnectUI } from '@tonconnect/ui-react';
+import { TonConnectButton } from '@tonconnect/ui-react';
 
 interface CryptoPaymentProps {
   amount: number;
@@ -14,41 +13,14 @@ interface CryptoPaymentProps {
 const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'completed'>('pending');
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const { toast } = useToast();
-  const { tonConnectUI } = useTONConnect();
-  const [tonConnectUi] = useTonConnectUI();
+  const { tonConnectUI, isConnected } = useTONConnect();
 
   // TON wallet details
   const tonWalletAddress = 'UQD73-9drgEr9RzP7vog9DuXz3Bn6KWeVp60m6DjM9wFO_y3';
   const exchangeRate = 0.015; // TON/USD rate
   
   const cryptoAmount = (amount * exchangeRate).toFixed(6);
-
-  useEffect(() => {
-    // Set up TONConnect wallet connection status monitoring
-    const unsubscribe = tonConnectUI.onStatusChange(wallet => {
-      if (wallet) {
-        console.log('Wallet connected:', wallet);
-        setIsWalletConnected(true);
-      } else {
-        console.log('Wallet disconnected');
-        setIsWalletConnected(false);
-      }
-    });
-    
-    // Check initial connection status
-    const checkInitialStatus = async () => {
-      const walletInfo = tonConnectUi.wallet;
-      setIsWalletConnected(!!walletInfo);
-    };
-    
-    checkInitialStatus();
-    
-    return () => {
-      unsubscribe();
-    };
-  }, [tonConnectUI, tonConnectUi]);
   
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -72,9 +44,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
       });
 
       // Check if wallet is connected
-      const walletInfo = tonConnectUi.wallet;
-      
-      if (!walletInfo) {
+      if (!isConnected) {
         toast({
           title: "Wallet not connected",
           description: "Please connect your TON wallet first",
@@ -140,7 +110,6 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
           </div>
           
           <div className="flex flex-col items-center justify-center gap-4 mt-4">
-            {/* TON Connect Button will be rendered here */}
             <div className="w-full">
               <TonConnectButton />
             </div>
@@ -150,7 +119,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
                 onClick={handleSendPayment} 
                 className="w-full mt-2"
                 variant="cyber"
-                disabled={!isWalletConnected}
+                disabled={!isConnected}
               >
                 Pay with TON
               </Button>
