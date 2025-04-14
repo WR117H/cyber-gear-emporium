@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,12 +24,12 @@ import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
-// Your manifest URL is fine
-const manifestUrl = "https://cyber-gear-emporium.lovable.app/tonconnect-manifest.json";
+// Update the manifest URL to point to a valid location
+const manifestUrl="https://cyber-gear-emporium.lovable.app/tonconnect-manifest.json";
 
 const App = () => (
-  <TonConnectUIProvider manifestUrl={manifestUrl}>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <TonConnectUIProvider manifestUrl={manifestUrl}>
       <TONConnectProvider>
         <BrowserRouter>
           <CartProvider>
@@ -43,6 +44,8 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/profile" element={<Profile />} />
+                
+                {/* Admin routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/dashboard" element={
                   <ProtectedAdminRoute>
@@ -64,14 +67,16 @@ const App = () => (
                     <ProductForm />
                   </ProtectedAdminRoute>
                 } />
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </TooltipProvider>
           </CartProvider>
         </BrowserRouter>
       </TONConnectProvider>
-    </QueryClientProvider>
-  </TonConnectUIProvider>
+    </TonConnectUIProvider>
+  </QueryClientProvider>
 );
 
 export default App;
