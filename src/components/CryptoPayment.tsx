@@ -36,6 +36,14 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
       }
     });
     
+    // Check initial connection status
+    const checkInitialStatus = async () => {
+      const wallets = await tonConnectUI.getWallets();
+      setIsWalletConnected(wallets && wallets.length > 0);
+    };
+    
+    checkInitialStatus();
+    
     return () => {
       unsubscribe();
     };

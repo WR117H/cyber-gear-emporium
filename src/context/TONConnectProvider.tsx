@@ -26,7 +26,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
   const [tonConnectUI] = React.useState(
     () => new TonConnectUI({
       manifestUrl,
-      // Removing the buttonRootId as we're using TonConnectButton component directly
+      // Using TonConnectButton component directly without buttonRootId
       uiPreferences: {
         theme: THEME.DARK,
       }
