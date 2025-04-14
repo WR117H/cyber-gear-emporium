@@ -14,6 +14,7 @@ interface CryptoPaymentProps {
 const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'completed'>('pending');
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const { toast } = useToast();
   const { tonConnectUI } = useTONConnect();
 
@@ -28,8 +29,10 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
     const unsubscribe = tonConnectUI.onStatusChange(wallet => {
       if (wallet) {
         console.log('Wallet connected:', wallet);
+        setIsWalletConnected(true);
       } else {
         console.log('Wallet disconnected');
+        setIsWalletConnected(false);
       }
     });
     
@@ -60,7 +63,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
       });
 
       // Check if wallet is connected
-      const wallets = tonConnectUI.getWallets();
+      const wallets = await tonConnectUI.getWallets();
       
       if (!wallets || wallets.length === 0) {
         toast({
@@ -128,14 +131,17 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
           </div>
           
           <div className="flex flex-col items-center justify-center gap-4 mt-4">
-            <div id="ton-connect-button" className="w-full"></div>
+            {/* TON Connect Button will be rendered here */}
+            <div className="w-full">
+              <TonConnectButton />
+            </div>
             
             {paymentStatus === 'pending' && (
               <Button 
                 onClick={handleSendPayment} 
                 className="w-full mt-2"
                 variant="cyber"
-                disabled={!tonConnectUI.getWallets() || tonConnectUI.getWallets().length === 0}
+                disabled={!isWalletConnected}
               >
                 Pay with TON
               </Button>
