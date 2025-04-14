@@ -93,7 +93,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
 
   return (
     <TONConnectContext.Provider value={{ tonConnectUI, isConnected, sendTransaction }}>
-      manifestUrl="https://cyber-gear-emporium.lovable.app/tonconnect-manifest.json"
+      {children}
     </TONConnectContext.Provider>
   );
 }
