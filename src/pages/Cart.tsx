@@ -4,40 +4,21 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import CartItem from '@/components/CartItem';
-import { mockProducts } from '@/data/products';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, CreditCard, Bitcoin } from 'lucide-react';
 import CryptoPayment from '@/components/CryptoPayment';
-import { CartItemType } from '@/types/cart';
+import { useCart } from '@/context/CartContext';
 
 const Cart = () => {
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState<'credit' | 'crypto' | null>(null);
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
 
-  // Convert mock products to cart items with quantity
-  const cartItems: CartItemType[] = mockProducts.slice(0, 3).map(product => ({
-    id: product.id,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    image: product.image,
-    quantity: 1
-  }));
+  const { items, getTotal } = useCart();
   
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = getTotal();
   const shipping = 15;
   const total = subtotal + shipping;
-  
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    // This would update the cart state in a real application
-    console.log(`Updated quantity for ${id} to ${quantity}`);
-  };
-
-  const handleRemoveItem = (id: string) => {
-    // This would remove the item from cart in a real application
-    console.log(`Removed item ${id} from cart`);
-  };
   
   const handlePaymentComplete = () => {
     setIsPaymentComplete(true);
@@ -73,14 +54,12 @@ const Cart = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              {cartItems.length > 0 ? (
+              {items.length > 0 ? (
                 <div className="space-y-6">
-                  {cartItems.map(item => (
+                  {items.map(item => (
                     <CartItem 
                       key={item.id} 
                       item={item} 
-                      onUpdateQuantity={handleUpdateQuantity}
-                      onRemove={handleRemoveItem}
                     />
                   ))}
                 </div>
@@ -95,7 +74,7 @@ const Cart = () => {
             </div>
             
             <div className="lg:col-span-1">
-              {cartItems.length > 0 && !paymentMethod && (
+              {items.length > 0 && !paymentMethod && (
                 <div className="border border-white/10 rounded-xl p-6 bg-card/30 backdrop-blur-sm">
                   <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
                   
@@ -132,7 +111,7 @@ const Cart = () => {
                       onClick={() => setPaymentMethod('crypto')}
                     >
                       <Bitcoin className="mr-2 h-4 w-4" />
-                      Cryptocurrency
+                      TON Payment
                     </Button>
                   </div>
                 </div>

@@ -3,14 +3,15 @@ import React from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CartItemType } from '@/types/cart';
+import { useCart } from '@/context/CartContext';
 
 interface CartItemProps {
   item: CartItemType;
-  onUpdateQuantity: (id: string, quantity: number) => void;
-  onRemove: (id: string) => void;
 }
 
-const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
+const CartItem = ({ item }: CartItemProps) => {
+  const { updateQuantity, removeItem } = useCart();
+
   return (
     <div className="flex items-center py-4 border-b border-cyber-blue/20">
       <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-cyber-blue/30">
@@ -35,7 +36,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-none rounded-l-md text-cyber-blue hover:bg-cyber-blue/10"
-              onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+              onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
               disabled={item.quantity <= 1}
             >
               <Minus className="h-3 w-3" />
@@ -47,7 +48,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-none rounded-r-md text-cyber-blue hover:bg-cyber-blue/10"
-              onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+              onClick={() => updateQuantity(item.id, item.quantity + 1)}
             >
               <Plus className="h-3 w-3" />
             </Button>
@@ -57,7 +58,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
             variant="ghost"
             size="sm"
             className="text-cyber-blue hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onRemove(item.id)}
+            onClick={() => removeItem(item.id)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

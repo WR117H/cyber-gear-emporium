@@ -5,6 +5,7 @@ import { Menu, X, ShoppingCart, Search, Image, User, LogOut } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { isAuthenticated, getCurrentUser, signOut } from '@/utils/auth';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/context/CartContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,7 @@ const Navbar = () => {
   const [userData, setUserData] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { getCount } = useCart();
   
   const categories = [
     { name: 'Network Tools', path: '/products?category=network' },
@@ -48,6 +50,8 @@ const Navbar = () => {
       console.error('Error logging out:', error);
     }
   };
+
+  const cartItemCount = getCount();
 
   return (
     <nav className="sticky top-0 z-50 bg-black border-b border-white/10">
@@ -98,9 +102,11 @@ const Navbar = () => {
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon" className="text-white">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-white text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  3
-                </span>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-white text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                    {cartItemCount}
+                  </span>
+                )}
               </Button>
             </Link>
             

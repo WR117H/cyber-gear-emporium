@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Copy, Check, ExternalLink, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useTONConnect } from '@/context/TONConnectProvider';
+import { TonConnectButton } from '@tonconnect/ui-react';
 
 interface CryptoPaymentProps {
   amount: number;
@@ -12,14 +14,29 @@ interface CryptoPaymentProps {
 const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'completed'>('pending');
-  const [manualAddress, setManualAddress] = useState('');
   const { toast } = useToast();
+  const { tonConnectUI } = useTONConnect();
 
-  // Specific TON wallet details
+  // TON wallet details
   const tonWalletAddress = 'UQD73-9drgEr9RzP7vog9DuXz3Bn6KWeVp60m6DjM9wFO_y3';
   const exchangeRate = 0.015; // TON/USD rate
   
   const cryptoAmount = (amount * exchangeRate).toFixed(6);
+
+  useEffect(() => {
+    // Set up TONConnect wallet connection status monitoring
+    const unsubscribe = tonConnectUI.onStatusChange(wallet => {
+      if (wallet) {
+        console.log('Wallet connected:', wallet);
+      } else {
+        console.log('Wallet disconnected');
+      }
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [tonConnectUI]);
   
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -33,42 +50,48 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const verifyTransaction = () => {
-    if (!manualAddress.trim()) {
+  const handleSendPayment = async () => {
+    try {
+      setPaymentStatus('processing');
+      
       toast({
-        title: "Error",
-        description: "Please enter your TON wallet address",
-        variant: "destructive"
+        title: "Processing payment",
+        description: "Please confirm the transaction in your TON wallet"
       });
-      return;
-    }
-    
-    setPaymentStatus('processing');
-    
-    toast({
-      title: "Verifying transaction",
-      description: "Please wait while we confirm your payment"
-    });
-    
-    // Simulate transaction verification
-    setTimeout(() => {
-      // Simulated verification with a high success rate
-      if (Math.random() > 0.1) { // 90% success rate for demo
+
+      // Check if wallet is connected
+      const walletInfo = tonConnectUI.getWalletInfo();
+      
+      if (!walletInfo) {
+        toast({
+          title: "Wallet not connected",
+          description: "Please connect your TON wallet first",
+          variant: "destructive"
+        });
+        setPaymentStatus('pending');
+        return;
+      }
+
+      // Simulate transaction - in a real app, you would use the actual TONConnect SDK methods
+      // to create and send a real transaction
+      setTimeout(() => {
         setPaymentStatus('completed');
         toast({
-          title: "Payment confirmed!",
+          title: "Payment successful!",
           description: "Your TON payment has been processed"
         });
         onComplete();
-      } else {
-        setPaymentStatus('pending');
-        toast({
-          title: "Transaction failed",
-          description: "We couldn't verify your payment. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }, 5000);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentStatus('pending');
+      toast({
+        title: "Payment failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -104,48 +127,39 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
             </div>
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Your TON Wallet Address
-            </label>
-            <input
-              type="text"
-              className="cyber-input w-full"
-              placeholder="Enter your TON wallet address"
-              value={manualAddress}
-              onChange={(e) => setManualAddress(e.target.value)}
-            />
+          <div className="flex flex-col items-center justify-center gap-4 mt-4">
+            <div id="ton-connect-button" className="w-full"></div>
+            
+            {paymentStatus === 'pending' && (
+              <Button 
+                onClick={handleSendPayment} 
+                className="w-full mt-2"
+                variant="cyber"
+                disabled={!tonConnectUI.getWalletInfo()}
+              >
+                Pay with TON
+              </Button>
+            )}
+            
+            {paymentStatus === 'processing' && (
+              <Button disabled className="w-full mt-2">
+                Processing payment...
+              </Button>
+            )}
+            
+            {paymentStatus === 'completed' && (
+              <Button variant="cyber" className="w-full mt-2" onClick={onComplete}>
+                <Check className="mr-2 h-4 w-4" /> Payment confirmed
+              </Button>
+            )}
           </div>
         </div>
         
-        <div className="text-sm text-muted-foreground space-y-1">
-          <p>1. Send <span className="text-cyber-blue font-mono">{cryptoAmount} TON</span> to the address above</p>
-          <p>2. Enter your wallet address for verification</p>
-          <p>3. Click "Pay" once completed</p>
-          <p>4. Wait for blockchain confirmation</p>
+        <div className="text-sm text-muted-foreground space-y-1 mt-4">
+          <p>1. Connect your TON wallet</p>
+          <p>2. Send <span className="text-cyber-blue font-mono">{cryptoAmount} TON</span> to the address above</p>
+          <p>3. Click "Pay with TON" to confirm</p>
         </div>
-        
-        {paymentStatus === 'pending' && (
-          <Button 
-            onClick={verifyTransaction} 
-            className="w-full"
-            variant="cyber"
-          >
-            Pay
-          </Button>
-        )}
-        
-        {paymentStatus === 'processing' && (
-          <Button disabled className="w-full">
-            Verifying transaction...
-          </Button>
-        )}
-        
-        {paymentStatus === 'completed' && (
-          <Button variant="cyber" className="w-full" onClick={onComplete}>
-            <Check className="mr-2 h-4 w-4" /> Payment confirmed
-          </Button>
-        )}
         
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-white/10">
           <a 
@@ -159,7 +173,7 @@ const CryptoPayment = ({ amount, onComplete }: CryptoPaymentProps) => {
           
           <div className="flex items-center gap-1">
             <Wallet size={12} />
-            Secure Payments
+            Secure TON Payments
           </div>
         </div>
       </div>

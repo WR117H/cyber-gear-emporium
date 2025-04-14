@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -30,6 +30,16 @@ const HeroSection = () => {
                 <Link to="/products">
                   Browse Equipment <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
+              </Button>
+              
+              <Button 
+                asChild
+                variant="github" 
+                size="lg"
+              >
+                <a href="https://github.com/WR117H" target="_blank" rel="noopener noreferrer">
+                  <Github className="mr-2 h-5 w-5" /> GitHub
+                </a>
               </Button>
             </div>
           </div>
