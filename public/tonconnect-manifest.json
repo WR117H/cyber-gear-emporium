@@ -3,5 +3,8 @@
   "name": "Cyber Gear Emporium",
   "iconUrl": "https://cyber-gear-emporium.lovable.app/icon.png",
   "termsOfUseUrl": "https://cyber-gear-emporium.lovable.app/terms",
-  "privacyPolicyUrl": "https://cyber-gear-emporium.lovable.app/privacy"
+  "privacyPolicyUrl": "https://cyber-gear-emporium.lovable.app/privacy",
+  "manifestVersion": "0.0.1",
+  "bridgeUrl": "https://bridge.tonapi.io/bridge", 
+  "universalLink": "https://app.tonkeeper.com/ton-connect"
 }
