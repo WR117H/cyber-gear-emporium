@@ -59,7 +59,7 @@ export function TONConnectProvider({ children }: TONConnectProviderProps) {
         validUntil: Math.floor(Date.now() / 1000) + 360, // Valid for 5 minutes
         messages: [
           {
-            address: "UQDumOkL-njb-WFGwoVCTBurAnGoQ45EgI7yEpg17D_Udobf",
+            address: tonConnectUI.wallet?.account.address || '',
             amount: (amount * 1000000000).toString(), // Convert TON to nanoTON
           }
         ]
