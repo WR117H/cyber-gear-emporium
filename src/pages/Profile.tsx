@@ -311,46 +311,9 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-col md:flex-row gap-4">
-                 
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button onClick={handleClick} variant="outline" className="flex-1 border-white/20">
-                          Cryptocurrency
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-black border border-white/10 text-white">
-                        <DialogHeader>
-                          <DialogTitle>Cryptocurrency Payment</DialogTitle>
-                          <DialogDescription className="text-muted-foreground">
-                            Send cryptocurrency to one of our wallets
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium">Bitcoin (BTC)</p>
-                            <div className="p-2 bg-white/10 rounded break-all text-xs">
-                              bc1q34nq38g0v3jxwsh6ftx47wc9yc7yv0g3s3mzcz
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium">Ethereum (ETH)</p>
-                            <div className="p-2 bg-white/10 rounded break-all text-xs">
-                              0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2 pb-2">
-                            <p className="text-sm font-medium">After sending, contact support with:</p>
-                            <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                              <li>Transaction ID</li>
-                              <li>Your order number</li>
-                              <li>Email address</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Button onClick={handleClick} variant="outline" className="flex-1 border-white/20">
+                      Cryptocurrency
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
