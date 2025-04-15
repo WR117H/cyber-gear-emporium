@@ -16,17 +16,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Star, ArrowLeft } from "lucide-react";
 import { OTPVerification } from "@/components/OTPVerification";
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client
-const supabase = createClient(
-  "YOUR_SUPABASE_URL", // Replace with your Supabase URL
-  "YOUR_SUPABASE_ANON_KEY" // Replace with your Supabase Anon Key
-);
 
 const signupSchema = z
   .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
     email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
   });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -37,32 +37,36 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [userData, setUserData] = useState<any>(null);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      name: "",
       email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
+  // Mock API call to send OTP
   const sendOTP = async (email: string) => {
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: "https://cyber-gear-emporium.lovable.app/login", // Adjust this to your app's login URL
-        },
+      // Replace this with your actual API call
+      const response = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        throw new Error("Failed to send OTP");
       }
 
       toast({
         title: "OTP Sent",
         description: `A verification code has been sent to ${email}`,
       });
-      setShowOTP(true);
     } catch (error) {
       toast({
         title: "Error",
@@ -77,11 +81,62 @@ const Signup = () => {
     setUserEmail(data.email);
 
     try {
+      // Save user data locally
+      setUserData({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+
+      // Trigger OTP sending
       await sendOTP(data.email);
+
+      setShowOTP(true);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Registration failed",
+        description: "There was a problem creating your account",
+        variant: "destructive",
+      });
+      setShowOTP(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOTPVerify = async (code: string) => {
+    setIsLoading(true);
+
+    try {
+      // Replace this with your actual OTP verification API call
+      const response = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, otp: code }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid OTP");
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully",
+        });
+        navigate("/login");
+      } else {
+        toast({
+          title: "Verification failed",
+          description: "Invalid verification code",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Verification failed",
+        description: "An error occurred during verification",
         variant: "destructive",
       });
     } finally {
@@ -113,21 +168,39 @@ const Signup = () => {
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-bold text-white mb-2">Send OTP</h2>
-                <p className="text-muted-foreground mb-8">Enter your email to receive an OTP</p>
+                <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
+                <p className="text-muted-foreground mb-8">Sign up to get started</p>
               </>
             )}
           </div>
 
           {showOTP ? (
             <OTPVerification
-              onVerify={() => navigate("/login")}
+              onVerify={handleOTPVerify}
               isLoading={isLoading}
               email={userEmail}
             />
           ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John Doe"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -146,14 +219,59 @@ const Signup = () => {
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <Button
                   type="submit"
                   variant="cyber"
                   className="w-full"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Sending OTP..." : "Send OTP"}
+                  {isLoading ? "Creating Account..." : "Sign Up"}
                 </Button>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-cyber-blue hover:underline">
+                    Sign in
+                  </Link>
+                </div>
               </form>
             </Form>
           )}
