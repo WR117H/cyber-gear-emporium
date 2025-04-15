@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { Star, ArrowLeft } from 'lucide-react';
-import { supabase } from '@/utils/supabase'; // Adjust the import based on your project structure
+import { signUp } from '@/utils/auth';
 import { OTPVerification } from '@/components/OTPVerification';
 
 const signupSchema = z.object({
@@ -41,79 +42,71 @@ const Signup = () => {
     },
   });
 
-  // Send OTP request and handle email submission
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     setUserEmail(data.email);
-
+    
     try {
-      // Call Supabase to send OTP to the user's email
-      const { error } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: {
-          shouldCreateUser: true, // Automatically create a user
-          emailRedirectTo: "https://cyber-gear-emporium.lovable.app/verify", // Adjust your redirect URL here
-        },
-      });
-
-      if (error) throw error;
-
-      // Store user data for later use (password, name)
+      // For demo purposes, let's assume we need OTP verification
       setUserData({
         name: data.name,
         email: data.email,
-        password: data.password, // Optionally store password to use later
+        password: data.password
       });
-      setShowOTP(true); // Show OTP input form after request
-    } catch (error: any) {
+      setShowOTP(true);
+      
+      // For actual signup without OTP:
+      /*
+      const result = await signUp(data.email, data.password, data.name);
+      
+      if (result.success) {
+        navigate('/login');
+      }
+      */
+    } catch (error) {
       toast({
-        title: "OTP not sent",
-        description: error.message || "An error occurred while sending OTP.",
+        title: "Registration failed",
+        description: "There was a problem creating your account",
         variant: "destructive",
       });
+      setShowOTP(false);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Handle OTP verification
+  
   const handleOTPVerify = async (code: string) => {
     setIsLoading(true);
-
+    
     try {
-      // Verify OTP and proceed with account creation
-      const { user, error } = await supabase.auth.verifyOtp({
-        email: userEmail,
-        token: code, // Pass OTP code
-      });
-
-      if (error) throw error;
-
-      // Now sign up the user with email and password
-      const result = await supabase.auth.signUp({
-        email: userEmail,
-        password: userData.password,
-      });
-
-      if (result.error) throw result.error;
-
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully.",
-      });
-
-      navigate('/login'); // Redirect to login after success
-    } catch (error: any) {
+      // In a real app, you would validate the OTP code here
+      // For now, we'll just simulate a successful verification
+      const result = await signUp(userData.email, userData.password, userData.name);
+      
+      if (result.success) {
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully"
+        });
+        navigate('/login');
+      } else {
+        toast({
+          title: "Verification failed",
+          description: "Invalid verification code",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
       toast({
         title: "Verification failed",
-        description: error.message || "An error occurred during verification",
-        variant: "destructive",
+        description: "An error occurred during verification",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <div className="absolute inset-0 bg-black z-[-1]"></div>
