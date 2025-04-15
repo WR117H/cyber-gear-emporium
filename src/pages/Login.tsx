@@ -2,24 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage
-} from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { Star, ArrowLeft } from 'lucide-react';
-import { OTPVerification } from '@/components/OTPVerification';
-import { supabase } from '@/utils/supabaseClient'; // adjust path as needed
+import { signIn } from '@/utils/auth';
 
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' })
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -28,76 +21,39 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [showOTP, setShowOTP] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: ''
-    }
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    setUserEmail(data.email);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: {
-          shouldCreateUser: true
-        }
-      });
+      const result = await signIn(data.email, data.password);
 
-      if (error) throw error;
-
-      setShowOTP(true);
-      toast({
-        title: 'Check your email',
-        description: 'We’ve sent you a 6-digit login code.'
-      });
-    } catch (error: any) {
-      console.error('OTP login error:', error);
-      toast({
-        title: 'Login failed',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive'
-      });
-      setShowOTP(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOTPVerify = async (code: string) => {
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: userEmail,
-        token: code,
-        type: 'email'
-      });
-
-      if (error) {
+      if (result.success) {
         toast({
-          title: 'Verification failed',
-          description: error.message,
-          variant: 'destructive'
-        });
-      } else {
-        toast({
-          title: 'Login successful',
-          description: 'Welcome back!'
+          title: "Login successful",
+          description: "Welcome back!"
         });
         navigate('/');
+      } else {
+        toast({
+          title: "Login failed",
+          description: result.message || "Invalid credentials",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: 'Verification failed',
-        description: 'An error occurred during verification',
-        variant: 'destructive'
+        title: "Login failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -119,66 +75,73 @@ const Login = () => {
               </Button>
             </Link>
 
-            {!showOTP && (
-              <>
-                <div className="mx-auto mb-6 w-12 h-12 relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-                  <div className="relative flex items-center justify-center w-full h-full">
-                    <Star className="w-8 h-8 text-white" />
-                  </div>
-                </div>
+            <div className="mx-auto mb-6 w-12 h-12 relative">
+              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
+              <div className="relative flex items-center justify-center w-full h-full">
+                <Star className="w-8 h-8 text-white" />
+              </div>
+            </div>
 
-                <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
-                <p className="text-muted-foreground mb-8">Sign in to your account</p>
-              </>
-            )}
+            <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
+            <p className="text-muted-foreground mb-8">Sign in to your account</p>
           </div>
 
-          {showOTP ? (
-            <OTPVerification
-              onVerify={handleOTPVerify}
-              isLoading={isLoading}
-              email={userEmail}
-            />
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="you@example.com"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="you@example.com"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <Button
-                  type="submit"
-                  variant="cyber"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Sending OTP...' : 'Send OTP'}
-                </Button>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <div className="text-center text-sm text-muted-foreground">
-                  Don’t have an account?{' '}
-                  <Link to="/signup" className="text-cyber-blue hover:underline">
-                    Sign up
-                  </Link>
-                </div>
-              </form>
-            </Form>
-          )}
+              <Button
+                type="submit"
+                variant="cyber"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
+              </Button>
+
+              <div className="text-center text-sm text-muted-foreground">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-cyber-blue hover:underline">
+                  Sign up
+                </Link>
+              </div>
+            </form>
+          </Form>
         </div>
       </div>
     </div>
