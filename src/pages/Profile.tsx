@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
-import { Loader2, User, MapPin, CreditCard } from 'lucide-react';
+import { Loader2, User, MapPin, CreditCard, Wallet } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useTONConnect } from '@/context/TONConnectProvider';
 
@@ -31,6 +31,8 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [userAddress, setUserAddress] = useState<any>(null);
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
+
+  const { isConnected, tonConnectUI, sendTransaction } = useTONConnect();  // Call the hook here
 
   const form = useForm<z.infer<typeof addressSchema>>({
     resolver: zodResolver(addressSchema),
@@ -102,6 +104,42 @@ const Profile = () => {
     }
   };
 
+  const handleClick = async () => {
+    // Check if the wallet is connected, if not open the wallet connection modal
+    if (!isConnected) {
+      tonConnectUI.openModal();
+      return;
+    }
+
+    // If connected, proceed with your transaction or any other logic
+    try {
+      toast({
+        title: "Processing payment",
+        description: "Please confirm the transaction in your TON wallet"
+      });
+      const success = await sendTransaction(100); // Replace 100 with actual amount
+      if (success) {
+        toast({
+          title: "Payment successful!",
+          description: "Your TON payment has been processed"
+        });
+      } else {
+        toast({
+          title: "Payment failed",
+          description: "Something went wrong with the payment process.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Error",
+        description: "There was an issue processing your payment.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-black">
@@ -112,10 +150,6 @@ const Profile = () => {
         <Footer />
       </div>
     );
-  }
-
-  const handleClick = async () => {
-    useTONConnect();
   }
 
   return (
@@ -192,57 +226,4 @@ const Profile = () => {
                         name="street"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Street Address</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="123 Main St" 
-                                className="bg-white/10 border-white/20 text-white" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="city"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>City</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="City" 
-                                  className="bg-white/10 border-white/20 text-white" 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="state"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>State/Province</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="State" 
-                                  className="bg-white/10 border-white/20 text-white" 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
+                            <
