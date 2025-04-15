@@ -306,11 +306,7 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-col md:flex-row gap-4">
-                    <Button variant="outline" className="flex-1 border-white/20">
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Credit Card
-                    </Button>
-                    
+                 
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="flex-1 border-white/20">
