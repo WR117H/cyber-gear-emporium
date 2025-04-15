@@ -23,7 +23,10 @@ const addressSchema = z.object({
   zipCode: z.string().min(5, { message: "Valid ZIP code is required" }),
   country: z.string().min(2, { message: "Country is required" }),
 });
-
+const handleClick = async () => {
+  useTONConnect();
+  return;
+}
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,9 +34,6 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [userAddress, setUserAddress] = useState<any>(null);
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
-  
-  // Wallet connection state
-  const { connect, disconnect, isConnected } = useTONConnect(); // Assuming these methods exist
 
   const form = useForm<z.infer<typeof addressSchema>>({
     resolver: zodResolver(addressSchema),
@@ -84,6 +84,8 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
+      // In a real app, you would save this to your database
+      // For now, we'll use localStorage
       const userId = userData?.id || userData?.email;
       localStorage.setItem(`address_${userId}`, JSON.stringify(data));
       setUserAddress(data);
@@ -100,14 +102,6 @@ const Profile = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleWalletAction = async () => {
-    if (isConnected) {
-      await disconnect();  // Disconnect if already connected
-    } else {
-      await connect();  // Connect if not connected
     }
   };
 
@@ -214,3 +208,121 @@ const Profile = () => {
                         <FormField
                           control={form.control}
                           name="city"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="City" 
+                                  className="bg-white/10 border-white/20 text-white" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="state"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>State/Province</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="State" 
+                                  className="bg-white/10 border-white/20 text-white" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="zipCode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>ZIP/Postal Code</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="12345" 
+                                  className="bg-white/10 border-white/20 text-white" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="Country" 
+                                  className="bg-white/10 border-white/20 text-white" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        variant="cyber"
+                        disabled={isLoading}
+                        className="w-full"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : "Save Address"}
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="payment" className="space-y-4">
+              <Card className="bg-black border border-white/10 text-white">
+                <CardHeader>
+                  <CardTitle>Payment Methods</CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Manage your payment options
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <Button onClick={handleClick} variant="outline" className="flex-1 border-white/20">
+                      Cryptocurrency
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Profile;
