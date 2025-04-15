@@ -25,6 +25,10 @@ const addressSchema = z.object({
   country: z.string().min(2, { message: "Country is required" }),
 });
 
+const handleClick = async () => {
+  tonConnectUI.openModal(); // Trigger wallet connect
+  return;
+}
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -310,8 +314,7 @@ const Profile = () => {
                  
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" className="flex-1 border-white/20">
-                          tonConnectUI.openModal(); // Trigger wallet connect
+                        <Button onClick={handleClick} variant="outline" className="flex-1 border-white/20">
                           Cryptocurrency
                         </Button>
                       </DialogTrigger>
