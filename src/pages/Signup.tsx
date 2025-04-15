@@ -1,26 +1,33 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
+import { Star, ArrowLeft } from "lucide-react";
+import { OTPVerification } from "@/components/OTPVerification";
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { Star, ArrowLeft } from 'lucide-react';
-import { signUp } from '@/utils/auth';
-import { OTPVerification } from '@/components/OTPVerification';
-
-const signupSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const signupSchema = z
+  .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -31,7 +38,7 @@ const Signup = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userData, setUserData] = useState<any>(null);
-  
+
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -42,27 +49,49 @@ const Signup = () => {
     },
   });
 
+  // Mock API call to send OTP
+  const sendOTP = async (email: string) => {
+    try {
+      // Replace this with your actual API call
+      const response = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send OTP");
+      }
+
+      toast({
+        title: "OTP Sent",
+        description: `A verification code has been sent to ${email}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send OTP. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     setUserEmail(data.email);
-    
+
     try {
-      // For demo purposes, let's assume we need OTP verification
+      // Save user data locally
       setUserData({
         name: data.name,
         email: data.email,
-        password: data.password
+        password: data.password,
       });
+
+      // Trigger OTP sending
+      await sendOTP(data.email);
+
       setShowOTP(true);
-      
-      // For actual signup without OTP:
-      /*
-      const result = await signUp(data.email, data.password, data.name);
-      
-      if (result.success) {
-        navigate('/login');
-      }
-      */
     } catch (error) {
       toast({
         title: "Registration failed",
@@ -74,44 +103,52 @@ const Signup = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleOTPVerify = async (code: string) => {
     setIsLoading(true);
-    
+
     try {
-      // In a real app, you would validate the OTP code here
-      // For now, we'll just simulate a successful verification
-      const result = await signUp(userData.email, userData.password, userData.name);
-      
+      // Replace this with your actual OTP verification API call
+      const response = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, otp: code }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid OTP");
+      }
+
+      const result = await response.json();
       if (result.success) {
         toast({
           title: "Account created",
-          description: "Your account has been created successfully"
+          description: "Your account has been created successfully",
         });
-        navigate('/login');
+        navigate("/login");
       } else {
         toast({
           title: "Verification failed",
           description: "Invalid verification code",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Verification failed",
         description: "An error occurred during verification",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="absolute inset-0 bg-black z-[-1]"></div>
       <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
-      
+
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10">
           <div className="text-center">
@@ -121,7 +158,7 @@ const Signup = () => {
                 Back to Home
               </Button>
             </Link>
-            
+
             {!showOTP && (
               <>
                 <div className="mx-auto mb-6 w-12 h-12 relative">
@@ -130,17 +167,17 @@ const Signup = () => {
                     <Star className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                
+
                 <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
                 <p className="text-muted-foreground mb-8">Sign up to get started</p>
               </>
             )}
           </div>
-          
+
           {showOTP ? (
-            <OTPVerification 
-              onVerify={handleOTPVerify} 
-              isLoading={isLoading} 
+            <OTPVerification
+              onVerify={handleOTPVerify}
+              isLoading={isLoading}
               email={userEmail}
             />
           ) : (
@@ -153,17 +190,17 @@ const Signup = () => {
                     <FormItem>
                       <FormLabel className="text-white">Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="John Doe" 
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                          {...field} 
+                        <Input
+                          placeholder="John Doe"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -171,17 +208,17 @@ const Signup = () => {
                     <FormItem>
                       <FormLabel className="text-white">Email</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="you@example.com" 
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                          {...field} 
+                        <Input
+                          placeholder="you@example.com"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -189,18 +226,18 @@ const Signup = () => {
                     <FormItem>
                       <FormLabel className="text-white">Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                          {...field} 
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="confirmPassword"
@@ -208,27 +245,27 @@ const Signup = () => {
                     <FormItem>
                       <FormLabel className="text-white">Confirm Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50" 
-                          {...field} 
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
-                <Button 
-                  type="submit" 
+
+                <Button
+                  type="submit"
                   variant="cyber"
-                  className="w-full" 
+                  className="w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating Account..." : "Sign Up"}
                 </Button>
-                
+
                 <div className="text-center text-sm text-muted-foreground">
                   Already have an account?{" "}
                   <Link to="/login" className="text-cyber-blue hover:underline">
