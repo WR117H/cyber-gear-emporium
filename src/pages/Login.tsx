@@ -35,33 +35,33 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    setUserEmail(data.email);
-    
-    try {
-      // For demo purposes, let's assume we need OTP verification
-      // Comment this out and use the result.success logic for normal login
-      setShowOTP(true);
-      
-      // For actual login without OTP:
-      /*
-      const result = await signIn(data.email, data.password);
-      
-      if (result.success) {
-        navigate('/');
-      }
-      */
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-      setShowOTP(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+		setIsLoading(true);
+		setUserEmail(data.email);
+
+		try {
+			const { error } = await supabase.auth.signInWithOtp({
+				email: data.email,
+			});
+
+			if (error) throw error;
+
+			setShowOTP(true);
+			toast({
+				title: "Check your email",
+				description: "We've sent you a login code.",
+			});
+
+		} catch (error: any) {
+			toast({
+				title: "Login failed",
+				description: error.message || "An unexpected error occurred",
+				variant: "destructive",
+			});
+			setShowOTP(false);
+		} finally {
+			setIsLoading(false);
+		}
+	};
   
   const handleOTPVerify = async (code: string) => {
     setIsLoading(true);
