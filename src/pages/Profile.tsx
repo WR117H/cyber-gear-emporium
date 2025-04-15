@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
 import { Loader2, User, MapPin, CreditCard, Wallet } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useTONConnect } from '@/context/TONConnectProvider';
 
 const addressSchema = z.object({
   street: z.string().min(3, { message: "Street address is required" }),
