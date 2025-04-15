@@ -24,10 +24,8 @@ const addressSchema = z.object({
   zipCode: z.string().min(5, { message: "Valid ZIP code is required" }),
   country: z.string().min(2, { message: "Country is required" }),
 });
-const sendTratonConnectUI = useTONConnect();
-
 const handleClick = async () => {
-  tonConnectUI.openModal(); // Trigger wallet connect
+  useTONConnect();
   return;
 }
 const Profile = () => {
