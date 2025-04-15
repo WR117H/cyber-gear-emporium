@@ -310,7 +310,7 @@ const Profile = () => {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="flex-1 border-white/20">
-                          <Wallet className="mr-2 h-4 w-4" />
+                          tonConnectUI.openModal(); // Trigger wallet connect
                           Cryptocurrency
                         </Button>
                       </DialogTrigger>
