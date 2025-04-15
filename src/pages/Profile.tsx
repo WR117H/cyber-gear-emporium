@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
-import { Loader2, User, MapPin, CreditCard, Wallet } from 'lucide-react';
+import { Loader2, User, MapPin, CreditCard } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useTONConnect } from '@/context/TONConnectProvider';
 
@@ -31,9 +31,6 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [userAddress, setUserAddress] = useState<any>(null);
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
-  
-  // Wallet connection state
-  const { connect, disconnect, isConnected } = useTONConnect(); // Assuming these methods exist
 
   const form = useForm<z.infer<typeof addressSchema>>({
     resolver: zodResolver(addressSchema),
@@ -84,6 +81,8 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
+      // In a real app, you would save this to your database
+      // For now, we'll use localStorage
       const userId = userData?.id || userData?.email;
       localStorage.setItem(`address_${userId}`, JSON.stringify(data));
       setUserAddress(data);
@@ -103,14 +102,6 @@ const Profile = () => {
     }
   };
 
-  const handleWalletAction = async () => {
-    if (isConnected) {
-      await disconnect();  // Disconnect if already connected
-    } else {
-      await connect();  // Connect if not connected
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-black">
@@ -121,6 +112,10 @@ const Profile = () => {
         <Footer />
       </div>
     );
+  }
+
+  const handleClick = async () => {
+    useTONConnect();
   }
 
   return (
@@ -214,3 +209,40 @@ const Profile = () => {
                         <FormField
                           control={form.control}
                           name="city"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="City" 
+                                  className="bg-white/10 border-white/20 text-white" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="state"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>State/Province</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="State" 
+                                  className="bg-white/10 border-white/20 text-white" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
