@@ -31,8 +31,9 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [userAddress, setUserAddress] = useState<any>(null);
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
-
-  const { isConnected, tonConnectUI, sendTransaction } = useTONConnect();  // Call the hook here
+  
+  // Wallet connection state
+  const { connect, disconnect, isConnected } = useTONConnect(); // Assuming these methods exist
 
   const form = useForm<z.infer<typeof addressSchema>>({
     resolver: zodResolver(addressSchema),
@@ -83,8 +84,6 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
-      // In a real app, you would save this to your database
-      // For now, we'll use localStorage
       const userId = userData?.id || userData?.email;
       localStorage.setItem(`address_${userId}`, JSON.stringify(data));
       setUserAddress(data);
@@ -104,39 +103,11 @@ const Profile = () => {
     }
   };
 
-  const handleClick = async () => {
-    // Check if the wallet is connected, if not open the wallet connection modal
-    if (!isConnected) {
-      tonConnectUI.openModal();
-      return;
-    }
-
-    // If connected, proceed with your transaction or any other logic
-    try {
-      toast({
-        title: "Processing payment",
-        description: "Please confirm the transaction in your TON wallet"
-      });
-      const success = await sendTransaction(100); // Replace 100 with actual amount
-      if (success) {
-        toast({
-          title: "Payment successful!",
-          description: "Your TON payment has been processed"
-        });
-      } else {
-        toast({
-          title: "Payment failed",
-          description: "Something went wrong with the payment process.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast({
-        title: "Error",
-        description: "There was an issue processing your payment.",
-        variant: "destructive"
-      });
+  const handleWalletAction = async () => {
+    if (isConnected) {
+      await disconnect();  // Disconnect if already connected
+    } else {
+      await connect();  // Connect if not connected
     }
   };
 
@@ -226,4 +197,20 @@ const Profile = () => {
                         name="street"
                         render={({ field }) => (
                           <FormItem>
-                            <
+                            <FormLabel>Street Address</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="123 Main St" 
+                                className="bg-white/10 border-white/20 text-white" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="city"
