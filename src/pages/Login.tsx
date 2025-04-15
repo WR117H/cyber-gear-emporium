@@ -35,33 +35,36 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-		setIsLoading(true);
-		setUserEmail(data.email);
+ 	setIsLoading(true);
+ 	setUserEmail(data.email);
 
-		try {
-			const { error } = await supabase.auth.signInWithOtp({
-				email: data.email,
-			});
+ 	try {
+	 	const { error } = await supabase.auth.signInWithOtp({
+	 		email: data.email,
+ 			options: {
+				 emailRedirectTo: `${window.location.origin}/auth/callback` // Replace with your redirect route
+		 	}
+		 });
 
-			if (error) throw error;
+ 		if (error) throw error;
 
-			setShowOTP(true);
-			toast({
-				title: "Check your email",
-				description: "We've sent you a login code.",
-			});
-
-		} catch (error: any) {
-			toast({
-				title: "Login failed",
-				description: error.message || "An unexpected error occurred",
-				variant: "destructive",
-			});
-			setShowOTP(false);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+	 	setShowOTP(true);
+ 		toast({
+ 			title: "Check your email",
+ 			description: "We've sent you a login code or magic link.",
+ 		});
+ 	} catch (error: any) {
+ 		console.error("OTP login error:", error);
+ 		toast({
+	 		title: "Login failed",
+ 			description: error.message || "An unexpected error occurred",
+ 			variant: "destructive",
+ 		});
+ 		setShowOTP(false);
+ 	} finally {
+ 		setIsLoading(false);
+ 	}
+ };
   
   const handleOTPVerify = async (code: string) => {
     setIsLoading(true);
