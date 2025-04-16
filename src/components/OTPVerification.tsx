@@ -27,27 +27,23 @@ export function OTPVerification({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (resendTimeout <= 0) return;
+    let timer: NodeJS.Timeout;
+    if (resendTimeout > 0) {
+      timer = setInterval(() => {
+        setResendTimeout((prev) => prev - 1);
+      }, 1000);
+    }
 
-    const timer = setTimeout(() => {
-      setResendTimeout((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, [resendTimeout]);
 
   const handleResend = () => {
-    if (email) {
-      toast({
-        title: "Code resent!",
-        description: `A new verification code has been sent to ${email}`,
-      });
-    } else {
-      toast({
-        title: "Code resent!",
-        description: `A new verification code has been sent to your email.`,
-      });
-    }
+    toast({
+      title: "Code resent!",
+      description: `A new verification code has been sent to ${email || "your email"}`,
+    });
     setResendTimeout(30);
   };
 
@@ -110,8 +106,6 @@ export function OTPVerification({
             <button
               onClick={handleResend}
               className="text-cyber-blue hover:underline"
-              disabled={isLoading}
-              aria-disabled={isLoading}
             >
               Resend code
             </button>
