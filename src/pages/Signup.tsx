@@ -1,76 +1,250 @@
-import React, { useState, useEffect } from 'react'; import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp"; import { Button } from "@/components/ui/button"; import { useToast } from "@/hooks/use-toast"; import { Mail, MailCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
+import { Star, ArrowLeft } from 'lucide-react';
+import { signUp } from '@/utils/auth';
+import { OTPVerification } from '@/components/OTPVerification';
 
-interface OTPVerificationProps { length?: number; onVerify: (code: string) => void; isLoading?: boolean; email?: string; }
+const signupSchema = z.object({
+name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+email: z.string().email({ message: "Please enter a valid email address" }),
+password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+message: "Passwords don't match",
+path: ["confirmPassword"],
+});
 
-export function OTPVerification({ length = 6, onVerify, isLoading = false, email }: OTPVerificationProps) { const [otp, setOtp] = useState(""); const [resendTimeout, setResendTimeout] = useState(30); const { toast } = useToast();
+type SignupFormValues = z.infer<typeof signupSchema>;
 
-useEffect(() => { let timer: NodeJS.Timeout; if (resendTimeout > 0) { timer = setInterval(() => { setResendTimeout((prev) => prev - 1); }, 1000); }
+const Signup = () => {
+const { toast } = useToast();
+const navigate = useNavigate();
+const [isLoading, setIsLoading] = useState(false);
+const [showOTP, setShowOTP] = useState(false);
+const [userEmail, setUserEmail] = useState("");
+const [userData, setUserData] = useState<any>(null);
 
-return () => {
-  if (timer) clearInterval(timer);
+const form = useForm<SignupFormValues>({
+resolver: zodResolver(signupSchema),
+defaultValues: {
+name: "",
+email: "",
+password: "",
+confirmPassword: "",
+},
+});
+
+const onSubmit = async (data: SignupFormValues) => {
+setIsLoading(true);
+setUserEmail(data.email);
+
+try {  
+  // For demo purposes, let's assume we need OTP verification  
+  setUserData({  
+    name: data.name,  
+    email: data.email,  
+    password: data.password  
+  });  
+  setShowOTP(true);  
+    
+  // For actual signup without OTP:  
+  /*  
+  const result = await signUp(data.email, data.password, data.name);  
+    
+  if (result.success) {  
+    navigate('/login');  
+  }  
+  */  
+} catch (error) {  
+  toast({  
+    title: "Registration failed",  
+    description: "There was a problem creating your account",  
+    variant: "destructive",  
+  });  
+  setShowOTP(false);  
+} finally {  
+  setIsLoading(false);  
+}
+
 };
 
-}, [resendTimeout]);
+const handleOTPVerify = async (code: string) => {
+setIsLoading(true);
 
-const handleResend = () => { toast({ title: "Code resent!", description: A new verification code has been sent to ${email || "your email"}, }); setResendTimeout(30); };
-
-const handleVerify = () => { if (otp.length === length) { onVerify(otp); } };
-
-return ( <div className="space-y-8"> <div className="space-y-4 text-center"> <div className="mx-auto w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"> <MailCheck className="h-6 w-6 text-cyber-blue" /> </div>
-
-<h3 className="text-lg font-medium text-white">Check your email</h3>
-    {email && (
-      <p className="text-md text-cyber-blue font-medium">
-        {email}
-      </p>
-    )}
-    <p className="text-sm text-muted-foreground">
-      We've sent a verification code to your email
-    </p>
-  </div>
-  
-  <div className="flex flex-col items-center space-y-4">
-    <InputOTP 
-      maxLength={length} 
-      value={otp} 
-      onChange={setOtp}
-      containerClassName="gap-2 md:gap-4"
-    >
-      <InputOTPGroup>
-        {Array.from({ length }).map((_, i) => (
-          <React.Fragment key={i}>
-            <InputOTPSlot index={i} />
-            {i !== length - 1 && <InputOTPSeparator />}
-          </React.Fragment>
-        ))}
-      </InputOTPGroup>
-    </InputOTP>
+try {  
+  // In a real app, you would validate the OTP code here  
+  // For now, we'll just simulate a successful verification  
+  const result = await signUp(userData.email, userData.password, userData.name);  
     
-    <Button 
-      onClick={handleVerify} 
-      disabled={otp.length !== length || isLoading}
-      variant="cyber"
-      className="w-full mt-4"
-    >
-      {isLoading ? "Verifying..." : "Verify Email"}
-    </Button>
-    
-    <div className="text-sm text-center">
-      {resendTimeout > 0 ? (
-        <p className="text-muted-foreground">
-          Resend code in {resendTimeout}s
-        </p>
-      ) : (
-        <button 
-          onClick={handleResend} 
-          className="text-cyber-blue hover:underline"
-        >
-          Resend code
-        </button>
-      )}
-    </div>
-  </div>
+  if (result.success) {  
+    toast({  
+      title: "Account created",  
+      description: "Your account has been created successfully"  
+    });  
+    navigate('/login');  
+  } else {  
+    toast({  
+      title: "Verification failed",  
+      description: "Invalid verification code",  
+      variant: "destructive"  
+    });  
+  }  
+} catch (error) {  
+  toast({  
+    title: "Verification failed",  
+    description: "An error occurred during verification",  
+    variant: "destructive"  
+  });  
+} finally {  
+  setIsLoading(false);  
+}
+
+};
+
+return (
+<div className="min-h-screen flex flex-col">
+<div className="absolute inset-0 bg-black z-[-1]"></div>
+<div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+
+<div className="flex-1 flex items-center justify-center p-4">  
+    <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10">  
+      <div className="text-center">  
+        <Link to="/" className="inline-block mb-8">  
+          <Button variant="ghost" size="sm" className="rounded-full">  
+            <ArrowLeft className="h-4 w-4 mr-2" />  
+            Back to Home  
+          </Button>  
+        </Link>  
+          
+        {!showOTP && (  
+          <>  
+            <div className="mx-auto mb-6 w-12 h-12 relative">  
+              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>  
+              <div className="relative flex items-center justify-center w-full h-full">  
+                <Star className="w-8 h-8 text-white" />  
+              </div>  
+            </div>  
+              
+            <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>  
+            <p className="text-muted-foreground mb-8">Sign up to get started</p>  
+          </>  
+        )}  
+      </div>  
+        
+      {showOTP ? (  
+        <OTPVerification   
+          onVerify={handleOTPVerify}   
+          isLoading={isLoading}   
+          email={userEmail}  
+        />  
+      ) : (  
+        <Form {...form}>  
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">  
+            <FormField  
+              control={form.control}  
+              name="name"  
+              render={({ field }) => (  
+                <FormItem>  
+                  <FormLabel className="text-white">Name</FormLabel>  
+                  <FormControl>  
+                    <Input   
+                      placeholder="John Doe"   
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"   
+                      {...field}   
+                    />  
+                  </FormControl>  
+                  <FormMessage />  
+                </FormItem>  
+              )}  
+            />  
+              
+            <FormField  
+              control={form.control}  
+              name="email"  
+              render={({ field }) => (  
+                <FormItem>  
+                  <FormLabel className="text-white">Email</FormLabel>  
+                  <FormControl>  
+                    <Input   
+                      placeholder="you@example.com"   
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"   
+                      {...field}   
+                    />  
+                  </FormControl>  
+                  <FormMessage />  
+                </FormItem>  
+              )}  
+            />  
+              
+            <FormField  
+              control={form.control}  
+              name="password"  
+              render={({ field }) => (  
+                <FormItem>  
+                  <FormLabel className="text-white">Password</FormLabel>  
+                  <FormControl>  
+                    <Input   
+                      type="password"   
+                      placeholder="••••••••"   
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"   
+                      {...field}   
+                    />  
+                  </FormControl>  
+                  <FormMessage />  
+                </FormItem>  
+              )}  
+            />  
+              
+            <FormField  
+              control={form.control}  
+              name="confirmPassword"  
+              render={({ field }) => (  
+                <FormItem>  
+                  <FormLabel className="text-white">Confirm Password</FormLabel>  
+                  <FormControl>  
+                    <Input   
+                      type="password"   
+                      placeholder="••••••••"   
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"   
+                      {...field}   
+                    />  
+                  </FormControl>  
+                  <FormMessage />  
+                </FormItem>  
+              )}  
+            />  
+              
+            <Button   
+              type="submit"   
+              variant="cyber"  
+              className="w-full"   
+              disabled={isLoading}  
+            >  
+              {isLoading ? "Creating Account..." : "Sign Up"}  
+            </Button>  
+              
+            <div className="text-center text-sm text-muted-foreground">  
+              Already have an account?{" "}  
+              <Link to="/login" className="text-cyber-blue hover:underline">  
+                Sign in  
+              </Link>  
+            </div>  
+          </form>  
+        </Form>  
+      )}  
+    </div>  
+  </div>  
 </div>
 
-); }
+);
+};
+
+export default Signup;
 
