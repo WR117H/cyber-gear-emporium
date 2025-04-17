@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { Star, ArrowLeft } from 'lucide-react';
-import { supabase } from '@/lib/supabase'; // adjust path if needed
+import { signUp } from '@/utils/auth'; // This should handle the magic link
 
 const signupSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -38,25 +38,22 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`, // Adjust redirect path
-        },
-      });
-
-      if (error) {
-        throw error;
+      const result = await signUp(data.email); // Your custom logic
+      if (result.success) {
+        toast({
+          title: 'Magic link sent!',
+          description: 'Check your email to complete signup.',
+        });
+      } else {
+        throw new Error(result.message || 'Failed to send magic link');
       }
-
-      toast({
-        title: 'Check your email',
-        description: 'A magic link has been sent to your inbox.',
-      });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Signup failed',
-        description: error.message || 'Something went wrong.',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'There was an error sending the magic link',
         variant: 'destructive',
       });
     } finally {
@@ -66,8 +63,8 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="absolute inset-0 bg-black z-[-1]"></div>
-      <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+      <div className="absolute inset-0 bg-black z-[-1]" />
+      <div className="absolute inset-0 bg-cyber-grid opacity-20" />
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10">
@@ -86,9 +83,9 @@ const Signup = () => {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Get Started</h2>
             <p className="text-muted-foreground mb-8">
-              Enter your email to receive a magic link
+              We'll send you a magic login link
             </p>
           </div>
 
@@ -118,7 +115,7 @@ const Signup = () => {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Sending Magic Link...' : 'Send Magic Link'}
+                {isLoading ? 'Sending Link...' : 'Send Magic Link'}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">
