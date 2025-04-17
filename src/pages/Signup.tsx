@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { signUp } from '@/utils/auth';
+import { signUp } from '@/utils/auth';  // Import your custom signUp function
 import {
   Form,
   FormField,
@@ -42,7 +42,7 @@ const Signup = () => {
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
-      const result = await signUp(data.email, data.password, data.name);
+      const result = await signUp(data.email, data.password, data.name);  // Use the custom signUp function
 
       if (result.success) {
         toast({
