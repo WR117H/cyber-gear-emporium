@@ -1,58 +1,66 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
+import { signUp } from '@/utils/auth';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Star, ArrowLeft } from 'lucide-react';
-import { signIn } from '@/utils/auth';
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+const signupSchema = z.object({
+  name: z.string().min(2, { message: "Name is required" }),
+  email: z.string().email({ message: "Please enter a valid email" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
 
-const Login = () => {
+const Signup = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
-
     try {
-      const result = await signIn(data.email, data.password);
+      const result = await signUp(data.email, data.password, data.name);
 
       if (result.success) {
         toast({
-          title: "Login successful",
-          description: "Welcome back!"
+          title: "Verification email sent",
+          description: "Check your inbox to confirm your email",
         });
-        navigate('/');
+        navigate('/login');
       } else {
         toast({
-          title: "Login failed",
-          description: result.message || "Invalid credentials",
+          title: "Signup failed",
+          description: result?.error?.message || "An unexpected error occurred",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "Login failed",
-        description: error.message || "An unexpected error occurred",
+        title: "Signup failed",
+        description: error.message || "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -82,12 +90,30 @@ const Login = () => {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
-            <p className="text-muted-foreground mb-8">Sign in to your account</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Create your account</h2>
+            <p className="text-muted-foreground mb-8">Start your journey now</p>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="John Doe"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="email"
@@ -131,13 +157,13 @@ const Login = () => {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? "Signing Up..." : "Sign Up"}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link to="/signup" className="text-cyber-blue hover:underline">
-                  Sign up
+                Already have an account?{" "}
+                <Link to="/login" className="text-cyber-blue hover:underline">
+                  Sign in
                 </Link>
               </div>
             </form>
@@ -148,4 +174,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
