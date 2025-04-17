@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
+import { signUp } from '@/utils/auth';
 import {
   Form,
   FormField,
@@ -10,51 +13,55 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Star, ArrowLeft } from 'lucide-react';
-import { signUp } from '@/utils/auth'; // This should handle the magic link
 
 const signupSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
+  name: z.string().min(2, { message: "Name is required" }),
+  email: z.string().email({ message: "Please enter a valid email" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 const Signup = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: '',
+      name: "",
+      email: "",
+      password: "",
     },
   });
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
-
     try {
-      const result = await signUp(data.email); // Your custom logic
+      const result = await signUp(data.email, data.password, data.name);
+
       if (result.success) {
         toast({
-          title: 'Magic link sent!',
-          description: 'Check your email to complete signup.',
+          title: "Verification email sent",
+          description: "Check your inbox to confirm your email",
         });
+        navigate('/login');
       } else {
-        throw new Error(result.message || 'Failed to send magic link');
+        toast({
+          title: "Signup failed",
+          description: result?.error?.message || "An unexpected error occurred",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: 'Signup failed',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'There was an error sending the magic link',
-        variant: 'destructive',
+        title: "Signup failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -63,8 +70,8 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="absolute inset-0 bg-black z-[-1]" />
-      <div className="absolute inset-0 bg-cyber-grid opacity-20" />
+      <div className="absolute inset-0 bg-black z-[-1]"></div>
+      <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10">
@@ -83,14 +90,30 @@ const Signup = () => {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">Get Started</h2>
-            <p className="text-muted-foreground mb-8">
-              We'll send you a magic login link
-            </p>
+            <h2 className="text-2xl font-bold text-white mb-2">Create your account</h2>
+            <p className="text-muted-foreground mb-8">Start your journey now</p>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="John Doe"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="email"
@@ -109,17 +132,36 @@ const Signup = () => {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button
                 type="submit"
                 variant="cyber"
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Sending Link...' : 'Send Magic Link'}
+                {isLoading ? "Signing Up..." : "Sign Up"}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <Link to="/login" className="text-cyber-blue hover:underline">
                   Sign in
                 </Link>
