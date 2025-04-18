@@ -7,16 +7,14 @@ import { signUp } from '@/utils/auth';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-@@ -27,7 +27,6 @@ const Signup = () => {
-  const { toast } = useToast();
+const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
-@@ -43,19 +42,12 @@ const Signup = () => {
-    setIsLoading(true);
+ setIsLoading(true);
 
     try {
       const result = await signUp(data.email, data.password, data.name);
@@ -35,7 +33,7 @@ const signupSchema = z.object({
     } catch (error) {
       toast({
         title: "Registration failed",
-@@ -67,33 +59,6 @@ const Signup = () => {
+
     }
   };
 
@@ -69,7 +67,7 @@ const signupSchema = z.object({
   return (
     <div className="min-h-screen flex flex-col">
       <div className="absolute inset-0 bg-black z-[-1]"></div>
-@@ -116,116 +81,102 @@ const Signup = () => {
+
               </div>
             </div>
 
@@ -175,3 +173,6 @@ const signupSchema = z.object({
               </div>
             </form>
           </Form>
+        </div>
+      </div>
+    </div>
