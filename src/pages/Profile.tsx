@@ -308,14 +308,55 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <Button onClick={handleClick} variant="outline" className="flex-1 border-white/20">
-                      Cryptocurrency
-                    </Button>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between border border-white/10 p-4 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="h-6 w-6 text-white" />
+                        <div>
+                          <p className="text-white font-medium">Visa ending in 4242</p>
+                          <p className="text-sm text-muted-foreground">Expires 04/26</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" className="text-sm">
+                        Remove
+                      </Button>
+                    </div>
+            
+                    <div className="flex items-center justify-between border border-white/10 p-4 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Wallet className="h-6 w-6 text-white" />
+                        <div>
+                          <p className="text-white font-medium">Add New Payment Method</p>
+                          <p className="text-sm text-muted-foreground">Credit, debit, or other methods</p>
+                        </div>
+                      </div>
+                      <Button variant="cyber" className="text-sm">
+                        Add
+                      </Button>
+                    </div>
+            
+                    {/* TONConnect Button */}
+                    <div className="flex items-center justify-between border border-white/10 p-4 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Wallet className="h-6 w-6 text-white" />
+                        <div>
+                          <p className="text-white font-medium">TON Payment</p>
+                          <p className="text-sm text-muted-foreground">Connect your TON wallet</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="text-sm"
+                        onClick={handleClick} // Trigger TONConnect functionality
+                      >
+                        Connect
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
+
           </Tabs>
         </div>
       </main>
