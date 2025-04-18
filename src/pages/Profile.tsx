@@ -24,9 +24,13 @@ const addressSchema = z.object({
   country: z.string().min(2, { message: "Country is required" }),
 });
 const handleClick = async () => {
-  useTONConnect();
-  return;
-}
+  await useTONConnect(); // This will handle the connection logic
+  toast({
+    title: "TON Wallet Connected",
+    description: "Your TON wallet is now connected.",
+  });
+};
+
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
