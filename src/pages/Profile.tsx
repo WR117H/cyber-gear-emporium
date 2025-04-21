@@ -23,31 +23,13 @@ const addressSchema = z.object({
   zipCode: z.string().min(5, { message: "Valid ZIP code is required" }),
   country: z.string().min(2, { message: "Country is required" }),
 });
-const { wallet, connect, disconnect } = useTONConnect();
 const handleClick = async () => {
-  try {
-    if (wallet) {
-      await disconnect();
-      toast({
-        title: "Wallet Disconnected",
-        description: "Your TON wallet has been disconnected.",
-      });
-    } else {
-      await connect();
-      toast({
-        title: "TON Wallet Connected",
-        description: "Your TON wallet is now connected.",
-      });
-    }
-  } catch (error) {
-    toast({
-      title: "Error",
-      description: "Failed to connect/disconnect wallet.",
-      variant: "destructive",
-    });
-  }
+  await useTONConnect(); // This will handle the connection logic
+  toast({
+    title: "TON Wallet Connected",
+    description: "Your TON wallet is now connected.",
+  });
 };
-
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -371,7 +353,7 @@ const Profile = () => {
                         className="text-sm"
                         onClick={handleClick} // Trigger TONConnect functionality
                       >
-                        {wallet ? "Disconnect Wallet" : "Connect Wallet"}
+                        Connect
                       </Button>
                     </div>
                   </div>
