@@ -36,10 +36,10 @@ const ProductDetail = () => {
       addItem({
         id: product.id,
         name: product.name,
-        description: product.description,
         price: product.price,
         image: product.image,
-        quantity: quantity
+        quantity: quantity,
+        description: product.description
       });
       
       toast({

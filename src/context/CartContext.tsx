@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { CartItem } from '@/types/cart';
@@ -9,6 +10,7 @@ interface CartContextProps {
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
+  getCount: () => number;
 }
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);
@@ -93,8 +95,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     return items.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
+  // Add getCount method to calculate total number of items in cart
+  const getCount = () => {
+    return items.reduce((count, item) => count + item.quantity, 0);
+  };
+
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, getTotal }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, getTotal, getCount }}>
       {children}
     </CartContext.Provider>
   );

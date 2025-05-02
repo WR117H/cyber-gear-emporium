@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getArticleById, createArticle, updateArticle } from '@/utils/articleDatabase';
 import { Input } from '@/components/ui/input';
@@ -82,7 +81,7 @@ export default function ArticleForm() {
     });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 

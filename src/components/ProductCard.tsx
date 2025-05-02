@@ -25,13 +25,13 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     addItem({
       id: product.id,
       name: product.name,
-      description: product.description,
       price: product.price,
       image: product.image,
-      quantity: 1
+      quantity: 1,
+      description: product.description
     });
     
-    // Call the optional onAddToCart prop if provided (for additional handling like analytics)
+    // Call the optional onAddToCart prop if provided
     if (onAddToCart) {
       onAddToCart(product);
     }
