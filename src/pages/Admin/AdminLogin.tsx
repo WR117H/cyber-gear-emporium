@@ -57,8 +57,8 @@ export default function AdminLogin() {
 
   // Check local storage on component mount
   useEffect(() => {
-    const storedHash = localStorage.getItem('admin_password_hash');
-    if (!storedHash) {
+    const storedPassword = localStorage.getItem('admin_password');
+    if (!storedPassword) {
       toast({
         title: "First time setup",
         description: "Use the default password: admin123"
