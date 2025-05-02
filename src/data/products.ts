@@ -1,4 +1,3 @@
-
 import { Product } from '@/types/product';
 
 export const mockProducts: Product[] = [
@@ -19,6 +18,21 @@ export const mockProducts: Product[] = [
       interfaces: 'USB 3.0, Ethernet, Wi-Fi, Bluetooth'
     },
     compatibleWith: ['Windows', 'Linux', 'macOS']
+  },
+  {
+    id: 'free-demo',
+    name: 'CyberGear Demo - FREE',
+    description: 'A free demo product to test our ordering and tracking system. No payment required.',
+    price: 0,
+    image: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=800',
+    category: 'demo',
+    inStock: 999,
+    featured: false,
+    isNew: true,
+    specifications: {
+      type: 'Demo Product',
+      note: 'For testing purposes only'
+    }
   },
   {
     id: '2',

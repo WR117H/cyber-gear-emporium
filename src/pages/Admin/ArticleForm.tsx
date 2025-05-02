@@ -1,5 +1,5 @@
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getArticleById, createArticle, updateArticle } from '@/utils/articleDatabase';
 import { Input } from '@/components/ui/input';
@@ -24,11 +24,14 @@ export default function ArticleForm() {
     imageUrl: '',
     excerpt: '',
     slug: '',
-    tags: []
+    tags: [],
+    category: '',
+    coverImage: '',
+    publishedAt: new Date().toISOString()
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   useEffect(() => {
     if (id) {
       const article = getArticleById(id);
@@ -41,7 +44,10 @@ export default function ArticleForm() {
           imageUrl: article.imageUrl,
           excerpt: article.excerpt,
           slug: article.slug,
-          tags: article.tags || []
+          tags: article.tags || [],
+          category: article.category,
+          coverImage: article.coverImage,
+          publishedAt: article.publishedAt
         });
       }
     }

@@ -80,9 +80,19 @@ export default function Checkout() {
           image: item.image
         })),
         total,
-        status: 'payment_confirmed',
         paymentMethod: 'ton',
         address,
+        paymentStatus: 'paid',
+        shippingAddress: {
+          fullName: address.fullName,
+          street: address.streetAddress,
+          city: address.city,
+          state: address.state,
+          zipCode: address.postalCode,
+          country: address.country
+        },
+        date: new Date().toISOString(),
+        notes: ''
       });
       
       // Clear cart
