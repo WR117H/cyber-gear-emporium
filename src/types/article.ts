@@ -5,9 +5,8 @@ export interface Article {
   content: string;
   excerpt: string;
   author: string;
-  coverImage: string;
-  publishedAt: string;
-  category: string;
-  tags: string[];
+  date: string;
+  imageUrl: string;
   slug: string;
+  tags: string[];
 }

@@ -2,30 +2,30 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Order, OrderStatus } from '@/types/order';
 
-// Mock database stored in localStorage
 const ORDERS_STORAGE_KEY = 'cyber_gear_orders';
 
 // Helper to get all orders
 export const fetchOrders = (): Order[] => {
+  if (typeof window === 'undefined') return [];
   const storedOrders = localStorage.getItem(ORDERS_STORAGE_KEY);
   return storedOrders ? JSON.parse(storedOrders) : [];
 };
 
 // Helper to save all orders
 const saveOrders = (orders: Order[]): void => {
+  if (typeof window === 'undefined') return;
   localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
 };
 
 // Create a new order
-export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Order => {
+export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'>): Order => {
   const orders = fetchOrders();
-  const now = new Date().toISOString();
   
   const newOrder: Order = {
     ...orderData,
     id: uuidv4(),
-    createdAt: now,
-    updatedAt: now
+    createdAt: new Date().toISOString(),
+    status: 'pending'
   };
   
   saveOrders([...orders, newOrder]);
@@ -44,8 +44,8 @@ export const getOrdersByUserId = (userId: string): Order[] => {
   return orders.filter(order => order.userId === userId);
 };
 
-// Update order status
-export const updateOrderStatus = (id: string, status: OrderStatus): Order | null => {
+// Update an order
+export const updateOrder = (id: string, orderData: Partial<Order>): Order | null => {
   const orders = fetchOrders();
   const orderIndex = orders.findIndex(order => order.id === id);
   
@@ -53,32 +53,7 @@ export const updateOrderStatus = (id: string, status: OrderStatus): Order | null
   
   const updatedOrder = {
     ...orders[orderIndex],
-    status,
-    updatedAt: new Date().toISOString()
-  };
-  
-  orders[orderIndex] = updatedOrder;
-  saveOrders(orders);
-  
-  return updatedOrder;
-};
-
-// Update order tracking info
-export const updateOrderTracking = (
-  id: string, 
-  trackingNumber: string, 
-  estimatedDelivery?: string
-): Order | null => {
-  const orders = fetchOrders();
-  const orderIndex = orders.findIndex(order => order.id === id);
-  
-  if (orderIndex === -1) return null;
-  
-  const updatedOrder = {
-    ...orders[orderIndex],
-    trackingNumber,
-    estimatedDelivery,
-    updatedAt: new Date().toISOString()
+    ...orderData,
   };
   
   orders[orderIndex] = updatedOrder;
@@ -96,4 +71,9 @@ export const deleteOrder = (id: string): boolean => {
   
   saveOrders(filteredOrders);
   return true;
+};
+
+// Update order status
+export const updateOrderStatus = (id: string, status: OrderStatus): Order | null => {
+  return updateOrder(id, { status });
 };

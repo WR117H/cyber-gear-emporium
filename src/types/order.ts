@@ -1,40 +1,41 @@
 
-export type OrderStatus = 
-  | 'pending' 
-  | 'payment_confirmed' 
-  | 'processing' 
-  | 'shipped' 
-  | 'delivered' 
-  | 'cancelled';
+import { CartItem } from './cart';
 
-export interface OrderAddress {
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
+export interface ShippingAddress {
   fullName: string;
-  streetAddress: string;
+  street: string;
   city: string;
   state: string;
-  postalCode: string;
+  zipCode: string;
   country: string;
-  phone: string;
 }
 
 export interface Order {
   id: string;
   userId: string;
-  items: {
+  items: Array<{
     id: string;
     name: string;
     price: number;
     quantity: number;
     image: string;
-  }[];
+  }>;
   total: number;
   status: OrderStatus;
-  paymentMethod: 'ton' | 'card' | 'other';
-  paymentId?: string;
-  address: OrderAddress;
   createdAt: string;
-  updatedAt: string;
+  paymentMethod: string;
+  paymentStatus: 'paid' | 'pending' | 'failed';
+  shippingAddress: ShippingAddress;
   trackingNumber?: string;
-  estimatedDelivery?: string;
   notes?: string;
+  date: string; // Order date
+}
+
+export interface OrderStage {
+  name: string;
+  completed: boolean;
+  date?: string;
+  status: string;
 }
