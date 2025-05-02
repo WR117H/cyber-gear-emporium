@@ -2,7 +2,7 @@
 import CryptoJS from 'crypto-js';
 
 // Default password hash (hashed value of "admin123")
-const DEFAULT_PASSWORD_HASH = "3c3662bcb661d6de679c636744c66b62";
+const DEFAULT_PASSWORD_HASH = "0192023a7bbd73250516f069df18b500";
 
 // Key for storing admin status in localStorage
 const ADMIN_AUTH_KEY = 'admin_authenticated';
@@ -39,6 +39,13 @@ export const checkAdminPassword = (password: string): boolean => {
   
   const storedHash = localStorage.getItem(ADMIN_PASSWORD_HASH_KEY) || DEFAULT_PASSWORD_HASH;
   const inputHash = CryptoJS.MD5(password).toString();
+  
+  // For debugging
+  console.log('Input password:', password);
+  console.log('Input hash:', inputHash);
+  console.log('Stored hash:', storedHash);
+  console.log('Match?', inputHash === storedHash);
+  
   return inputHash === storedHash;
 };
 
@@ -52,6 +59,19 @@ export const changeAdminPassword = (newPassword: string): boolean => {
     return true;
   } catch (error) {
     console.error('Error changing admin password:', error);
+    return false;
+  }
+};
+
+// Reset admin password to default (admin123)
+export const resetAdminPassword = (): boolean => {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+  
+  try {
+    localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, DEFAULT_PASSWORD_HASH);
+    return true;
+  } catch (error) {
+    console.error('Error resetting admin password:', error);
     return false;
   }
 };
