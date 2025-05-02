@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search, Image, User, LogOut } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, Image, User, LogOut, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isAuthenticated, getCurrentUser, signOut } from '@/utils/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -68,6 +68,16 @@ const Navbar = () => {
           <div className="hidden md:flex items-center justify-center flex-grow">
             <Link to="/" className="flex items-center">
               <span className="text-white font-bold text-2xl tracking-wider">CYBER<span className="text-white">GEAR</span></span>
+            </Link>
+          </div>
+          
+          {/* Desktop navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link to="/products" className="text-white hover:text-white/80">
+              Products
+            </Link>
+            <Link to="/articles" className="text-white hover:text-white/80">
+              Articles
             </Link>
           </div>
           
@@ -138,6 +148,22 @@ const Navbar = () => {
                 className="cyber-input w-full"
               />
             </div>
+            
+            <Link
+              to="/products"
+              className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
+              onClick={() => setIsOpen(false)}
+            >
+              All Products
+            </Link>
+            
+            <Link
+              to="/articles"
+              className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
+              onClick={() => setIsOpen(false)}
+            >
+              Articles
+            </Link>
             
             {categories.map((category) => (
               <Link

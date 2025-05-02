@@ -1,45 +1,48 @@
 
-import { supabase, isSupabaseConfigured } from './supabaseClient';
+import CryptoJS from 'crypto-js';
 
-// Admin table name in Supabase
-const ADMIN_TABLE = 'admins';
+// Default password hash (hashed value of "admin123")
+const DEFAULT_PASSWORD_HASH = "3c3662bcb661d6de679c636744c66b62";
 
-// Fallback admin password for development
-const ADMIN_PASSWORD = "admin123"; 
+// Key for storing admin status in localStorage
+const ADMIN_AUTH_KEY = 'admin_authenticated';
+// Key for storing the admin password hash
+const ADMIN_PASSWORD_HASH_KEY = 'admin_password_hash';
 
-export const checkAdminPassword = async (password: string): Promise<boolean> => {
-  try {
-    if (!isSupabaseConfigured()) {
-      console.warn('Supabase not configured. Using local admin password.');
-      return password === ADMIN_PASSWORD;
-    }
-    
-    const { data, error } = await supabase
-      .from(ADMIN_TABLE)
-      .select('*')
-      .eq('password', password)
-      .single();
+// Initialize password hash if not set
+if (!localStorage.getItem(ADMIN_PASSWORD_HASH_KEY)) {
+  localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, DEFAULT_PASSWORD_HASH);
+}
 
-    if (error) {
-      console.error('Error checking admin password:', error);
-      return password === ADMIN_PASSWORD;
-    }
-
-    return !!data;
-  } catch (err) {
-    console.error('Error in admin authentication:', err);
-    return password === ADMIN_PASSWORD;
-  }
-};
-
-export const setAdminAuthenticated = (isAuthenticated: boolean): void => {
-  if (isAuthenticated) {
-    localStorage.setItem("adminAuthenticated", "true");
-  } else {
-    localStorage.removeItem("adminAuthenticated");
-  }
-};
-
+// Check if admin is authenticated
 export const isAdminAuthenticated = (): boolean => {
-  return localStorage.getItem("adminAuthenticated") === "true";
+  return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
+};
+
+// Set admin authenticated state
+export const setAdminAuthenticated = (value: boolean): void => {
+  if (value) {
+    localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+  } else {
+    localStorage.removeItem(ADMIN_AUTH_KEY);
+  }
+};
+
+// Check if password is correct
+export const checkAdminPassword = (password: string): boolean => {
+  const storedHash = localStorage.getItem(ADMIN_PASSWORD_HASH_KEY) || DEFAULT_PASSWORD_HASH;
+  const inputHash = CryptoJS.MD5(password).toString();
+  return inputHash === storedHash;
+};
+
+// Change admin password
+export const changeAdminPassword = (newPassword: string): boolean => {
+  try {
+    const newHash = CryptoJS.MD5(newPassword).toString();
+    localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, newHash);
+    return true;
+  } catch (error) {
+    console.error('Error changing admin password:', error);
+    return false;
+  }
 };

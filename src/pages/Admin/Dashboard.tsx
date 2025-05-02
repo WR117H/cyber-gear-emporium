@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Package, Users, DollarSign, Settings } from 'lucide-react';
+import { ArrowLeft, Package, Users, DollarSign, Settings, FileText, ShoppingBag } from 'lucide-react';
 
 export default function Dashboard() {
   return (
@@ -33,18 +33,10 @@ export default function Dashboard() {
           </Card>
           <Card className="bg-secondary border-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Articles</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">324</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-secondary border-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">$9,876</div>
+              <div className="text-2xl font-bold text-white">8</div>
             </CardContent>
           </Card>
           <Card className="bg-secondary border-none">
@@ -55,9 +47,17 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-white">43</div>
             </CardContent>
           </Card>
+          <Card className="bg-secondary border-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">$9,876</div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="bg-secondary border-none">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -81,18 +81,98 @@ export default function Dashboard() {
           <Card className="bg-secondary border-none">
             <CardHeader>
               <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-cyber-blue" />
+                Article Management
+              </CardTitle>
+              <CardDescription>Manage your blog content</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Create, edit, and publish articles and guides.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/articles" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Manage Articles
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <ShoppingBag className="h-5 w-5 mr-2 text-cyber-blue" />
+                Order Management
+              </CardTitle>
+              <CardDescription>Track and update order status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Process orders and update shipping information.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/orders" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Manage Orders
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
                 <Users className="h-5 w-5 mr-2 text-cyber-blue" />
                 User Management
               </CardTitle>
               <CardDescription>Manage your user database</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Add, edit, and manage user accounts.</p>
+              <p className="text-muted-foreground">View and manage user accounts.</p>
             </CardContent>
             <CardFooter>
               <Link to="/admin/users" className="w-full">
                 <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
                   Manage Users
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <DollarSign className="h-5 w-5 mr-2 text-cyber-blue" />
+                Payment Settings
+              </CardTitle>
+              <CardDescription>Manage payment methods</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Configure payment gateways and options.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/payments" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Manage Payments
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Settings className="h-5 w-5 mr-2 text-cyber-blue" />
+                Store Settings
+              </CardTitle>
+              <CardDescription>Configure store settings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Update store information and preferences.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/settings" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Store Settings
                 </Button>
               </Link>
             </CardFooter>
