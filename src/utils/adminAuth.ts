@@ -10,17 +10,22 @@ const ADMIN_AUTH_KEY = 'admin_authenticated';
 const ADMIN_PASSWORD_HASH_KEY = 'admin_password_hash';
 
 // Initialize password hash if not set
-if (!localStorage.getItem(ADMIN_PASSWORD_HASH_KEY)) {
-  localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, DEFAULT_PASSWORD_HASH);
+if (typeof window !== 'undefined' && window.localStorage) {
+  if (!localStorage.getItem(ADMIN_PASSWORD_HASH_KEY)) {
+    localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, DEFAULT_PASSWORD_HASH);
+  }
 }
 
 // Check if admin is authenticated
 export const isAdminAuthenticated = (): boolean => {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
   return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
 };
 
 // Set admin authenticated state
 export const setAdminAuthenticated = (value: boolean): void => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  
   if (value) {
     localStorage.setItem(ADMIN_AUTH_KEY, 'true');
   } else {
@@ -30,6 +35,8 @@ export const setAdminAuthenticated = (value: boolean): void => {
 
 // Check if password is correct
 export const checkAdminPassword = (password: string): boolean => {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+  
   const storedHash = localStorage.getItem(ADMIN_PASSWORD_HASH_KEY) || DEFAULT_PASSWORD_HASH;
   const inputHash = CryptoJS.MD5(password).toString();
   return inputHash === storedHash;
@@ -37,6 +44,8 @@ export const checkAdminPassword = (password: string): boolean => {
 
 // Change admin password
 export const changeAdminPassword = (newPassword: string): boolean => {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+  
   try {
     const newHash = CryptoJS.MD5(newPassword).toString();
     localStorage.setItem(ADMIN_PASSWORD_HASH_KEY, newHash);

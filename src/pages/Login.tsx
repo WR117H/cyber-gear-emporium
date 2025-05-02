@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ const Login = () => {
       } else {
         toast({
           title: "Login failed",
-          description: result.message || "Invalid credentials",
+          description: result.error || "Invalid credentials",
           variant: "destructive",
         });
       }

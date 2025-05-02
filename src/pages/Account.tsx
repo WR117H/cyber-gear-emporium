@@ -1,11 +1,27 @@
-import { useState, useEffect } from 'react'
-import { supabase } from './supabaseClient'
 
-export default function Account({ session }) {
+import { useState, useEffect, FormEvent } from 'react'
+import { supabase } from '../utils/supabaseClient'
+
+interface Profile {
+  username: string | null;
+  website: string | null;
+  avatar_url: string | null;
+}
+
+interface SessionProps {
+  session: {
+    user: {
+      id: string;
+      email: string;
+    }
+  }
+}
+
+export default function Account({ session }: SessionProps) {
   const [loading, setLoading] = useState(true)
-  const [username, setUsername] = useState(null)
-  const [website, setWebsite] = useState(null)
-  const [avatar_url, setAvatarUrl] = useState(null)
+  const [username, setUsername] = useState<string | null>(null)
+  const [website, setWebsite] = useState<string | null>(null)
+  const [avatar_url, setAvatarUrl] = useState<string | null>(null)
 
   useEffect(() => {
     let ignore = false
@@ -39,7 +55,7 @@ export default function Account({ session }) {
     }
   }, [session])
 
-  async function updateProfile(event, avatarUrl) {
+  async function updateProfile(event: FormEvent<HTMLFormElement>, avatarUrl?: string) {
     event.preventDefault()
 
     setLoading(true)
@@ -49,7 +65,7 @@ export default function Account({ session }) {
       id: user.id,
       username,
       website,
-      avatar_url: avatarUrl,
+      avatar_url: avatarUrl || avatar_url,
       updated_at: new Date(),
     }
 
@@ -58,7 +74,7 @@ export default function Account({ session }) {
     if (error) {
       alert(error.message)
     } else {
-      setAvatarUrl(avatarUrl)
+      if (avatarUrl) setAvatarUrl(avatarUrl)
     }
     setLoading(false)
   }

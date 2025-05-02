@@ -31,7 +31,7 @@ export const signUp = async (email: string, password: string, name: string) => {
         description: error.message,
         variant: "destructive",
       });
-      return { success: false, error };
+      return { success: false, error: error.message };
     }
 
     toast({
@@ -40,14 +40,14 @@ export const signUp = async (email: string, password: string, name: string) => {
     });
 
     return { success: true, data };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error during signup:', error);
     toast({
       title: "Sign up failed",
       description: "An unexpected error occurred",
       variant: "destructive",
     });
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -75,7 +75,7 @@ export const signIn = async (email: string, password: string) => {
         description: error.message,
         variant: "destructive",
       });
-      return { success: false, error };
+      return { success: false, error: error.message };
     }
 
     toast({
@@ -84,14 +84,14 @@ export const signIn = async (email: string, password: string) => {
     });
 
     return { success: true, data };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error during login:', error);
     toast({
       title: "Login failed",
       description: "An unexpected error occurred",
       variant: "destructive",
     });
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -114,7 +114,7 @@ export const signOut = async () => {
         description: error.message,
         variant: "destructive",
       });
-      return { success: false, error };
+      return { success: false, error: error.message };
     }
 
     toast({
@@ -123,14 +123,14 @@ export const signOut = async () => {
     });
 
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error during logout:', error);
     toast({
       title: "Logout failed",
       description: "An unexpected error occurred",
       variant: "destructive",
     });
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 };
 
@@ -157,4 +157,38 @@ export const getCurrentUser = async () => {
 export const isAuthenticated = async () => {
   const { user } = await getCurrentUser();
   return !!user;
+};
+
+// Add the missing updateUserProfile function
+export const updateUserProfile = async (updates: any) => {
+  try {
+    if (!isSupabaseConfigured()) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        localStorage.setItem('user', JSON.stringify({...user, ...updates}));
+        return { success: true };
+      }
+      return { success: false, error: "No user found" };
+    }
+    
+    const { user, error: userError } = await getCurrentUser();
+    
+    if (userError || !user) {
+      return { success: false, error: userError || "No user found" };
+    }
+    
+    const { error } = await supabase.auth.updateUser({
+      data: updates
+    });
+    
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error updating user profile:', error);
+    return { success: false, error: error.message };
+  }
 };

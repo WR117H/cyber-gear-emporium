@@ -43,12 +43,22 @@ export default function Signup() {
     try {
       const result = await signUp(data.email, data.password, data.name);
       if (result.success) {
+        toast({ 
+          title: "Registration successful", 
+          description: "Please check your email to verify your account" 
+        });
         navigate('/login');
       } else {
-        toast({ title: "Registration failed", description: result.message });
+        toast({ 
+          title: "Registration failed", 
+          description: result.error || "Could not create account" 
+        });
       }
     } catch (error: any) {
-      toast({ title: "Registration failed", description: error.message || "Unknown error" });
+      toast({ 
+        title: "Registration failed", 
+        description: error.message || "Unknown error" 
+      });
     } finally {
       setIsLoading(false);
     }
