@@ -7,6 +7,9 @@ export interface Article {
   author: string;
   date: string;
   imageUrl: string;
+  coverImage: string; // Added back
+  publishedAt: string; // Added back
+  category: string; // Added back
   slug: string;
   tags: string[];
 }

@@ -18,13 +18,15 @@ const saveOrders = (orders: Order[]): void => {
 };
 
 // Create a new order
-export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'>): Order => {
+export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'updatedAt'>): Order => {
   const orders = fetchOrders();
+  const now = new Date().toISOString();
   
   const newOrder: Order = {
     ...orderData,
     id: uuidv4(),
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
     status: 'pending'
   };
   
@@ -54,6 +56,7 @@ export const updateOrder = (id: string, orderData: Partial<Order>): Order | null
   const updatedOrder = {
     ...orders[orderIndex],
     ...orderData,
+    updatedAt: new Date().toISOString()
   };
   
   orders[orderIndex] = updatedOrder;
@@ -76,4 +79,13 @@ export const deleteOrder = (id: string): boolean => {
 // Update order status
 export const updateOrderStatus = (id: string, status: OrderStatus): Order | null => {
   return updateOrder(id, { status });
+};
+
+// Update order tracking info
+export const updateOrderTracking = (
+  id: string, 
+  trackingNumber: string, 
+  estimatedDelivery?: string
+): Order | null => {
+  return updateOrder(id, { trackingNumber, estimatedDelivery });
 };
