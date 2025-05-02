@@ -1,262 +1,212 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getOrderById, updateOrder } from '@/utils/orderDatabase';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { getOrderById } from '@/utils/orderDatabase';
+import { ArrowLeft, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Order } from '@/types/order';
-import { format } from 'date-fns';
-import { 
-  CheckCircle, 
-  Circle, 
-  Clock, 
-  Package,
-  Truck,
-  Home,
-  ChevronLeft,
-  PackageOpen
-} from 'lucide-react';
 
-export default function OrderTracking() {
+type OrderStage = {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  status: string;
+};
+
+const OrderTracking = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadOrder = async () => {
-      setIsLoading(true);
-      try {
-        if (id) {
-          const orderData = await getOrderById(id);
-          if (orderData) {
-            setOrder(orderData);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading order:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadOrder();
+    if (id) {
+      const fetchedOrder = getOrderById(id);
+      setOrder(fetchedOrder || null);
+      setLoading(false);
+    }
   }, [id]);
 
-  const getStatusSteps = () => {
-    const steps = [
-      { key: 'pending', label: 'Order Placed', icon: <Clock className="h-5 w-5" /> },
-      { key: 'payment_confirmed', label: 'Payment Confirmed', icon: <CheckCircle className="h-5 w-5" /> },
-      { key: 'processing', label: 'Processing Order', icon: <Package className="h-5 w-5" /> },
-      { key: 'shipped', label: 'Shipped', icon: <Truck className="h-5 w-5" /> },
-      { key: 'delivered', label: 'Delivered', icon: <Home className="h-5 w-5" /> }
-    ];
-    
-    if (!order) return steps;
-    
-    const statusIndex = steps.findIndex(step => step.key === order.status);
-    if (order.status === 'cancelled') {
-      return steps.map(step => ({ ...step, status: 'cancelled' }));
-    }
-    
-    return steps.map((step, index) => {
-      if (index < statusIndex) return { ...step, status: 'complete' };
-      if (index === statusIndex) return { ...step, status: 'current' };
-      return { ...step, status: 'upcoming' };
-    });
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="bg-black min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <p className="text-white">Loading order information...</p>
-        </div>
-        <Footer />
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading order details...</div>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="bg-black min-h-screen flex flex-col">
-        <Navbar />
-        <div className="container mx-auto px-4 py-16 flex flex-col items-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Order Not Found</h1>
-          <p className="text-muted-foreground mb-8">The order you're looking for doesn't exist or may have been removed.</p>
-          <Button onClick={() => navigate('/profile')}>
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Profile
-          </Button>
+      <div className="min-h-screen bg-black text-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <Link to="/" className="inline-flex items-center text-cyber-blue hover:underline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Home
+            </Link>
+          </div>
+          
+          <Card className="bg-black/40 border border-white/10 text-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center justify-center py-12">
+                <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
+                <p className="text-gray-400 mb-6">The order you're looking for doesn't exist or has been removed.</p>
+                <Link to="/">
+                  <Button variant="cyber">Return to Homepage</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Footer />
       </div>
     );
   }
 
-  const formatAddress = (address: Order['address']) => {
-    return `${address.streetAddress}, ${address.city}, ${address.state} ${address.postalCode}, ${address.country}`;
+  // Define order stages
+  const stages: OrderStage[] = [
+    { 
+      key: 'processing', 
+      label: 'Processing', 
+      icon: <Package className="h-8 w-8" />,
+      status: 'processing'
+    },
+    { 
+      key: 'shipped', 
+      label: 'Shipped', 
+      icon: <Truck className="h-8 w-8" />,
+      status: 'shipped'
+    },
+    { 
+      key: 'delivered', 
+      label: 'Delivered', 
+      icon: <CheckCircle className="h-8 w-8" />,
+      status: 'delivered'
+    }
+  ];
+
+  // Determine current stage index
+  const getCurrentStageIndex = () => {
+    const currentStage = order.status || 'processing';
+    return stages.findIndex(stage => stage.status === currentStage);
   };
+  
+  const currentStageIndex = getCurrentStageIndex();
 
   return (
-    <div className="bg-black min-h-screen flex flex-col">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8 flex-grow">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/profile')}
-          className="mb-6"
-        >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Back to Profile
-        </Button>
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Link to="/" className="inline-flex items-center text-cyber-blue hover:underline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="cyber-card p-6">
-              <h1 className="text-2xl font-bold text-white mb-2">
-                Order Tracking
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                Track the status of your order #{order.id.slice(0, 8)}
-              </p>
-              
-              {order.status === 'cancelled' ? (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
-                  <h3 className="text-red-400 font-semibold mb-2 flex items-center">
-                    <PackageOpen className="h-5 w-5 mr-2" />
-                    Order Cancelled
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    This order has been cancelled. If you have any questions, please contact customer support.
-                  </p>
-                </div>
-              ) : (
-                <div className="relative mb-8">
-                  <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-white/10" />
-                  <div className="space-y-8">
-                    {getStatusSteps().map((step, index) => {
-                      let iconClass = '';
-                      let lineClass = '';
-                      
-                      if (step.status === 'complete') {
-                        iconClass = 'bg-green-500 text-green-900';
-                        lineClass = 'border-green-500';
-                      } else if (step.status === 'current') {
-                        iconClass = 'bg-cyber-blue text-cyber-navy';
-                        lineClass = 'border-cyber-blue';
-                      } else if (step.status === 'cancelled') {
-                        iconClass = 'bg-red-500/20 text-red-400';
-                        lineClass = 'border-red-500/50';
-                      } else {
-                        iconClass = 'bg-white/10 text-white/50';
-                        lineClass = '';
-                      }
-                      
-                      return (
-                        <div key={step.key} className="relative flex items-start">
-                          <div className={`absolute left-0 flex items-center justify-center w-16 h-16 rounded-full ${iconClass}`}>
-                            {step.icon}
-                          </div>
-                          <div className="ml-24 pt-3">
-                            <h3 className={`font-bold ${step.status === 'cancelled' ? 'text-red-400' : step.status === 'upcoming' ? 'text-white/50' : 'text-white'}`}>
-                              {step.label}
-                            </h3>
-                            {step.status === 'current' && (
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                {step.key === 'processing' && 'Your order is being prepared for shipment.'}
-                                {step.key === 'shipped' && order.trackingNumber && `Tracking number: ${order.trackingNumber}`}
-                                {step.key === 'shipped' && order.estimatedDelivery && 
-                                  ` • Estimated delivery: ${format(new Date(order.estimatedDelivery), 'MMM dd, yyyy')}`}
-                              </p>
-                            )}
-                            {step.status === 'complete' && (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {step.key === 'pending' && `Placed on ${format(new Date(order.createdAt), 'MMM dd, yyyy')}`}
-                                {step.key === 'shipped' && order.trackingNumber && `Tracking number: ${order.trackingNumber}`}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {order.trackingNumber && order.status !== 'cancelled' && (
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Tracking Number</p>
-                      <p className="font-mono text-white">{order.trackingNumber}</p>
-                    </div>
-                    {order.estimatedDelivery && (
-                      <div className="mt-2 md:mt-0">
-                        <p className="text-sm text-muted-foreground">Estimated Delivery</p>
-                        <p className="text-white">{format(new Date(order.estimatedDelivery), 'MMMM dd, yyyy')}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <div className="cyber-card p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
-              <div className="space-y-4">
+        <h1 className="text-3xl font-bold mb-8 text-cyber-green">Order Tracking</h1>
+        
+        <Card className="bg-black/40 border border-white/10 text-white mb-8">
+          <CardContent className="p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-4">Order #{order.id.substring(0, 8)}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm text-muted-foreground">Order Date</p>
-                  <p className="text-white">{format(new Date(order.createdAt), 'MMMM dd, yyyy')}</p>
+                  <p className="text-gray-400 mb-1">Order Date</p>
+                  <p>{new Date(order.date).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Payment Method</p>
-                  <p className="text-white capitalize">{order.paymentMethod} {order.paymentMethod === 'ton' && 'Wallet'}</p>
+                  <p className="text-gray-400 mb-1">Status</p>
+                  <p className="capitalize">{order.status}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Shipping Address</p>
-                  <p className="text-white">{order.address.fullName}</p>
-                  <p className="text-white text-sm">{formatAddress(order.address)}</p>
+                  <p className="text-gray-400 mb-1">Total Amount</p>
+                  <p>${order.total.toFixed(2)}</p>
                 </div>
-                <div className="pt-4 border-t border-white/10">
-                  <h3 className="text-white font-medium mb-2">Order Items</h3>
-                  <ul className="space-y-2">
-                    {order.items.map((item) => (
-                      <li key={item.id} className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {item.name} <span className="text-xs">x{item.quantity}</span>
-                        </span>
-                        <span className="text-white">${(item.price * item.quantity).toFixed(2)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="pt-4 border-t border-white/10">
-                  <div className="flex justify-between font-semibold">
-                    <span className="text-white">Total</span>
-                    <span className="text-white">${order.total.toFixed(2)}</span>
-                  </div>
+                <div>
+                  <p className="text-gray-400 mb-1">Payment Method</p>
+                  <p>{order.paymentMethod}</p>
                 </div>
               </div>
             </div>
             
-            <div className="cyber-card p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Need Help?</h2>
-              <p className="text-muted-foreground mb-4">
-                If you have any questions or concerns about your order, our support team is here to help.
-              </p>
-              <Button className="w-full">Contact Support</Button>
+            {/* Order Stages Progress */}
+            <div className="mt-8 mb-4">
+              <h3 className="text-xl font-semibold mb-4">Order Progress</h3>
+              <div className="relative">
+                <div className="flex justify-between mb-4">
+                  {stages.map((stage, index) => (
+                    <div 
+                      key={stage.key}
+                      className={`flex flex-col items-center w-1/3 ${index <= currentStageIndex ? 'text-cyber-green' : 'text-gray-500'}`}
+                    >
+                      <div className={`rounded-full p-3 ${index <= currentStageIndex ? 'bg-cyber-green/20' : 'bg-gray-800'}`}>
+                        {stage.icon}
+                      </div>
+                      <span className="mt-2 text-sm font-medium">{stage.label}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="absolute top-6 left-0 h-0.5 bg-gray-700 w-full -z-10"></div>
+                <div 
+                  className="absolute top-6 left-0 h-0.5 bg-cyber-green" 
+                  style={{ 
+                    width: `${currentStageIndex >= stages.length - 1 
+                      ? '100%' 
+                      : currentStageIndex < 0 
+                        ? '0' 
+                        : (currentStageIndex / (stages.length - 1)) * 100 + '%'
+                    }` 
+                  }}
+                ></div>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-black/40 border border-white/10 text-white mb-8">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Shipping Address</h3>
+            {order.shippingAddress ? (
+              <div>
+                <p>{order.shippingAddress.street}</p>
+                <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+              </div>
+            ) : (
+              <p className="text-gray-400">No shipping address provided</p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-black/40 border border-white/10 text-white">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Order Items</h3>
+            <div className="space-y-4">
+              {order.items.map((item, index) => (
+                <div key={index} className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center">
+                    <div className="h-16 w-16 rounded bg-gray-800 flex items-center justify-center mr-4">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded" />
+                      ) : (
+                        <Package className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-gray-400">Qty: {item.quantity}</p>
+                    </div>
+                  </div>
+                  <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      <Footer />
     </div>
   );
-}
+};
+
+export default OrderTracking;
