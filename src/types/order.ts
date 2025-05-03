@@ -31,18 +31,19 @@ export interface Order {
     price: number;
     quantity: number;
     image: string;
+    description: string;
     imageUrl?: string; // Added for OrderTracking
   }>;
   total: number;
   status: OrderStatus;
   createdAt: string;
-  updatedAt: string; // Added back
+  updatedAt: string; 
   paymentMethod: string;
   paymentStatus: 'paid' | 'pending' | 'failed';
   shippingAddress: ShippingAddress;
-  address: OrderAddress; // Added back
+  address: OrderAddress; 
   trackingNumber?: string;
-  estimatedDelivery?: string; // Added back
+  estimatedDelivery?: string;
   notes?: string;
   date: string; // Order date
 }

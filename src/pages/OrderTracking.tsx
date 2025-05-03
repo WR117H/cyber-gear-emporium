@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getOrderById, updateOrder } from '@/utils/orderDatabase';
+import { getOrderById } from '@/utils/orderDatabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
@@ -170,8 +170,10 @@ const OrderTracking = () => {
             <h3 className="text-xl font-semibold mb-4">Shipping Address</h3>
             {order.shippingAddress ? (
               <div>
+                <p>{order.shippingAddress.fullName}</p>
                 <p>{order.shippingAddress.street}</p>
                 <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                <p>{order.shippingAddress.country}</p>
               </div>
             ) : (
               <p className="text-gray-400">No shipping address provided</p>
@@ -187,8 +189,8 @@ const OrderTracking = () => {
                 <div key={index} className="flex items-center justify-between border-b border-white/10 pb-4">
                   <div className="flex items-center">
                     <div className="h-16 w-16 rounded bg-gray-800 flex items-center justify-center mr-4">
-                      {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded" />
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="h-full w-full object-cover rounded" />
                       ) : (
                         <Package className="h-8 w-8 text-gray-400" />
                       )}

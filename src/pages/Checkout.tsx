@@ -31,9 +31,25 @@ export default function Checkout() {
   const [address, setAddress] = useState<OrderAddress | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Check if cart is empty
+  // Check if cart is empty and user is logged in
   useEffect(() => {
+    const checkAuth = async () => {
+      setIsLoading(true);
+      const auth = await isAuthenticated();
+      setIsLoggedIn(auth);
+      
+      if (auth) {
+        const { user } = await getCurrentUser();
+        setUserId(user.id);
+      }
+      
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+    
     if (items.length === 0) {
       navigate('/cart');
       toast({
@@ -43,21 +59,6 @@ export default function Checkout() {
     }
   }, [items, navigate, toast]);
   
-  // Check if user is logged in
-  useEffect(() => {
-    const checkAuth = async () => {
-      const auth = await isAuthenticated();
-      setIsLoggedIn(auth);
-      
-      if (auth) {
-        const { user } = await getCurrentUser();
-        setUserId(user.id);
-      }
-    };
-    
-    checkAuth();
-  }, []);
-  
   const total = getTotal();
   
   const handleAddressSubmit = (shippingAddress: OrderAddress) => {
@@ -65,11 +66,18 @@ export default function Checkout() {
     setCurrentStep(CheckoutStep.Payment);
   };
   
-  const handlePaymentComplete = async () => {
-    if (!address || !userId) return;
+  const handlePaymentComplete = async (method: string = 'ton') => {
+    if (!address || !userId) {
+      toast({
+        title: "Error",
+        description: "Missing address or user information",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
-      // Create new order
+      // Create new order regardless of payment method
       const newOrder = await createOrder({
         userId,
         items: items.map(item => ({
@@ -77,10 +85,11 @@ export default function Checkout() {
           name: item.name,
           price: item.price,
           quantity: item.quantity,
-          image: item.image
+          image: item.image,
+          description: item.description
         })),
         total,
-        paymentMethod: 'ton',
+        paymentMethod: method,
         address,
         paymentStatus: 'paid',
         shippingAddress: {
@@ -120,6 +129,21 @@ export default function Checkout() {
     }
   };
   
+  // Add this new function to handle credit card payments
+  const handleCreditCardPayment = () => {
+    // In a real app, this would integrate with a payment processor
+    // For now, we'll simulate a successful payment
+    toast({
+      title: "Payment processing",
+      description: "Processing your credit card payment..."
+    });
+    
+    // Simulate payment processing delay
+    setTimeout(() => {
+      handlePaymentComplete('credit_card');
+    }, 1500);
+  };
+  
   const handleViewOrder = () => {
     const orderId = sessionStorage.getItem('lastOrderId');
     if (orderId) {
@@ -128,6 +152,18 @@ export default function Checkout() {
       navigate('/profile');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-black">
+        <Navbar />
+        <div className="flex-grow flex flex-col items-center justify-center p-4">
+          <p className="text-white text-xl">Loading...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return (
@@ -163,21 +199,21 @@ export default function Checkout() {
             <TabsList className="grid grid-cols-3 mb-6">
               <TabsTrigger 
                 value={CheckoutStep.Address}
-                disabled={true}
+                disabled={currentStep !== CheckoutStep.Address}
                 className={currentStep === CheckoutStep.Address ? "data-[state=active]:text-white" : ""}
               >
                 Shipping
               </TabsTrigger>
               <TabsTrigger 
                 value={CheckoutStep.Payment}
-                disabled={true}
+                disabled={currentStep !== CheckoutStep.Payment}
                 className={currentStep === CheckoutStep.Payment ? "data-[state=active]:text-white" : ""}
               >
                 Payment
               </TabsTrigger>
               <TabsTrigger 
                 value={CheckoutStep.Confirmation}
-                disabled={true}
+                disabled={currentStep !== CheckoutStep.Confirmation}
                 className={currentStep === CheckoutStep.Confirmation ? "data-[state=active]:text-white" : ""}
               >
                 Confirmation
@@ -231,15 +267,28 @@ export default function Checkout() {
                 <div className="md:col-span-2">
                   <Card className="p-6 bg-card/50 border-white/10">
                     <h2 className="text-xl font-semibold mb-4 text-white">Payment Method</h2>
-                    <div className="space-y-4">
-                      <p className="text-muted-foreground mb-4">
-                        Please complete your payment to finish your order.
-                      </p>
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="font-medium text-white mb-3">Crypto Payment</h3>
+                        <CryptoPayment 
+                          amount={total} 
+                          onComplete={() => handlePaymentComplete('ton')} 
+                        />
+                      </div>
                       
-                      <CryptoPayment 
-                        amount={total} 
-                        onComplete={handlePaymentComplete} 
-                      />
+                      <div className="pt-6 border-t border-white/10">
+                        <h3 className="font-medium text-white mb-3">Credit Card Payment</h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          For testing purposes only. No real payment will be processed.
+                        </p>
+                        <Button 
+                          variant="default" 
+                          onClick={handleCreditCardPayment}
+                          className="w-full"
+                        >
+                          Pay with Credit Card
+                        </Button>
+                      </div>
                       
                       <Button
                         variant="outline"

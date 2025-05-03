@@ -89,3 +89,22 @@ export const updateOrderTracking = (
 ): Order | null => {
   return updateOrder(id, { trackingNumber, estimatedDelivery });
 };
+
+// Function to get statistics for admin dashboard
+export const getOrderStats = () => {
+  const orders = fetchOrders();
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalOrders = orders.length;
+  
+  // Count by status
+  const ordersByStatus = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  return {
+    totalRevenue,
+    totalOrders,
+    ordersByStatus
+  };
+};
