@@ -6,21 +6,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[14px] text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[14px] text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:scale-[1.02] active:scale-[0.98]",
   {
     variants: {
       variant: {
-        default: "bg-white text-black hover:bg-white/90",
+        default: "bg-white text-black hover:bg-white/90 shadow-md hover:shadow-lg",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md hover:shadow-lg",
         outline:
-          "border border-white bg-transparent text-white hover:bg-accent hover:text-accent-foreground",
+          "border border-white bg-transparent text-white hover:bg-accent hover:text-accent-foreground hover:border-accent",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-md hover:shadow-lg",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        cyber: "bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy rounded-full",
-        github: "bg-white text-black hover:bg-white/90 rounded-full",
+        cyber: "bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy rounded-full shadow-[0_0_10px_rgba(0,255,255,0.4)] hover:shadow-[0_0_15px_rgba(0,255,255,0.6)]",
+        github: "bg-white text-black hover:bg-white/90 rounded-full shadow-md hover:shadow-lg",
       },
       size: {
         default: "h-10 px-6 py-3",

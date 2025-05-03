@@ -1,15 +1,14 @@
 
 import { supabase } from './supabaseClient';
-import { Order } from '@/types/order';
-
-// This file provides functions to interact with the Supabase database for orders
-// You'll need to create a 'orders' table in your Supabase dashboard first
+import { Order, OrderStatus } from '@/types/order';
+import { useToast } from '@/hooks/use-toast';
 
 // Fetch all orders from Supabase
 export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
   const { data, error } = await supabase
     .from('orders')
-    .select('*');
+    .select('*')
+    .order('createdAt', { ascending: false });
     
   if (error) {
     console.error('Error fetching orders from Supabase:', error);
@@ -21,6 +20,9 @@ export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
 
 // Create a new order in Supabase
 export const createOrderInSupabase = async (order: Omit<Order, 'id'>): Promise<Order | null> => {
+  // Log the order being created for debugging
+  console.log('Creating order in Supabase:', order);
+  
   const { data, error } = await supabase
     .from('orders')
     .insert([order])
@@ -32,11 +34,14 @@ export const createOrderInSupabase = async (order: Omit<Order, 'id'>): Promise<O
     return null;
   }
   
+  console.log('Order created successfully:', data);
   return data;
 };
 
 // Get orders by user ID from Supabase
 export const getOrdersByUserIdFromSupabase = async (userId: string): Promise<Order[]> => {
+  console.log('Fetching orders for user:', userId);
+  
   const { data, error } = await supabase
     .from('orders')
     .select('*')
@@ -48,6 +53,7 @@ export const getOrdersByUserIdFromSupabase = async (userId: string): Promise<Ord
     return [];
   }
   
+  console.log(`Found ${data?.length || 0} orders for user ${userId}`);
   return data || [];
 };
 
@@ -97,4 +103,31 @@ export const deleteOrderFromSupabase = async (id: string): Promise<boolean> => {
   }
   
   return true;
+};
+
+// Update order status in Supabase
+export const updateOrderStatusInSupabase = async (id: string, status: OrderStatus): Promise<Order | null> => {
+  return await updateOrderInSupabase(id, { status });
+};
+
+// Get order statistics for admin dashboard
+export const getOrderStatsFromSupabase = async () => {
+  // Fetch all orders first
+  const orders = await fetchOrdersFromSupabase();
+  
+  // Calculate statistics
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalOrders = orders.length;
+  
+  // Count by status
+  const ordersByStatus = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  return {
+    totalRevenue,
+    totalOrders,
+    ordersByStatus
+  };
 };

@@ -1,11 +1,33 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { Order, OrderStatus } from '@/types/order';
+import { isSupabaseConfigured } from './supabaseClient';
+import { 
+  createOrderInSupabase, 
+  fetchOrdersFromSupabase,
+  getOrderByIdFromSupabase,
+  getOrdersByUserIdFromSupabase,
+  updateOrderInSupabase,
+  deleteOrderFromSupabase
+} from './orderSupabase';
 
 const ORDERS_STORAGE_KEY = 'cyber_gear_orders';
 
-// Helper to get all orders
-export const fetchOrders = (): Order[] => {
+// Helper to get all orders - now tries Supabase first, falls back to localStorage
+export const fetchOrders = async (): Promise<Order[]> => {
+  // Try to fetch from Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      console.log('Fetching orders from Supabase...');
+      const orders = await fetchOrdersFromSupabase();
+      console.log(`Fetched ${orders.length} orders from Supabase`);
+      return orders;
+    } catch (error) {
+      console.error('Error fetching from Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage
   if (typeof window === 'undefined') return [];
   const storedOrders = localStorage.getItem(ORDERS_STORAGE_KEY);
   
@@ -26,8 +48,7 @@ const saveOrders = (orders: Order[]): void => {
 };
 
 // Create a new order
-export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'updatedAt'>): Order => {
-  const orders = fetchOrders();
+export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'updatedAt'>): Promise<Order> => {
   const now = new Date().toISOString();
   
   // Generate a simplified order ID for better usability
@@ -71,7 +92,22 @@ export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'
     };
   }
   
-  // Save immediately to localStorage
+  // Try to save to Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      console.log('Creating order in Supabase:', newOrder);
+      const supabaseOrder = await createOrderInSupabase(newOrder);
+      if (supabaseOrder) {
+        console.log('Order created in Supabase:', supabaseOrder);
+        return supabaseOrder;
+      }
+    } catch (error) {
+      console.error('Error creating order in Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage
+  const orders = await fetchOrders();
   orders.push(newOrder);
   saveOrders(orders);
   
@@ -82,14 +118,38 @@ export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'
 };
 
 // Get an order by ID
-export const getOrderById = (id: string): Order | undefined => {
-  const orders = fetchOrders();
+export const getOrderById = async (id: string): Promise<Order | undefined> => {
+  // Try to fetch from Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      console.log(`Fetching order ${id} from Supabase`);
+      const order = await getOrderByIdFromSupabase(id);
+      if (order) return order;
+    } catch (error) {
+      console.error('Error fetching from Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage
+  const orders = await fetchOrders();
   return orders.find(order => order.id === id);
 };
 
 // Get orders by user ID
-export const getOrdersByUserId = (userId: string): Order[] => {
-  const orders = fetchOrders();
+export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
+  // Try to fetch from Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      console.log(`Fetching orders for user ${userId} from Supabase`);
+      const orders = await getOrdersByUserIdFromSupabase(userId);
+      return orders;
+    } catch (error) {
+      console.error('Error fetching from Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage
+  const orders = await fetchOrders();
   console.log(`Looking for orders with userId: ${userId}`);
   console.log('All orders available:', orders);
   
@@ -99,8 +159,23 @@ export const getOrdersByUserId = (userId: string): Order[] => {
 };
 
 // Update an order
-export const updateOrder = (id: string, orderData: Partial<Order>): Order | null => {
-  const orders = fetchOrders();
+export const updateOrder = async (id: string, orderData: Partial<Order>): Promise<Order | null> => {
+  // Try to update in Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      console.log(`Updating order ${id} in Supabase`);
+      const updatedOrder = await updateOrderInSupabase(id, {
+        ...orderData,
+        updatedAt: new Date().toISOString()
+      });
+      if (updatedOrder) return updatedOrder;
+    } catch (error) {
+      console.error('Error updating in Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage
+  const orders = await fetchOrders();
   const orderIndex = orders.findIndex(order => order.id === id);
   
   if (orderIndex === -1) return null;
@@ -118,8 +193,20 @@ export const updateOrder = (id: string, orderData: Partial<Order>): Order | null
 };
 
 // Delete an order
-export const deleteOrder = (id: string): boolean => {
-  const orders = fetchOrders();
+export const deleteOrder = async (id: string): Promise<boolean> => {
+  // Try to delete from Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      console.log(`Deleting order ${id} from Supabase`);
+      const success = await deleteOrderFromSupabase(id);
+      if (success) return true;
+    } catch (error) {
+      console.error('Error deleting from Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage
+  const orders = await fetchOrders();
   const filteredOrders = orders.filter(order => order.id !== id);
   
   if (filteredOrders.length === orders.length) return false;
@@ -135,22 +222,22 @@ export const clearAllOrders = (): void => {
 };
 
 // Update order status
-export const updateOrderStatus = (id: string, status: OrderStatus): Order | null => {
+export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<Order | null> => {
   return updateOrder(id, { status });
 };
 
 // Update order tracking info
-export const updateOrderTracking = (
+export const updateOrderTracking = async (
   id: string, 
   trackingNumber: string, 
   estimatedDelivery?: string
-): Order | null => {
+): Promise<Order | null> => {
   return updateOrder(id, { trackingNumber, estimatedDelivery });
 };
 
 // Function to get statistics for admin dashboard
-export const getOrderStats = () => {
-  const orders = fetchOrders();
+export const getOrderStats = async () => {
+  const orders = await fetchOrders();
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   const totalOrders = orders.length;
   
@@ -170,8 +257,8 @@ export const getOrderStats = () => {
 };
 
 // Function to debug all orders in database
-export const debugAllOrders = () => {
-  const orders = fetchOrders();
+export const debugAllOrders = async () => {
+  const orders = await fetchOrders();
   console.log("All orders in database:", orders);
   return orders;
 };
