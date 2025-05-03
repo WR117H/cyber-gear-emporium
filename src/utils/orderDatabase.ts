@@ -8,12 +8,20 @@ const ORDERS_STORAGE_KEY = 'cyber_gear_orders';
 export const fetchOrders = (): Order[] => {
   if (typeof window === 'undefined') return [];
   const storedOrders = localStorage.getItem(ORDERS_STORAGE_KEY);
+  
+  // Add debug log to check what's in localStorage
+  console.log('Raw orders from localStorage:', storedOrders);
+  
   return storedOrders ? JSON.parse(storedOrders) : [];
 };
 
 // Helper to save all orders
 const saveOrders = (orders: Order[]): void => {
   if (typeof window === 'undefined') return;
+  
+  // Add debug log before saving to localStorage
+  console.log('Saving orders to localStorage:', orders);
+  
   localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
 };
 
@@ -82,6 +90,9 @@ export const getOrderById = (id: string): Order | undefined => {
 // Get orders by user ID
 export const getOrdersByUserId = (userId: string): Order[] => {
   const orders = fetchOrders();
+  console.log(`Looking for orders with userId: ${userId}`);
+  console.log('All orders available:', orders);
+  
   const userOrders = orders.filter(order => order.userId === userId);
   console.log(`Found ${userOrders.length} orders for user ${userId}`);
   return userOrders;
@@ -115,6 +126,12 @@ export const deleteOrder = (id: string): boolean => {
   
   saveOrders(filteredOrders);
   return true;
+};
+
+// Clear all orders (for testing)
+export const clearAllOrders = (): void => {
+  saveOrders([]);
+  console.log("All orders cleared from localStorage");
 };
 
 // Update order status

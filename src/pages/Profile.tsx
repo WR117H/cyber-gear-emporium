@@ -76,10 +76,11 @@ export default function Profile() {
         // Load user's orders
         if (user.id) {
           // Debug - log all orders first to help troubleshoot
-          debugAllOrders();
+          console.log("All orders before filtering:", debugAllOrders());
+          console.log("Current user ID:", user.id);
           
           const userOrders = await getOrdersByUserId(user.id);
-          console.log("User orders loaded:", userOrders);
+          console.log("User orders loaded for profile:", userOrders);
           
           // Sort by most recent first
           userOrders.sort((a, b) => 

@@ -100,6 +100,13 @@ export default function Checkout() {
     }
     
     try {
+      console.log("Creating order with userId:", userId);
+      console.log("Order details:", {
+        items,
+        address,
+        total
+      });
+      
       // Create new order regardless of payment method
       const newOrder = await createOrder({
         userId,
@@ -145,7 +152,7 @@ export default function Checkout() {
       // Save the order ID for the confirmation page
       sessionStorage.setItem('lastOrderId', newOrder.id);
       
-      // Debug - log all orders
+      // Debug - log all orders after placing a new one
       debugAllOrders();
       
     } catch (error) {

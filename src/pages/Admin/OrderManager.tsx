@@ -36,6 +36,9 @@ export default function OrderManager() {
       setIsLoading(true);
       try {
         // Debug - log all orders to help troubleshoot
+        console.log("Admin OrderManager - checking localStorage content:");
+        console.log(localStorage.getItem('cyber_gear_orders'));
+        
         const allOrders = debugAllOrders();
         console.log("Admin panel - all orders:", allOrders);
         
