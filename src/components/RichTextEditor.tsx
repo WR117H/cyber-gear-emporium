@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,7 +6,7 @@ import {
   Italic,
   Underline,
   ListOrdered,
-  ListUnordered,
+  List,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -56,11 +55,11 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       case 'u':
         formattedText = `<u>${selectedText}</u>`;
         break;
-      case 'ul':
-        formattedText = `<ul>\n  <li>${selectedText}</li>\n</ul>`;
-        break;
       case 'ol':
         formattedText = `<ol>\n  <li>${selectedText}</li>\n</ol>`;
+        break;
+      case 'ul':
+        formattedText = `<ul>\n  <li>${selectedText}</li>\n</ul>`;
         break;
       case 'left':
         formattedText = `<div style="text-align: left">${selectedText}</div>`;
@@ -175,7 +174,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           onClick={() => handleFormat('ul')}
           title="Unordered List"
         >
-          <ListUnordered className="h-4 w-4" />
+          <List className="h-4 w-4" />
         </Button>
         <div className="h-6 w-px bg-white/20 mx-1"></div>
         <Button 
