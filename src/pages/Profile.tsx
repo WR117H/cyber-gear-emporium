@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { isAuthenticated, getCurrentUser, updateUserProfile, signOut } from '@/utils/auth';
 import { useToast } from '@/hooks/use-toast';
-import { getOrdersByUserId } from '@/utils/orderDatabase';
+import { getOrdersByUserId, debugAllOrders } from '@/utils/orderDatabase';
 import { Order } from '@/types/order';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -28,7 +28,8 @@ import {
   LogOut, 
   ShoppingBag, 
   MapPin,
-  ExternalLink
+  ExternalLink,
+  AlertCircle
 } from 'lucide-react';
 
 interface UserProfile {
@@ -74,7 +75,12 @@ export default function Profile() {
         
         // Load user's orders
         if (user.id) {
+          // Debug - log all orders first to help troubleshoot
+          debugAllOrders();
+          
           const userOrders = await getOrdersByUserId(user.id);
+          console.log("User orders loaded:", userOrders);
+          
           // Sort by most recent first
           userOrders.sort((a, b) => 
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -176,7 +182,7 @@ export default function Profile() {
       case 'delivered':
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'cancelled':
-        return <Clock className="h-4 w-4 text-red-400" />;
+        return <AlertCircle className="h-4 w-4 text-red-400" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -270,6 +276,7 @@ export default function Profile() {
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">
                                   Order #{order.id} • {format(new Date(order.createdAt), 'MMM dd, yyyy')}
+                                  {order.orderCode && ` • Code: ${order.orderCode}`}
                                 </p>
                               </div>
                               

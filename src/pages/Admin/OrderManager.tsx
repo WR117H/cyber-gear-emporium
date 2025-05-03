@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { setAdminAuthenticated } from '@/utils/adminAuth';
 import { useNavigate } from 'react-router-dom';
-import { fetchOrders, updateOrderStatus, updateOrderTracking } from '@/utils/orderDatabase';
+import { fetchOrders, updateOrderStatus, updateOrderTracking, debugAllOrders } from '@/utils/orderDatabase';
 import { format } from 'date-fns';
 
 export default function OrderManager() {
@@ -35,6 +35,10 @@ export default function OrderManager() {
     const loadOrders = async () => {
       setIsLoading(true);
       try {
+        // Debug - log all orders to help troubleshoot
+        const allOrders = debugAllOrders();
+        console.log("Admin panel - all orders:", allOrders);
+        
         const ordersData = await fetchOrders();
         // Sort by most recent first
         ordersData.sort((a, b) => 
@@ -207,6 +211,7 @@ export default function OrderManager() {
               <TableHeader className="bg-secondary">
                 <TableRow>
                   <TableHead className="text-white">Order ID</TableHead>
+                  <TableHead className="text-white">Order Code</TableHead>
                   <TableHead className="text-white">Customer</TableHead>
                   <TableHead className="text-white">Date</TableHead>
                   <TableHead className="text-white text-right">Total</TableHead>
@@ -215,16 +220,22 @@ export default function OrderManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
+                {orders.length > 0 ? (
+                  orders.map((order) => (
                     <TableRow key={order.id} className="bg-card/50">
                       <TableCell className="font-mono text-xs text-white">
-                        {order.id.slice(0, 8)}...
+                        {order.id}
+                      </TableCell>
+                      <TableCell className="text-xs text-white">
+                        {order.orderCode || 'N/A'}
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="text-white">{order.address.fullName}</p>
-                          <p className="text-xs text-muted-foreground">{order.address.city}, {order.address.state}</p>
+                          <p className="text-white">{order.address?.fullName || order.shippingAddress?.fullName || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {order.address?.city || order.shippingAddress?.city || ''}, 
+                            {order.address?.state || order.shippingAddress?.state || ''}
+                          </p>
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -288,7 +299,7 @@ export default function OrderManager() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No orders found matching your search criteria.
                     </TableCell>
                   </TableRow>

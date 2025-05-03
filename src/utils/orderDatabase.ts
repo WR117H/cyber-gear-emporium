@@ -25,12 +25,16 @@ export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'
   // Generate a simplified order ID for better usability
   const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
   
+  // Generate an order code for confirmation page
+  const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  
   const newOrder: Order = {
     ...orderData,
     id: orderId,
     createdAt: now,
     updatedAt: now,
-    status: 'pending'
+    status: 'pending',
+    orderCode: orderCode
   };
   
   // Add images to the items if missing
@@ -46,8 +50,26 @@ export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'
     });
   }
   
+  // Make sure we have the address fields properly saved
+  if (newOrder.address && !newOrder.shippingAddress) {
+    newOrder.shippingAddress = {
+      fullName: newOrder.address.fullName,
+      street: newOrder.address.streetAddress,
+      city: newOrder.address.city,
+      state: newOrder.address.state,
+      zipCode: newOrder.address.postalCode,
+      country: newOrder.address.country,
+      phone: newOrder.address.phone
+    };
+  }
+  
+  // Save immediately to localStorage
   orders.push(newOrder);
   saveOrders(orders);
+  
+  // Debug log for tracking
+  console.log("Created new order:", newOrder);
+  
   return newOrder;
 };
 
@@ -60,7 +82,9 @@ export const getOrderById = (id: string): Order | undefined => {
 // Get orders by user ID
 export const getOrdersByUserId = (userId: string): Order[] => {
   const orders = fetchOrders();
-  return orders.filter(order => order.userId === userId);
+  const userOrders = orders.filter(order => order.userId === userId);
+  console.log(`Found ${userOrders.length} orders for user ${userId}`);
+  return userOrders;
 };
 
 // Update an order
@@ -119,9 +143,18 @@ export const getOrderStats = () => {
     return acc;
   }, {} as Record<string, number>);
   
+  console.log("Order stats:", { totalRevenue, totalOrders, ordersByStatus });
+  
   return {
     totalRevenue,
     totalOrders,
     ordersByStatus
   };
+};
+
+// Function to debug all orders in database
+export const debugAllOrders = () => {
+  const orders = fetchOrders();
+  console.log("All orders in database:", orders);
+  return orders;
 };

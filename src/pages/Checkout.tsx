@@ -7,13 +7,13 @@ import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/CartContext';
 import { useTONConnect } from '@/context/TONConnectProvider';
-import { createOrder } from '@/utils/orderDatabase';
+import { createOrder, debugAllOrders } from '@/utils/orderDatabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CryptoPayment from '@/components/CryptoPayment';
 import AddressForm from '@/components/AddressForm';
 import { OrderAddress } from '@/types/order';
-import { getCurrentUser, isAuthenticated } from '@/utils/auth';
+import { getCurrentUser, isAuthenticated, updateUserProfile } from '@/utils/auth';
 
 enum CheckoutStep {
   Address = 'address',
@@ -32,6 +32,7 @@ export default function Checkout() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [orderCode, setOrderCode] = useState<string | null>(null);
   
   // Check if cart is empty and user is logged in
   useEffect(() => {
@@ -43,6 +44,11 @@ export default function Checkout() {
       if (auth) {
         const { user } = await getCurrentUser();
         setUserId(user.id);
+        
+        // Check if user has a default address
+        if (user.defaultAddress) {
+          setAddress(user.defaultAddress);
+        }
       }
       
       setIsLoading(false);
@@ -61,8 +67,25 @@ export default function Checkout() {
   
   const total = getTotal();
   
-  const handleAddressSubmit = (shippingAddress: OrderAddress) => {
+  const handleAddressSubmit = async (shippingAddress: OrderAddress) => {
     setAddress(shippingAddress);
+    
+    // Save address to user profile for future use
+    if (isLoggedIn && userId) {
+      try {
+        await updateUserProfile({
+          defaultAddress: shippingAddress
+        });
+        
+        toast({
+          title: "Address saved",
+          description: "Your shipping address has been saved to your profile."
+        });
+      } catch (error) {
+        console.error("Error saving address to profile:", error);
+      }
+    }
+    
     setCurrentStep(CheckoutStep.Payment);
   };
   
@@ -98,11 +121,14 @@ export default function Checkout() {
           city: address.city,
           state: address.state,
           zipCode: address.postalCode,
-          country: address.country
+          country: address.country,
+          phone: address.phone
         },
         date: new Date().toISOString(),
         notes: ''
       });
+      
+      setOrderCode(newOrder.orderCode || null);
       
       // Clear cart
       clearCart();
@@ -118,6 +144,9 @@ export default function Checkout() {
       
       // Save the order ID for the confirmation page
       sessionStorage.setItem('lastOrderId', newOrder.id);
+      
+      // Debug - log all orders
+      debugAllOrders();
       
     } catch (error) {
       console.error('Error creating order:', error);
