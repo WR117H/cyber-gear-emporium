@@ -89,10 +89,17 @@ const OrderTracking = () => {
   // Determine current stage index
   const getCurrentStageIndex = () => {
     const currentStage = order.status || 'processing';
+    if (currentStage === 'pending' || currentStage === 'payment_confirmed') {
+      return -1; // Before processing
+    }
     return stages.findIndex(stage => stage.status === currentStage);
   };
   
   const currentStageIndex = getCurrentStageIndex();
+
+  const getFallbackImage = () => {
+    return "https://placehold.co/200x200/1a1a2e/FFFFFF?text=CyberGear";
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -109,15 +116,15 @@ const OrderTracking = () => {
         <Card className="bg-black/40 border border-white/10 text-white mb-8">
           <CardContent className="p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-4">Order #{order.id.substring(0, 8)}</h2>
+              <h2 className="text-2xl font-bold mb-4">Order #{order.id}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-gray-400 mb-1">Order Date</p>
-                  <p>{new Date(order.date).toLocaleDateString()}</p>
+                  <p>{new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400 mb-1">Status</p>
-                  <p className="capitalize">{order.status}</p>
+                  <p className="capitalize">{order.status.replace('_', ' ')}</p>
                 </div>
                 <div>
                   <p className="text-gray-400 mb-1">Total Amount</p>
@@ -162,6 +169,20 @@ const OrderTracking = () => {
                 ></div>
               </div>
             </div>
+            
+            {order.trackingNumber && (
+              <div className="mt-6 p-4 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
+                <div className="flex items-center">
+                  <Truck className="h-5 w-5 text-cyber-green mr-2" />
+                  <p className="text-cyber-green font-medium">Tracking Number: {order.trackingNumber}</p>
+                </div>
+                {order.estimatedDelivery && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Estimated delivery: {new Date(order.estimatedDelivery).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
         
@@ -174,6 +195,13 @@ const OrderTracking = () => {
                 <p>{order.shippingAddress.street}</p>
                 <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
                 <p>{order.shippingAddress.country}</p>
+              </div>
+            ) : order.address ? (
+              <div>
+                <p>{order.address.fullName}</p>
+                <p>{order.address.streetAddress}</p>
+                <p>{order.address.city}, {order.address.state} {order.address.postalCode}</p>
+                <p>{order.address.country}</p>
               </div>
             ) : (
               <p className="text-gray-400">No shipping address provided</p>
@@ -189,8 +217,15 @@ const OrderTracking = () => {
                 <div key={index} className="flex items-center justify-between border-b border-white/10 pb-4">
                   <div className="flex items-center">
                     <div className="h-16 w-16 rounded bg-gray-800 flex items-center justify-center mr-4">
-                      {item.image ? (
-                        <img src={item.image} alt={item.name} className="h-full w-full object-cover rounded" />
+                      {item.image || item.imageUrl ? (
+                        <img 
+                          src={item.image || item.imageUrl} 
+                          alt={item.name}
+                          className="h-full w-full object-cover rounded"
+                          onError={(e) => {
+                            e.currentTarget.src = getFallbackImage();
+                          }}
+                        />
                       ) : (
                         <Package className="h-8 w-8 text-gray-400" />
                       )}
@@ -209,6 +244,6 @@ const OrderTracking = () => {
       </div>
     </div>
   );
-};
+}
 
 export default OrderTracking;

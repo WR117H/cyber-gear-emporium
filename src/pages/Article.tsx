@@ -103,19 +103,21 @@ export default function Article() {
           
           <div className="w-full h-96 mb-8 rounded-xl overflow-hidden">
             <img 
-              src={article.coverImage} 
+              src={article.coverImage || article.imageUrl} 
               alt={article.title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "https://placehold.co/1200x800/1a1a2e/FFFFFF?text=CyberGear";
+              }}
             />
           </div>
           
           <div className="prose prose-invert max-w-none mb-8">
-            {/* Split content into paragraphs */}
-            {article.content.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="mb-4 text-muted-foreground leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
+            {/* Render HTML content instead of plain text */}
+            <div 
+              className="article-content text-muted-foreground leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
           </div>
           
           <div className="border-t border-white/10 pt-6 mt-8">

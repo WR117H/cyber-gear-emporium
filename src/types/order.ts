@@ -10,6 +10,7 @@ export interface ShippingAddress {
   state: string;
   zipCode: string;
   country: string;
+  phone?: string;
 }
 
 export interface OrderAddress {
@@ -46,6 +47,7 @@ export interface Order {
   estimatedDelivery?: string;
   notes?: string;
   date: string; // Order date
+  orderCode?: string; // Added for order confirmation
 }
 
 export interface OrderStage {

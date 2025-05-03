@@ -1,11 +1,40 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Package, Users, DollarSign, Settings, FileText, ShoppingBag } from 'lucide-react';
+import { getOrderStats } from '@/utils/orderDatabase';
+import { fetchArticles } from '@/utils/articleDatabase';
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    products: 0,
+    articles: 0,
+    orders: 0,
+    revenue: 0
+  });
+  
+  useEffect(() => {
+    const loadStats = async () => {
+      // Get article count
+      const articles = await fetchArticles();
+      
+      // Get order stats
+      const orderStats = getOrderStats();
+      
+      // For this demo, we'll assume 12 products (since they're defined in a static file)
+      setStats({
+        products: 12, // Hardcoded for now
+        articles: articles.length,
+        orders: orderStats.totalOrders,
+        revenue: orderStats.totalRevenue
+      });
+    };
+    
+    loadStats();
+  }, []);
+
   return (
     <div className="bg-black min-h-screen">
       <div className="container mx-auto py-8 px-4">
@@ -28,7 +57,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Products</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">12</div>
+              <div className="text-2xl font-bold text-white">{stats.products}</div>
             </CardContent>
           </Card>
           <Card className="bg-secondary border-none">
@@ -36,7 +65,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Articles</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">8</div>
+              <div className="text-2xl font-bold text-white">{stats.articles}</div>
             </CardContent>
           </Card>
           <Card className="bg-secondary border-none">
@@ -44,7 +73,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Orders</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">43</div>
+              <div className="text-2xl font-bold text-white">{stats.orders}</div>
             </CardContent>
           </Card>
           <Card className="bg-secondary border-none">
@@ -52,7 +81,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Revenue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">$9,876</div>
+              <div className="text-2xl font-bold text-white">${stats.revenue.toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>

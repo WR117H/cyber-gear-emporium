@@ -1,14 +1,15 @@
+
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getArticleById, createArticle, updateArticle } from '@/utils/articleDatabase';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { slugify } from '@/utils/helpers';
 import { Article } from '@/types/article';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function ArticleForm() {
   const { id } = useParams();
@@ -68,6 +69,13 @@ export default function ArticleForm() {
         [name]: value
       });
     }
+  };
+
+  const handleContentChange = (content: string) => {
+    setFormData({
+      ...formData,
+      content
+    });
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,47 +144,79 @@ export default function ArticleForm() {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="title" className="block text-sm font-medium">
-                Title
-              </label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="bg-black/60 border-white/20"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="title" className="block text-sm font-medium">
+                  Title
+                </label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                  className="bg-black/60 border-white/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="slug" className="block text-sm font-medium">
+                  Slug (URL)
+                </label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleInputChange}
+                  required
+                  className="bg-black/60 border-white/20"
+                />
+                <p className="text-sm text-gray-400">
+                  Auto-generated from title, can be edited
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="slug" className="block text-sm font-medium">
-                Slug (URL)
-              </label>
-              <Input
-                id="slug"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                required
-                className="bg-black/60 border-white/20"
-              />
-              <p className="text-sm text-gray-400">
-                Auto-generated from title, can be edited
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="coverImage" className="block text-sm font-medium">
+                  Cover Image URL
+                </label>
+                <Input
+                  id="coverImage"
+                  name="coverImage"
+                  value={formData.coverImage}
+                  onChange={handleInputChange}
+                  className="bg-black/60 border-white/20"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="category" className="block text-sm font-medium">
+                  Category
+                </label>
+                <Input
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="bg-black/60 border-white/20"
+                  placeholder="news, guide, review, etc."
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
               <label htmlFor="excerpt" className="block text-sm font-medium">
                 Excerpt
               </label>
-              <Textarea
+              <Input
                 id="excerpt"
                 name="excerpt"
                 value={formData.excerpt}
                 onChange={handleInputChange}
-                className="bg-black/60 border-white/20 min-h-[80px]"
+                className="bg-black/60 border-white/20"
                 placeholder="A short summary of the article"
               />
             </div>
@@ -185,56 +225,40 @@ export default function ArticleForm() {
               <label htmlFor="content" className="block text-sm font-medium">
                 Content
               </label>
-              <Textarea
-                id="content"
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                required
-                className="bg-black/60 border-white/20 min-h-[300px]"
+              <RichTextEditor 
+                value={formData.content} 
+                onChange={handleContentChange}
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="author" className="block text-sm font-medium">
-                Author
-              </label>
-              <Input
-                id="author"
-                name="author"
-                value={formData.author}
-                onChange={handleInputChange}
-                required
-                className="bg-black/60 border-white/20"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="author" className="block text-sm font-medium">
+                  Author
+                </label>
+                <Input
+                  id="author"
+                  name="author"
+                  value={formData.author}
+                  onChange={handleInputChange}
+                  required
+                  className="bg-black/60 border-white/20"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label htmlFor="imageUrl" className="block text-sm font-medium">
-                Featured Image URL
-              </label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                className="bg-black/60 border-white/20"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="tags" className="block text-sm font-medium">
-                Tags
-              </label>
-              <Input
-                id="tags"
-                name="tags"
-                value={tagsString}
-                onChange={handleTagsChange}
-                className="bg-black/60 border-white/20"
-                placeholder="cyberpunk, news, gear (comma separated)"
-              />
+              <div className="space-y-2">
+                <label htmlFor="tags" className="block text-sm font-medium">
+                  Tags
+                </label>
+                <Input
+                  id="tags"
+                  name="tags"
+                  value={tagsString}
+                  onChange={handleTagsChange}
+                  className="bg-black/60 border-white/20"
+                  placeholder="cyberpunk, news, gear (comma separated)"
+                />
+              </div>
             </div>
 
             <div className="pt-4">

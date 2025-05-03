@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -270,7 +269,7 @@ export default function Profile() {
                                   </span>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Order #{order.id.slice(0, 8)} • {format(new Date(order.createdAt), 'MMM dd, yyyy')}
+                                  Order #{order.id} • {format(new Date(order.createdAt), 'MMM dd, yyyy')}
                                 </p>
                               </div>
                               
@@ -286,9 +285,12 @@ export default function Profile() {
                               {order.items.slice(0, 3).map((item) => (
                                 <div key={item.id} className="w-16 h-16 overflow-hidden rounded border border-white/10">
                                   <img 
-                                    src={item.image} 
+                                    src={item.image || item.imageUrl} 
                                     alt={item.name}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.src = "https://placehold.co/200x200/1a1a2e/FFFFFF?text=CyberGear";
+                                    }}
                                   />
                                 </div>
                               ))}

@@ -22,15 +22,32 @@ export const createOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'
   const orders = fetchOrders();
   const now = new Date().toISOString();
   
+  // Generate a simplified order ID for better usability
+  const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+  
   const newOrder: Order = {
     ...orderData,
-    id: uuidv4(),
+    id: orderId,
     createdAt: now,
     updatedAt: now,
     status: 'pending'
   };
   
-  saveOrders([...orders, newOrder]);
+  // Add images to the items if missing
+  if (newOrder.items) {
+    newOrder.items = newOrder.items.map(item => {
+      if (!item.imageUrl && item.image) {
+        return {
+          ...item,
+          imageUrl: item.image
+        };
+      }
+      return item;
+    });
+  }
+  
+  orders.push(newOrder);
+  saveOrders(orders);
   return newOrder;
 };
 
