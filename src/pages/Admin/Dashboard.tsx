@@ -20,8 +20,8 @@ export default function Dashboard() {
       // Get article count
       const articles = await fetchArticles();
       
-      // Get order stats
-      const orderStats = getOrderStats();
+      // Get order stats - this is now an async operation
+      const orderStats = await getOrderStats();
       
       // For this demo, we'll assume 12 products (since they're defined in a static file)
       setStats({

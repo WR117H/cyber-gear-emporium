@@ -8,13 +8,16 @@ import {
   getOrderByIdFromSupabase,
   getOrdersByUserIdFromSupabase,
   updateOrderInSupabase,
-  deleteOrderFromSupabase
+  deleteOrderFromSupabase,
+  getOrderStatsFromSupabase
 } from './orderSupabase';
 
 const ORDERS_STORAGE_KEY = 'cyber_gear_orders';
 
 // Helper to get all orders - now tries Supabase first, falls back to localStorage
 export const fetchOrders = async (): Promise<Order[]> => {
+  console.log('fetchOrders called - checking data source');
+  
   // Try to fetch from Supabase if configured
   if (isSupabaseConfigured()) {
     try {
@@ -119,12 +122,17 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 's
 
 // Get an order by ID
 export const getOrderById = async (id: string): Promise<Order | undefined> => {
+  console.log(`getOrderById called for id: ${id}`);
+  
   // Try to fetch from Supabase if configured
   if (isSupabaseConfigured()) {
     try {
       console.log(`Fetching order ${id} from Supabase`);
       const order = await getOrderByIdFromSupabase(id);
-      if (order) return order;
+      if (order) {
+        console.log('Order found in Supabase:', order);
+        return order;
+      }
     } catch (error) {
       console.error('Error fetching from Supabase, falling back to localStorage:', error);
     }
@@ -132,16 +140,21 @@ export const getOrderById = async (id: string): Promise<Order | undefined> => {
   
   // Fallback to localStorage
   const orders = await fetchOrders();
-  return orders.find(order => order.id === id);
+  const order = orders.find(order => order.id === id);
+  console.log(`Order ${id} found in localStorage:`, order);
+  return order;
 };
 
 // Get orders by user ID
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
+  console.log(`getOrdersByUserId called for userId: ${userId}`);
+  
   // Try to fetch from Supabase if configured
   if (isSupabaseConfigured()) {
     try {
       console.log(`Fetching orders for user ${userId} from Supabase`);
       const orders = await getOrdersByUserIdFromSupabase(userId);
+      console.log(`Found ${orders.length} orders in Supabase for user ${userId}`);
       return orders;
     } catch (error) {
       console.error('Error fetching from Supabase, falling back to localStorage:', error);
@@ -154,12 +167,14 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
   console.log('All orders available:', orders);
   
   const userOrders = orders.filter(order => order.userId === userId);
-  console.log(`Found ${userOrders.length} orders for user ${userId}`);
+  console.log(`Found ${userOrders.length} orders for user ${userId} in localStorage`);
   return userOrders;
 };
 
 // Update an order
 export const updateOrder = async (id: string, orderData: Partial<Order>): Promise<Order | null> => {
+  console.log(`updateOrder called for id: ${id}`, orderData);
+  
   // Try to update in Supabase if configured
   if (isSupabaseConfigured()) {
     try {
@@ -168,7 +183,10 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
         ...orderData,
         updatedAt: new Date().toISOString()
       });
-      if (updatedOrder) return updatedOrder;
+      if (updatedOrder) {
+        console.log('Order updated in Supabase:', updatedOrder);
+        return updatedOrder;
+      }
     } catch (error) {
       console.error('Error updating in Supabase, falling back to localStorage:', error);
     }
@@ -194,12 +212,17 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
 
 // Delete an order
 export const deleteOrder = async (id: string): Promise<boolean> => {
+  console.log(`deleteOrder called for id: ${id}`);
+  
   // Try to delete from Supabase if configured
   if (isSupabaseConfigured()) {
     try {
       console.log(`Deleting order ${id} from Supabase`);
       const success = await deleteOrderFromSupabase(id);
-      if (success) return true;
+      if (success) {
+        console.log(`Order ${id} successfully deleted from Supabase`);
+        return true;
+      }
     } catch (error) {
       console.error('Error deleting from Supabase, falling back to localStorage:', error);
     }
@@ -223,6 +246,7 @@ export const clearAllOrders = (): void => {
 
 // Update order status
 export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<Order | null> => {
+  console.log(`updateOrderStatus called for id: ${id}, status: ${status}`);
   return updateOrder(id, { status });
 };
 
@@ -232,11 +256,24 @@ export const updateOrderTracking = async (
   trackingNumber: string, 
   estimatedDelivery?: string
 ): Promise<Order | null> => {
+  console.log(`updateOrderTracking called for id: ${id}, tracking: ${trackingNumber}`);
   return updateOrder(id, { trackingNumber, estimatedDelivery });
 };
 
 // Function to get statistics for admin dashboard
 export const getOrderStats = async () => {
+  console.log('getOrderStats called');
+  
+  if (isSupabaseConfigured()) {
+    try {
+      console.log('Getting order stats from Supabase');
+      return await getOrderStatsFromSupabase();
+    } catch (error) {
+      console.error('Error getting stats from Supabase, falling back to localStorage:', error);
+    }
+  }
+  
+  // Fallback to localStorage calculation
   const orders = await fetchOrders();
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   const totalOrders = orders.length;
@@ -247,7 +284,7 @@ export const getOrderStats = async () => {
     return acc;
   }, {} as Record<string, number>);
   
-  console.log("Order stats:", { totalRevenue, totalOrders, ordersByStatus });
+  console.log("Order stats calculated from localStorage:", { totalRevenue, totalOrders, ordersByStatus });
   
   return {
     totalRevenue,

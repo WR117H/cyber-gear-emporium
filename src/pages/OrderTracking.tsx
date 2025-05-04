@@ -21,11 +21,21 @@ const OrderTracking = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
-      const fetchedOrder = getOrderById(id);
-      setOrder(fetchedOrder || null);
-      setLoading(false);
-    }
+    const loadOrder = async () => {
+      if (id) {
+        try {
+          const fetchedOrder = await getOrderById(id);
+          setOrder(fetchedOrder || null);
+        } catch (error) {
+          console.error("Error fetching order:", error);
+          setOrder(null);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadOrder();
   }, [id]);
 
   if (loading) {

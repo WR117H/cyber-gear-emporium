@@ -5,6 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 
 // Fetch all orders from Supabase
 export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
+  console.log('Fetching all orders from Supabase');
+  
   const { data, error } = await supabase
     .from('orders')
     .select('*')
@@ -15,6 +17,7 @@ export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
     return [];
   }
   
+  console.log(`Successfully fetched ${data?.length || 0} orders from Supabase`);
   return data || [];
 };
 
@@ -23,9 +26,17 @@ export const createOrderInSupabase = async (order: Omit<Order, 'id'>): Promise<O
   // Log the order being created for debugging
   console.log('Creating order in Supabase:', order);
   
+  // Make sure the order has all required fields
+  const completeOrder = {
+    ...order,
+    createdAt: order.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: order.status || 'pending',
+  };
+  
   const { data, error } = await supabase
     .from('orders')
-    .insert([order])
+    .insert([completeOrder])
     .select()
     .single();
     
@@ -34,7 +45,7 @@ export const createOrderInSupabase = async (order: Omit<Order, 'id'>): Promise<O
     return null;
   }
   
-  console.log('Order created successfully:', data);
+  console.log('Order created successfully in Supabase:', data);
   return data;
 };
 
@@ -59,6 +70,8 @@ export const getOrdersByUserIdFromSupabase = async (userId: string): Promise<Ord
 
 // Get a single order by ID from Supabase
 export const getOrderByIdFromSupabase = async (id: string): Promise<Order | null> => {
+  console.log(`Fetching order with ID ${id} from Supabase`);
+  
   const { data, error } = await supabase
     .from('orders')
     .select('*')
@@ -70,14 +83,20 @@ export const getOrderByIdFromSupabase = async (id: string): Promise<Order | null
     return null;
   }
   
+  console.log('Order found:', data);
   return data;
 };
 
 // Update an order in Supabase
 export const updateOrderInSupabase = async (id: string, updates: Partial<Order>): Promise<Order | null> => {
+  console.log(`Updating order ${id} in Supabase with:`, updates);
+  
   const { data, error } = await supabase
     .from('orders')
-    .update(updates)
+    .update({
+      ...updates,
+      updatedAt: new Date().toISOString()
+    })
     .eq('id', id)
     .select()
     .single();
@@ -87,11 +106,14 @@ export const updateOrderInSupabase = async (id: string, updates: Partial<Order>)
     return null;
   }
   
+  console.log('Order updated successfully:', data);
   return data;
 };
 
 // Delete an order from Supabase
 export const deleteOrderFromSupabase = async (id: string): Promise<boolean> => {
+  console.log(`Deleting order ${id} from Supabase`);
+  
   const { error } = await supabase
     .from('orders')
     .delete()
@@ -102,16 +124,20 @@ export const deleteOrderFromSupabase = async (id: string): Promise<boolean> => {
     return false;
   }
   
+  console.log('Order deleted successfully');
   return true;
 };
 
 // Update order status in Supabase
 export const updateOrderStatusInSupabase = async (id: string, status: OrderStatus): Promise<Order | null> => {
+  console.log(`Updating order ${id} status to ${status} in Supabase`);
   return await updateOrderInSupabase(id, { status });
 };
 
 // Get order statistics for admin dashboard
 export const getOrderStatsFromSupabase = async () => {
+  console.log('Calculating order stats from Supabase');
+  
   // Fetch all orders first
   const orders = await fetchOrdersFromSupabase();
   
@@ -124,6 +150,8 @@ export const getOrderStatsFromSupabase = async () => {
     acc[order.status] = (acc[order.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+  
+  console.log('Order stats calculated:', { totalRevenue, totalOrders, ordersByStatus });
   
   return {
     totalRevenue,
