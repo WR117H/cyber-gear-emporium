@@ -1,6 +1,5 @@
-
 import { v4 as uuidv4 } from 'uuid';
-import { Order, OrderStatus } from '@/types/order';
+import { Order, OrderStatus, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 import { isSupabaseConfigured } from './supabaseClient';
 import { 
   createOrderInSupabase, 
@@ -51,7 +50,7 @@ const saveOrders = (orders: Order[]): void => {
 };
 
 // Create a new order
-export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'status' | 'updatedAt'>): Promise<Order> => {
+export const createOrder = async (orderData: Omit<any, 'id' | 'createdAt' | 'status' | 'updatedAt'>): Promise<Order> => {
   const now = new Date().toISOString();
   
   // Generate a simplified order ID for better usability
@@ -60,7 +59,7 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 's
   // Generate an order code for confirmation page
   const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   
-  const newOrder: Order = {
+  const newOrder = {
     ...orderData,
     id: orderId,
     createdAt: now,
@@ -99,7 +98,9 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 's
   if (isSupabaseConfigured()) {
     try {
       console.log('Creating order in Supabase:', newOrder);
-      const supabaseOrder = await createOrderInSupabase(newOrder);
+      // Convert to database format
+      const dbOrder = mapClientOrderToDatabaseOrder(newOrder);
+      const supabaseOrder = await createOrderInSupabase(dbOrder);
       if (supabaseOrder) {
         console.log('Order created in Supabase:', supabaseOrder);
         return supabaseOrder;
@@ -111,13 +112,14 @@ export const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 's
   
   // Fallback to localStorage
   const orders = await fetchOrders();
-  orders.push(newOrder);
+  const clientOrder = mapDatabaseOrderToClientOrder(newOrder);
+  orders.push(clientOrder);
   saveOrders(orders);
   
   // Debug log for tracking
-  console.log("Created new order:", newOrder);
+  console.log("Created new order:", clientOrder);
   
-  return newOrder;
+  return clientOrder;
 };
 
 // Get an order by ID

@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Order, OrderStatus } from '@/types/order';
-import { useToast } from '@/hooks/use-toast';
+import { Order, OrderStatus, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 
 // Fetch all orders from Supabase
 export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
@@ -10,7 +9,7 @@ export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
   const { data, error } = await supabase
     .from('orders')
     .select('*')
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
     
   if (error) {
     console.error('Error fetching orders from Supabase:', error);
@@ -22,21 +21,22 @@ export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
 };
 
 // Create a new order in Supabase
-export const createOrderInSupabase = async (order: Omit<Order, 'id'>): Promise<Order | null> => {
+export const createOrderInSupabase = async (order: Omit<any, 'id'>): Promise<Order | null> => {
   // Log the order being created for debugging
   console.log('Creating order in Supabase:', order);
   
-  // Make sure the order has all required fields
-  const completeOrder = {
+  // Convert client order format to database format
+  const dbOrder = mapClientOrderToDatabaseOrder({
     ...order,
-    createdAt: order.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    id: order.id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+    created_at: order.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     status: order.status || 'pending',
-  };
+  });
   
   const { data, error } = await supabase
     .from('orders')
-    .insert([completeOrder])
+    .insert([dbOrder])
     .select()
     .single();
     
@@ -56,8 +56,8 @@ export const getOrdersByUserIdFromSupabase = async (userId: string): Promise<Ord
   const { data, error } = await supabase
     .from('orders')
     .select('*')
-    .eq('userId', userId)
-    .order('createdAt', { ascending: false });
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
     
   if (error) {
     console.error('Error fetching user orders from Supabase:', error);
@@ -88,15 +88,26 @@ export const getOrderByIdFromSupabase = async (id: string): Promise<Order | null
 };
 
 // Update an order in Supabase
-export const updateOrderInSupabase = async (id: string, updates: Partial<Order>): Promise<Order | null> => {
+export const updateOrderInSupabase = async (id: string, updates: Partial<any>): Promise<Order | null> => {
   console.log(`Updating order ${id} in Supabase with:`, updates);
+  
+  // Convert client order format to database format if needed
+  const dbUpdates = {
+    ...updates,
+    updated_at: new Date().toISOString(),
+    // Map client-side properties to database properties if present
+    ...(updates.userId && { user_id: updates.userId }),
+    ...(updates.createdAt && { created_at: updates.createdAt }),
+    ...(updates.paymentMethod && { payment_method: updates.paymentMethod }),
+    ...(updates.shippingAddress && { shipping_address: updates.shippingAddress }),
+    ...(updates.trackingNumber && { tracking_number: updates.trackingNumber }),
+    ...(updates.estimatedDelivery && { estimated_delivery: updates.estimatedDelivery }),
+    ...(updates.orderCode && { order_code: updates.orderCode })
+  };
   
   const { data, error } = await supabase
     .from('orders')
-    .update({
-      ...updates,
-      updatedAt: new Date().toISOString()
-    })
+    .update(dbUpdates)
     .eq('id', id)
     .select()
     .single();
