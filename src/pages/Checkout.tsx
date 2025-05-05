@@ -121,7 +121,7 @@ export default function Checkout() {
         total,
         paymentMethod: method,
         address,
-        paymentStatus: 'paid',
+        payment_status: 'paid' as 'paid' | 'pending' | 'failed',
         shippingAddress: {
           fullName: address.fullName,
           street: address.streetAddress,

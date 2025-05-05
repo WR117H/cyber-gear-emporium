@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, CreditCard, Bitcoin } from 'lucide-react';
 import CryptoPayment from '@/components/CryptoPayment';
 import { useCart } from '@/context/CartContext';
+import { isAuthenticated } from '@/utils/auth';
+import { useToast } from '@/hooks/use-toast';
 
 const Cart = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState<'credit' | 'crypto' | null>(null);
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const { items, getTotal } = useCart();
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const auth = await isAuthenticated();
+      setIsLoggedIn(auth);
+    };
+    
+    checkAuth();
+  }, []);
   
   const subtotal = getTotal();
   const shipping = 15;
@@ -25,6 +38,19 @@ const Cart = () => {
     setTimeout(() => {
       navigate('/');
     }, 3000);
+  };
+  
+  const handleCheckout = () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to continue to checkout"
+      });
+      navigate('/login', { state: { returnUrl: '/checkout' } });
+      return;
+    }
+    
+    navigate('/checkout');
   };
 
   return (
@@ -95,25 +121,18 @@ const Cart = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-3 pt-4">
-                    <h3 className="text-white font-medium mb-2">Select payment method</h3>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start" 
-                      onClick={() => setPaymentMethod('credit')}
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Credit Card
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start" 
-                      onClick={() => setPaymentMethod('crypto')}
-                    >
-                      <Bitcoin className="mr-2 h-4 w-4" />
-                      TON Payment
-                    </Button>
-                  </div>
+                  <Button
+                    className="w-full mb-3"
+                    onClick={handleCheckout}
+                  >
+                    Proceed to Checkout
+                  </Button>
+                  
+                  {!isLoggedIn && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      You'll need to log in before completing your purchase
+                    </p>
+                  )}
                 </div>
               )}
               

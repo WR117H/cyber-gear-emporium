@@ -3,6 +3,7 @@ import { CartItem } from './cart';
 import { Json } from '@/integrations/supabase/types';
 
 export type OrderStatus = 'pending' | 'payment_confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface ShippingAddress {
   fullName: string;
@@ -67,7 +68,7 @@ export interface Order {
   updatedAt?: string;
   payment_method: string;
   paymentMethod?: string;
-  payment_status: 'paid' | 'pending' | 'failed';
+  payment_status: PaymentStatus;
   shipping_address: ShippingAddress;
   shippingAddress?: ShippingAddress;
   address: OrderAddress;
@@ -103,11 +104,22 @@ export function mapDatabaseOrderToClientOrder(dbOrder: OrderDB): Order {
     : undefined;
     
   return {
-    ...dbOrder,
+    id: dbOrder.id,
+    user_id: dbOrder.user_id,
     items: items as any[],
+    total: dbOrder.total,
     status: dbOrder.status as OrderStatus,
+    created_at: dbOrder.created_at,
+    updated_at: dbOrder.updated_at,
+    payment_method: dbOrder.payment_method || '',
+    payment_status: (dbOrder.payment_status as PaymentStatus) || 'pending',
     shipping_address: shippingAddress as ShippingAddress,
     address: address as OrderAddress,
+    tracking_number: dbOrder.tracking_number,
+    estimated_delivery: dbOrder.estimated_delivery,
+    notes: dbOrder.notes,
+    date: dbOrder.date || dbOrder.created_at,
+    order_code: dbOrder.order_code,
     // Add client-side property aliases
     userId: dbOrder.user_id,
     createdAt: dbOrder.created_at,
@@ -121,21 +133,27 @@ export function mapDatabaseOrderToClientOrder(dbOrder: OrderDB): Order {
 }
 
 // Map client order to database order
-export function mapClientOrderToDatabaseOrder(clientOrder: Partial<Order>): OrderDB {
+export function mapClientOrderToDatabaseOrder(clientOrder: Partial<Order>): Partial<OrderDB> {
   const result: Partial<OrderDB> = {
-    ...clientOrder,
-    // Map client properties to database properties
+    id: clientOrder.id,
     user_id: clientOrder.userId || clientOrder.user_id,
+    items: clientOrder.items as unknown as Json,
+    total: clientOrder.total,
+    status: clientOrder.status,
     created_at: clientOrder.createdAt || clientOrder.created_at || new Date().toISOString(),
     updated_at: clientOrder.updatedAt || clientOrder.updated_at || new Date().toISOString(),
     payment_method: clientOrder.paymentMethod || clientOrder.payment_method,
-    shipping_address: clientOrder.shippingAddress || clientOrder.shipping_address,
+    payment_status: clientOrder.payment_status,
+    shipping_address: clientOrder.shippingAddress || clientOrder.shipping_address as unknown as Json,
+    address: clientOrder.address as unknown as Json,
     tracking_number: clientOrder.trackingNumber || clientOrder.tracking_number,
     estimated_delivery: clientOrder.estimatedDelivery || clientOrder.estimated_delivery,
+    notes: clientOrder.notes,
+    date: clientOrder.date,
     order_code: clientOrder.orderCode || clientOrder.order_code
   };
   
-  return result as OrderDB;
+  return result;
 }
 
 export interface OrderStage {

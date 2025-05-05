@@ -126,11 +126,18 @@ const OrderTracking = () => {
         <Card className="bg-black/40 border border-white/10 text-white mb-8">
           <CardContent className="p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-4">Order #{order.id}</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                Order #{order.id}
+                {order.orderCode && (
+                  <span className="ml-2 text-sm text-cyber-blue bg-cyber-blue/20 px-2 py-1 rounded-md">
+                    Code: {order.orderCode}
+                  </span>
+                )}
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-gray-400 mb-1">Order Date</p>
-                  <p>{new Date(order.createdAt).toLocaleDateString()}</p>
+                  <p>{new Date(order.createdAt || order.created_at).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400 mb-1">Status</p>
@@ -142,7 +149,7 @@ const OrderTracking = () => {
                 </div>
                 <div>
                   <p className="text-gray-400 mb-1">Payment Method</p>
-                  <p>{order.paymentMethod}</p>
+                  <p>{order.paymentMethod || order.payment_method}</p>
                 </div>
               </div>
             </div>
