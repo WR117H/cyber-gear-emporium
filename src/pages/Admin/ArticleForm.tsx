@@ -33,25 +33,38 @@ export default function ArticleForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
-    if (id) {
-      const article = getArticleById(id);
-      if (article) {
-        setFormData({
-          title: article.title,
-          content: article.content,
-          author: article.author,
-          date: article.date,
-          imageUrl: article.imageUrl,
-          excerpt: article.excerpt,
-          slug: article.slug,
-          tags: article.tags || [],
-          category: article.category,
-          coverImage: article.coverImage,
-          publishedAt: article.publishedAt
-        });
+    const loadArticle = async () => {
+      if (id) {
+        try {
+          const article = await getArticleById(id);
+          if (article) {
+            setFormData({
+              title: article.title,
+              content: article.content,
+              author: article.author,
+              date: article.date,
+              imageUrl: article.imageUrl,
+              excerpt: article.excerpt,
+              slug: article.slug,
+              tags: article.tags || [],
+              category: article.category,
+              coverImage: article.coverImage,
+              publishedAt: article.publishedAt
+            });
+          }
+        } catch (error) {
+          console.error('Error loading article:', error);
+          toast({
+            title: "Error",
+            description: "Could not load article details.",
+            variant: "destructive"
+          });
+        }
       }
-    }
-  }, [id]);
+    };
+    
+    loadArticle();
+  }, [id, toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -96,20 +109,25 @@ export default function ArticleForm() {
     try {
       if (id) {
         // Update existing article
-        updateArticle(id, formData);
-        toast({
-          title: "Article updated",
-          description: "The article has been updated successfully."
-        });
+        const result = await updateArticle(id, formData);
+        if (result) {
+          toast({
+            title: "Article updated",
+            description: "The article has been updated successfully."
+          });
+          navigate('/admin/articles');
+        } else {
+          throw new Error("Failed to update article");
+        }
       } else {
         // Create new article
-        createArticle(formData);
+        await createArticle(formData);
         toast({
           title: "Article created",
           description: "The article has been created successfully."
         });
+        navigate('/admin/articles');
       }
-      navigate('/admin/articles');
     } catch (error) {
       toast({
         title: "Error",

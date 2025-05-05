@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string | null
+          id: number
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      articles: {
+        Row: {
+          author: string
+          category: string
+          content: string
+          coverimage: string
+          date: string
+          excerpt: string
+          id: string
+          imageurl: string
+          publishedat: string
+          slug: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          author: string
+          category: string
+          content: string
+          coverimage: string
+          date: string
+          excerpt: string
+          id: string
+          imageurl: string
+          publishedat: string
+          slug: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string
+          coverimage?: string
+          date?: string
+          excerpt?: string
+          id?: string
+          imageurl?: string
+          publishedat?: string
+          slug?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           address: Json | null
@@ -63,6 +132,48 @@ export type Database = {
           tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          compatiblewith: string[] | null
+          description: string
+          featured: boolean
+          id: string
+          image: string
+          instock: number
+          isnew: boolean
+          name: string
+          price: number
+          specifications: Json | null
+        }
+        Insert: {
+          category: string
+          compatiblewith?: string[] | null
+          description: string
+          featured?: boolean
+          id: string
+          image: string
+          instock?: number
+          isnew?: boolean
+          name: string
+          price: number
+          specifications?: Json | null
+        }
+        Update: {
+          category?: string
+          compatiblewith?: string[] | null
+          description?: string
+          featured?: boolean
+          id?: string
+          image?: string
+          instock?: number
+          isnew?: boolean
+          name?: string
+          price?: number
+          specifications?: Json | null
         }
         Relationships: []
       }

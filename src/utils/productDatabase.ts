@@ -2,9 +2,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types/product';
 
+// Mock database stored in localStorage (as fallback)
 const PRODUCTS_STORAGE_KEY = 'cyber_gear_products';
 
-export const fetchProductsFromSupabase = async (): Promise<Product[]> => {
+// Helper to get all products
+export const fetchProducts = async (): Promise<Product[]> => {
   try {
     // Try to fetch from Supabase
     const { data, error } = await supabase
@@ -19,48 +21,68 @@ export const fetchProductsFromSupabase = async (): Promise<Product[]> => {
     }
     
     if (data && data.length > 0) {
-      return data as Product[];
+      return data as unknown as Product[];
     }
     
     // If no data in Supabase, try local storage
     const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
     return storedProducts ? JSON.parse(storedProducts) : [];
   } catch (error) {
-    console.error('Error fetching products from Supabase:', error);
-    return [];
+    console.error('Error fetching products:', error);
+    // Fallback to localStorage
+    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    return storedProducts ? JSON.parse(storedProducts) : [];
   }
 };
 
-export const fetchProducts = async (): Promise<Product[]> => {
-  // First, try to fetch from Supabase
+// Helper to save all products in localStorage (fallback)
+const saveProducts = (products: Product[]): void => {
+  localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+};
+
+// Create a new product
+export const createProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
   try {
-    return await fetchProductsFromSupabase();
-  } catch (error) {
-    console.error('Error fetching products from Supabase, falling back to localStorage:', error);
+    const newProduct: Product = {
+      ...productData,
+      id: Math.random().toString(36).substring(2, 9),
+    };
     
-    // Try to load from localStorage if defined
-    if (typeof window === 'undefined') return [];
-    
-    try {
-      // First try to fetch from local storage
-      const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    // Try to save to Supabase
+    const { data, error } = await supabase
+      .from('products')
+      .insert([newProduct as any])
+      .select()
+      .single();
       
-      if (storedProducts) {
-        return JSON.parse(storedProducts);
-      }
-      
-      // If no products in local storage, return static data
-      return [];
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      return [];
+    if (error) {
+      console.error('Error saving product to Supabase:', error);
+      // Fallback to local storage
+      const products = await fetchProducts();
+      saveProducts([...products, newProduct]);
+      return newProduct;
     }
+    
+    return data as unknown as Product;
+  } catch (error) {
+    console.error('Error creating product:', error);
+    
+    // Fallback to local storage
+    const newProduct: Product = {
+      ...productData,
+      id: Math.random().toString(36).substring(2, 9),
+    };
+    
+    const products = await fetchProducts();
+    saveProducts([...products, newProduct]);
+    return newProduct;
   }
 };
 
+// Get a product by ID
 export const getProductById = async (id: string): Promise<Product | undefined> => {
   try {
-    // Try to fetch from Supabase first
+    // Try to fetch from Supabase
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -74,49 +96,22 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
       return products.find(product => product.id === id);
     }
     
-    return data as Product;
+    return data as unknown as Product;
   } catch (error) {
     console.error('Error getting product by ID:', error);
-    return undefined;
+    // Fallback to local storage
+    const products = await fetchProducts();
+    return products.find(product => product.id === id);
   }
 };
 
-export const createProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
-  try {
-    const newProduct: Product = {
-      ...productData,
-      id: Math.random().toString(36).substring(2, 9),
-    };
-    
-    // Try to save to Supabase
-    const { data, error } = await supabase
-      .from('products')
-      .insert([newProduct])
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Error saving product to Supabase:', error);
-      // Fallback to local storage
-      const products = await fetchProducts();
-      products.push(newProduct);
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
-      return newProduct;
-    }
-    
-    return data as Product;
-  } catch (error) {
-    console.error('Error creating product:', error);
-    throw error;
-  }
-};
-
-export const updateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+// Update a product
+export const updateProduct = async (id: string, productData: Partial<Product>): Promise<Product | null> => {
   try {
     // Try to update in Supabase
     const { data, error } = await supabase
       .from('products')
-      .update(updates)
+      .update(productData as any)
       .eq('id', id)
       .select()
       .single();
@@ -125,28 +120,44 @@ export const updateProduct = async (id: string, updates: Partial<Product>): Prom
       console.error('Error updating product in Supabase:', error);
       // Fallback to local storage
       const products = await fetchProducts();
-      const productIndex = products.findIndex(p => p.id === id);
+      const productIndex = products.findIndex(product => product.id === id);
       
       if (productIndex === -1) return null;
       
       const updatedProduct = {
         ...products[productIndex],
-        ...updates
+        ...productData,
       };
       
       products[productIndex] = updatedProduct;
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+      saveProducts(products);
       
       return updatedProduct;
     }
     
-    return data as Product;
+    return data as unknown as Product;
   } catch (error) {
     console.error('Error updating product:', error);
-    return null;
+    
+    // Fallback to local storage
+    const products = await fetchProducts();
+    const productIndex = products.findIndex(product => product.id === id);
+    
+    if (productIndex === -1) return null;
+    
+    const updatedProduct = {
+      ...products[productIndex],
+      ...productData,
+    };
+    
+    products[productIndex] = updatedProduct;
+    saveProducts(products);
+    
+    return updatedProduct;
   }
 };
 
+// Delete a product
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
     // Try to delete from Supabase
@@ -159,21 +170,30 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
       console.error('Error deleting product from Supabase:', error);
       // Fallback to local storage
       const products = await fetchProducts();
-      const filteredProducts = products.filter(p => p.id !== id);
+      const filteredProducts = products.filter(product => product.id !== id);
       
       if (filteredProducts.length === products.length) return false;
       
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(filteredProducts));
+      saveProducts(filteredProducts);
       return true;
     }
     
     return true;
   } catch (error) {
     console.error('Error deleting product:', error);
-    return false;
+    
+    // Fallback to local storage
+    const products = await fetchProducts();
+    const filteredProducts = products.filter(product => product.id !== id);
+    
+    if (filteredProducts.length === products.length) return false;
+    
+    saveProducts(filteredProducts);
+    return true;
   }
 };
 
+// Search products
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
     // Try to search in Supabase using ILIKE for case-insensitive search
@@ -195,7 +215,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
         );
       }
       
-      return data as Product[];
+      return data as unknown as Product[];
     } else {
       // If no query, return all products
       return fetchProducts();
@@ -206,39 +226,10 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   }
 };
 
-export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  try {
-    // Try to fetch from Supabase filtered by category
-    if (category && category !== 'all') {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category', category);
-        
-      if (error) {
-        console.error('Error fetching products by category from Supabase:', error);
-        // Fallback to local storage
-        const products = await fetchProducts();
-        return products.filter(product => 
-          product.category.toLowerCase() === category.toLowerCase()
-        );
-      }
-      
-      return data as Product[];
-    } else {
-      // If no category or 'all', return all products
-      return fetchProducts();
-    }
-  } catch (error) {
-    console.error('Error getting products by category:', error);
-    return [];
-  }
-};
-
-// Functions for featured products
+// Get featured products
 export const getFeaturedProducts = async (): Promise<Product[]> => {
   try {
-    // Try to fetch featured products from Supabase
+    // Try to fetch from Supabase
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -251,36 +242,36 @@ export const getFeaturedProducts = async (): Promise<Product[]> => {
       return products.filter(product => product.featured);
     }
     
-    return data as Product[];
+    return data as unknown as Product[];
   } catch (error) {
     console.error('Error getting featured products:', error);
-    return [];
+    // Fallback to local storage
+    const products = await fetchProducts();
+    return products.filter(product => product.featured);
   }
 };
 
-// Functions for new releases
-export const getNewReleases = async (): Promise<Product[]> => {
+// Get products by category
+export const getProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
-    // Try to fetch new releases from Supabase
+    // Try to fetch from Supabase
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .eq('isNew', true)
-      .limit(6);
+      .eq('category', category);
       
     if (error) {
-      console.error('Error fetching new releases from Supabase:', error);
+      console.error('Error fetching products by category from Supabase:', error);
       // Fallback to local storage
       const products = await fetchProducts();
-      // Sort by created_at and take the first 6
-      return products
-        .filter(product => product.isNew)
-        .slice(0, 6);
+      return products.filter(product => product.category === category);
     }
     
-    return data as Product[];
+    return data as unknown as Product[];
   } catch (error) {
-    console.error('Error getting new releases:', error);
-    return [];
+    console.error('Error getting products by category:', error);
+    // Fallback to local storage
+    const products = await fetchProducts();
+    return products.filter(product => product.category === category);
   }
 };

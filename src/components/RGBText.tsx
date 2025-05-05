@@ -1,56 +1,36 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface RGBTextProps {
   text: string;
   className?: string;
+  colors?: string[];
+  intervalMs?: number;
 }
 
-const RGBText: React.FC<RGBTextProps> = ({ text, className = '' }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+const RGBText: React.FC<RGBTextProps> = ({
+  text,
+  className = '',
+  colors = ['#00FFFF', '#FF00FF', '#00FF00'], // Cyber theme colors (cyan, magenta, green)
+  intervalMs = 1000,
+}) => {
+  const [colorIndex, setColorIndex] = useState(0);
   
   useEffect(() => {
-    if (!containerRef.current) return;
-    
-    // Theme colors
-    const colors = [
-      '#9b87f5', // Primary Purple
-      '#7E69AB', // Secondary Purple
-      '#6E59A5', // Tertiary Purple
-      '#D6BCFA', // Light Purple
-      '#0EA5E9', // Ocean Blue
-      '#0FA0CE', // Bright Blue
-      '#33C3F0', // Sky Blue
-    ];
-    
-    const spans = containerRef.current.querySelectorAll('span');
-    let currentColorIndex = 0;
-    
     const interval = setInterval(() => {
-      spans.forEach((span, i) => {
-        // Use a different color index for each letter with a slight delay
-        const colorIndex = (currentColorIndex + i) % colors.length;
-        span.style.color = colors[colorIndex];
-      });
-      
-      currentColorIndex = (currentColorIndex + 1) % colors.length;
-    }, 500);
+      setColorIndex((prevIndex) => (prevIndex + 1) % colors.length);
+    }, intervalMs);
     
     return () => clearInterval(interval);
-  }, [text]);
+  }, [colors.length, intervalMs]);
   
   return (
-    <div ref={containerRef} className={`inline-block ${className}`}>
-      {text.split('').map((char, i) => (
-        <span 
-          key={i} 
-          className="transition-colors duration-300 ease-in-out"
-          style={{ color: '#9b87f5' }}
-        >
-          {char}
-        </span>
-      ))}
-    </div>
+    <span 
+      className={`transition-colors duration-700 ${className}`}
+      style={{ color: colors[colorIndex] }}
+    >
+      {text}
+    </span>
   );
 };
 

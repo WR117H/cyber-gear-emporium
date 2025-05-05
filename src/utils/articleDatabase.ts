@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Article } from '@/types/article';
 
-// Mock database stored in localStorage
+// Local storage fallback key
 const ARTICLES_STORAGE_KEY = 'cyber_gear_articles';
 
 // Helper to get all articles
@@ -21,7 +21,7 @@ export const fetchArticles = async (): Promise<Article[]> => {
     }
     
     if (data && data.length > 0) {
-      return data as Article[];
+      return data as unknown as Article[];
     }
     
     // If no data in Supabase, try local storage
@@ -35,7 +35,7 @@ export const fetchArticles = async (): Promise<Article[]> => {
   }
 };
 
-// Helper to save all articles
+// Helper to save all articles locally (fallback)
 const saveArticles = (articles: Article[]): void => {
   localStorage.setItem(ARTICLES_STORAGE_KEY, JSON.stringify(articles));
 };
@@ -51,7 +51,7 @@ export const createArticle = async (articleData: Omit<Article, 'id'>): Promise<A
     // Try to save to Supabase
     const { data, error } = await supabase
       .from('articles')
-      .insert([newArticle])
+      .insert([newArticle as any])
       .select()
       .single();
       
@@ -63,7 +63,7 @@ export const createArticle = async (articleData: Omit<Article, 'id'>): Promise<A
       return newArticle;
     }
     
-    return data as Article;
+    return data as unknown as Article;
   } catch (error) {
     console.error('Error creating article:', error);
     
@@ -96,7 +96,7 @@ export const getArticleById = async (id: string): Promise<Article | undefined> =
       return articles.find(article => article.id === id);
     }
     
-    return data as Article;
+    return data as unknown as Article;
   } catch (error) {
     console.error('Error getting article by ID:', error);
     // Fallback to local storage
@@ -122,7 +122,7 @@ export const getArticleBySlug = async (slug: string): Promise<Article | undefine
       return articles.find(article => article.slug === slug);
     }
     
-    return data as Article;
+    return data as unknown as Article;
   } catch (error) {
     console.error('Error getting article by slug:', error);
     // Fallback to local storage
@@ -137,7 +137,7 @@ export const updateArticle = async (id: string, articleData: Partial<Article>): 
     // Try to update in Supabase
     const { data, error } = await supabase
       .from('articles')
-      .update(articleData)
+      .update(articleData as any)
       .eq('id', id)
       .select()
       .single();
@@ -161,7 +161,7 @@ export const updateArticle = async (id: string, articleData: Partial<Article>): 
       return updatedArticle;
     }
     
-    return data as Article;
+    return data as unknown as Article;
   } catch (error) {
     console.error('Error updating article:', error);
     
@@ -227,7 +227,7 @@ export const searchArticles = async (query: string): Promise<Article[]> => {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%,category.ilike.%${query}%,tags.ilike.%${query}%`);
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%,category.ilike.%${query}%`);
         
       if (error) {
         console.error('Error searching articles in Supabase:', error);
@@ -242,7 +242,7 @@ export const searchArticles = async (query: string): Promise<Article[]> => {
         );
       }
       
-      return data as Article[];
+      return data as unknown as Article[];
     } else {
       // If no query, return all articles
       return fetchArticles();

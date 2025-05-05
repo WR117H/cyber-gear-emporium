@@ -1,195 +1,139 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search, Image, User, LogOut, FileText } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingCart, User, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { isAuthenticated, getCurrentUser, signOut } from '@/utils/auth';
-import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/CartContext';
+import { getCurrentUser, isAuthenticated } from '@/utils/auth';
+import ThemeToggle from './ThemeToggle';
+import SearchBar from './SearchBar';
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { getCount } = useCart();
-  
-  const categories = [
-    { name: 'Network Tools', path: '/products?category=network' },
-    { name: 'Wireless Devices', path: '/products?category=wireless' },
-    { name: 'Hardware Kits', path: '/products?category=hardware' },
-    { name: 'Software Tools', path: '/products?category=software' }
-  ];
+  const [userName, setUserName] = useState<string | null>(null);
+  const { items } = useCart();
+  const location = useLocation();
 
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
+  const closeMenu = () => setIsMenuOpen(false);
+
+  // Check authentication status
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const authStatus = await isAuthenticated();
-      setIsLoggedIn(authStatus);
+    const checkAuth = async () => {
+      const authenticated = await isAuthenticated();
+      setIsLoggedIn(authenticated);
       
-      if (authStatus) {
-        const { user } = await getCurrentUser();
-        setUserData(user);
+      if (authenticated) {
+        try {
+          const userData = await getCurrentUser();
+          setUserName(userData?.user?.email?.split('@')[0] || null);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
       }
     };
     
-    checkAuthStatus();
-  }, []);
+    checkAuth();
+  }, [location.pathname]); // Re-check when route changes
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      setIsLoggedIn(false);
-      setUserData(null);
-      navigate('/');
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account"
-      });
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
-
-  const cartItemCount = getCount();
+  // Calculate cart count
+  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <nav className="sticky top-0 z-50 bg-black border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo area */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center">
-              <Image className="h-6 w-6 text-white" />
-            </Link>
+    <nav className="bg-black border-b border-white/10 py-4 sticky top-0 z-50 backdrop-blur-lg bg-opacity-70">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <Link to="/" className="flex items-center" onClick={closeMenu}>
+            <span className="text-white font-bold text-xl md:text-2xl tracking-tight">CYBER<span className="text-cyber-blue">GEAR</span></span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-white hover:text-cyber-blue transition-colors">Home</Link>
+            <Link to="/shop" className="text-white hover:text-cyber-blue transition-colors">Shop</Link>
+            <Link to="/blog" className="text-white hover:text-cyber-blue transition-colors">Blog</Link>
+            <Link to="/about" className="text-white hover:text-cyber-blue transition-colors">About</Link>
+            <Link to="/contact" className="text-white hover:text-cyber-blue transition-colors">Contact</Link>
           </div>
-          
-          {/* Center logo/brand for Apple TV+ style */}
-          <div className="hidden md:flex items-center justify-center flex-grow">
-            <Link to="/" className="flex items-center">
-              <span className="text-white font-bold text-2xl tracking-wider">CYBER<span className="text-white">GEAR</span></span>
-            </Link>
-          </div>
-          
-          {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link to="/products" className="text-white hover:text-white/80">
-              Products
-            </Link>
-            <Link to="/articles" className="text-white hover:text-white/80">
-              Articles
-            </Link>
-          </div>
-          
-          {/* Right side icons */}
-          <div className="flex items-center gap-2">
-            {/* Search button - visible on desktop */}
-            <div className="hidden md:flex items-center">
-              <Button variant="ghost" size="icon" className="text-white">
-                <Search className="h-5 w-5" />
-              </Button>
-            </div>
+
+          {/* Icons */}
+          <div className="flex items-center">
+            <button 
+              onClick={toggleSearch} 
+              className="text-white hover:text-cyber-blue p-2 transition-colors"
+              aria-label="Search"
+            >
+              <Search />
+            </button>
             
-            {/* Auth/Profile buttons */}
+            <Link to="/cart" className="text-white hover:text-cyber-blue p-2 relative transition-colors">
+              <ShoppingCart />
+              {cartItemCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 bg-cyber-pink text-white" variant="destructive">
+                  {cartItemCount}
+                </Badge>
+              )}
+            </Link>
+
             {isLoggedIn ? (
-              <>
-                <Button variant="ghost" size="icon" className="text-white" onClick={() => navigate('/profile')}>
-                  <User className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-white" onClick={handleLogout}>
-                  <LogOut className="h-5 w-5" />
-                </Button>
-              </>
+              <Link to="/profile" className="text-white hover:text-cyber-blue p-2 transition-colors">
+                <User />
+              </Link>
             ) : (
               <Link to="/login">
-                <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 rounded-full">
-                  Login/SignUp
+                <Button className="ml-2 bg-cyber-blue hover:bg-cyber-blue/90 text-cyber-navy" size="sm">
+                  Login
                 </Button>
               </Link>
             )}
-            
-            {/* Cart button */}
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="text-white">
-                <ShoppingCart className="h-5 w-5" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-white text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                    {cartItemCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
+
+            <ThemeToggle className="ml-3" />
             
             {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-white"
-              >
-                {isOpen ? (
-                  <X className="h-6 w-6" aria-hidden="true" />
-                ) : (
-                  <Menu className="h-6 w-6" aria-hidden="true" />
-                )}
-              </button>
-            </div>
+            <button 
+              className="md:hidden text-white p-2 ml-2 focus:outline-none"
+              onClick={toggleMenu}
+              aria-label="Menu"
+            >
+              {isMenuOpen ? <X /> : <Menu />}
+            </button>
           </div>
         </div>
+        
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 mt-2 border-t border-white/10">
+            <div className="flex flex-col space-y-3">
+              <Link to="/" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Home</Link>
+              <Link to="/shop" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Shop</Link>
+              <Link to="/blog" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Blog</Link>
+              <Link to="/about" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>About</Link>
+              <Link to="/contact" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Contact</Link>
+              
+              {isLoggedIn && (
+                <div className="border-t border-white/10 pt-3 mt-2">
+                  <p className="text-sm text-white/70">Logged in as {userName}</p>
+                  <Link to="/profile" className="text-cyber-blue hover:text-cyber-blue/70 py-2 transition-colors block" onClick={closeMenu}>
+                    View Profile
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Search Panel */}
+        {isSearchOpen && (
+          <div className="absolute left-0 right-0 bg-black border-b border-white/10 p-4 shadow-lg">
+            <SearchBar onClose={toggleSearch} />
+          </div>
+        )}
       </div>
-      
-      {/* Mobile menu */}
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-black border-t border-white/10">
-            <div className="px-3 py-2">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="cyber-input w-full"
-              />
-            </div>
-            
-            <Link
-              to="/products"
-              className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
-              onClick={() => setIsOpen(false)}
-            >
-              All Products
-            </Link>
-            
-            <Link
-              to="/articles"
-              className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
-              onClick={() => setIsOpen(false)}
-            >
-              Articles
-            </Link>
-            
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                to={category.path}
-                className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
-                onClick={() => setIsOpen(false)}
-              >
-                {category.name}
-              </Link>
-            ))}
-            
-            {!isLoggedIn && (
-              <Link
-                to="/login"
-                className="block px-3 py-2 text-base font-medium text-white hover:text-white/80"
-                onClick={() => setIsOpen(false)}
-              >
-                Login/SignUp
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
-};
-
-export default Navbar;
+}
