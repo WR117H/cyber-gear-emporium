@@ -1,5 +1,6 @@
+
 import { v4 as uuidv4 } from 'uuid';
-import { Order, OrderStatus, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
+import { Order, OrderStatus, OrderDB, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 import { isSupabaseConfigured } from './supabaseClient';
 import { 
   createOrderInSupabase, 
@@ -50,7 +51,7 @@ const saveOrders = (orders: Order[]): void => {
 };
 
 // Create a new order
-export const createOrder = async (orderData: Omit<any, 'id' | 'createdAt' | 'status' | 'updatedAt'>): Promise<Order> => {
+export const createOrder = async (orderData: Partial<Order>): Promise<Order> => {
   const now = new Date().toISOString();
   
   // Generate a simplified order ID for better usability
@@ -59,12 +60,14 @@ export const createOrder = async (orderData: Omit<any, 'id' | 'createdAt' | 'sta
   // Generate an order code for confirmation page
   const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   
-  const newOrder = {
+  const newOrder: Partial<Order> = {
     ...orderData,
     id: orderId,
     createdAt: now,
+    created_at: now,
     updatedAt: now,
-    status: 'pending',
+    updated_at: now,
+    status: 'pending' as OrderStatus,
     orderCode: orderCode
   };
   
@@ -98,9 +101,7 @@ export const createOrder = async (orderData: Omit<any, 'id' | 'createdAt' | 'sta
   if (isSupabaseConfigured()) {
     try {
       console.log('Creating order in Supabase:', newOrder);
-      // Convert to database format
-      const dbOrder = mapClientOrderToDatabaseOrder(newOrder);
-      const supabaseOrder = await createOrderInSupabase(dbOrder);
+      const supabaseOrder = await createOrderInSupabase(newOrder);
       if (supabaseOrder) {
         console.log('Order created in Supabase:', supabaseOrder);
         return supabaseOrder;
@@ -112,7 +113,7 @@ export const createOrder = async (orderData: Omit<any, 'id' | 'createdAt' | 'sta
   
   // Fallback to localStorage
   const orders = await fetchOrders();
-  const clientOrder = mapDatabaseOrderToClientOrder(newOrder);
+  const clientOrder = newOrder as Order;
   orders.push(clientOrder);
   saveOrders(orders);
   
@@ -168,7 +169,7 @@ export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
   console.log(`Looking for orders with userId: ${userId}`);
   console.log('All orders available:', orders);
   
-  const userOrders = orders.filter(order => order.userId === userId);
+  const userOrders = orders.filter(order => order.userId === userId || order.user_id === userId);
   console.log(`Found ${userOrders.length} orders for user ${userId} in localStorage`);
   return userOrders;
 };
@@ -183,7 +184,8 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
       console.log(`Updating order ${id} in Supabase`);
       const updatedOrder = await updateOrderInSupabase(id, {
         ...orderData,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
       if (updatedOrder) {
         console.log('Order updated in Supabase:', updatedOrder);
@@ -203,7 +205,8 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
   const updatedOrder = {
     ...orders[orderIndex],
     ...orderData,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
   
   orders[orderIndex] = updatedOrder;
@@ -259,7 +262,7 @@ export const updateOrderTracking = async (
   estimatedDelivery?: string
 ): Promise<Order | null> => {
   console.log(`updateOrderTracking called for id: ${id}, tracking: ${trackingNumber}`);
-  return updateOrder(id, { trackingNumber, estimatedDelivery });
+  return updateOrder(id, { trackingNumber, tracking_number: trackingNumber, estimatedDelivery, estimated_delivery: estimatedDelivery });
 };
 
 // Function to get statistics for admin dashboard

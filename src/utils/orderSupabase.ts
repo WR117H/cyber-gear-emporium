@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Order, OrderStatus, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
+import { Order, OrderStatus, OrderDB, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 
 // Fetch all orders from Supabase
 export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
@@ -18,11 +18,11 @@ export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
   
   console.log(`Successfully fetched ${data?.length || 0} orders from Supabase`);
   // Map database format to client format
-  return (data || []).map(order => mapDatabaseOrderToClientOrder(order as Order));
+  return (data || []).map(order => mapDatabaseOrderToClientOrder(order as OrderDB));
 };
 
 // Create a new order in Supabase
-export const createOrderInSupabase = async (order: Omit<any, 'id'>): Promise<Order | null> => {
+export const createOrderInSupabase = async (order: Partial<Order>): Promise<Order | null> => {
   // Log the order being created for debugging
   console.log('Creating order in Supabase:', order);
   
@@ -47,7 +47,7 @@ export const createOrderInSupabase = async (order: Omit<any, 'id'>): Promise<Ord
   }
   
   console.log('Order created successfully in Supabase:', data);
-  return mapDatabaseOrderToClientOrder(data as Order);
+  return mapDatabaseOrderToClientOrder(data as OrderDB);
 };
 
 // Get orders by user ID from Supabase
@@ -66,7 +66,7 @@ export const getOrdersByUserIdFromSupabase = async (userId: string): Promise<Ord
   }
   
   console.log(`Found ${data?.length || 0} orders for user ${userId}`);
-  return (data || []).map(order => mapDatabaseOrderToClientOrder(order as Order));
+  return (data || []).map(order => mapDatabaseOrderToClientOrder(order as OrderDB));
 };
 
 // Get a single order by ID from Supabase
@@ -85,26 +85,18 @@ export const getOrderByIdFromSupabase = async (id: string): Promise<Order | null
   }
   
   console.log('Order found:', data);
-  return data ? mapDatabaseOrderToClientOrder(data as Order) : null;
+  return data ? mapDatabaseOrderToClientOrder(data as OrderDB) : null;
 };
 
 // Update an order in Supabase
-export const updateOrderInSupabase = async (id: string, updates: Partial<any>): Promise<Order | null> => {
+export const updateOrderInSupabase = async (id: string, updates: Partial<Order>): Promise<Order | null> => {
   console.log(`Updating order ${id} in Supabase with:`, updates);
   
-  // Convert client order format to database format if needed
-  const dbUpdates = {
+  // Convert client order format to database format
+  const dbUpdates = mapClientOrderToDatabaseOrder({
     ...updates,
     updated_at: new Date().toISOString(),
-    // Map client-side properties to database properties if present
-    ...(updates.userId && { user_id: updates.userId }),
-    ...(updates.createdAt && { created_at: updates.createdAt }),
-    ...(updates.paymentMethod && { payment_method: updates.paymentMethod }),
-    ...(updates.shippingAddress && { shipping_address: updates.shippingAddress }),
-    ...(updates.trackingNumber && { tracking_number: updates.trackingNumber }),
-    ...(updates.estimatedDelivery && { estimated_delivery: updates.estimatedDelivery }),
-    ...(updates.orderCode && { order_code: updates.orderCode })
-  };
+  });
   
   const { data, error } = await supabase
     .from('orders')
@@ -119,7 +111,7 @@ export const updateOrderInSupabase = async (id: string, updates: Partial<any>): 
   }
   
   console.log('Order updated successfully:', data);
-  return data ? mapDatabaseOrderToClientOrder(data as Order) : null;
+  return data ? mapDatabaseOrderToClientOrder(data as OrderDB) : null;
 };
 
 // Delete an order from Supabase
