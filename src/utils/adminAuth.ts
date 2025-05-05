@@ -1,18 +1,10 @@
 
+import { supabase } from '@/integrations/supabase/client';
+
 // Key for storing admin status in localStorage
 const ADMIN_AUTH_KEY = 'admin_authenticated';
-// Key for storing the admin password in plaintext (not secure, but as requested)
-const ADMIN_PASSWORD_KEY = 'admin_password';
-
 // Default admin password
 const DEFAULT_PASSWORD = "admin123";
-
-// Initialize password if not set
-if (typeof window !== 'undefined' && window.localStorage) {
-  if (!localStorage.getItem(ADMIN_PASSWORD_KEY)) {
-    localStorage.setItem(ADMIN_PASSWORD_KEY, DEFAULT_PASSWORD);
-  }
-}
 
 // Check if admin is authenticated
 export const isAdminAuthenticated = (): boolean => {
@@ -31,26 +23,69 @@ export const setAdminAuthenticated = (value: boolean): void => {
   }
 };
 
-// Check if password is correct - directly compare without hashing
-export const checkAdminPassword = (password: string): boolean => {
-  if (typeof window === 'undefined' || !window.localStorage) return false;
-  
-  const storedPassword = localStorage.getItem(ADMIN_PASSWORD_KEY) || DEFAULT_PASSWORD;
-  
+// Initialize the admin password in the database if not set
+export const initializeAdminPassword = async (): Promise<void> => {
+  try {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('*')
+      .eq('key', 'admin_password')
+      .single();
+      
+    if (error || !data) {
+      // Insert the default password if not found
+      await supabase
+        .from('admin_settings')
+        .insert([{ key: 'admin_password', value: DEFAULT_PASSWORD }]);
+    }
+  } catch (error) {
+    console.error('Error initializing admin password:', error);
+  }
+};
+
+// Check if password is correct by comparing with the one in the database
+export const checkAdminPassword = async (password: string): Promise<boolean> => {
   // For debugging
   console.log('Input password:', password);
-  console.log('Stored password:', storedPassword);
-  console.log('Match?', password === storedPassword);
   
-  return password === storedPassword;
+  try {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('value')
+      .eq('key', 'admin_password')
+      .single();
+      
+    if (error) {
+      console.error('Error fetching admin password from database:', error);
+      // Fallback to default password if db fetch fails
+      return password === DEFAULT_PASSWORD;
+    }
+    
+    const storedPassword = data?.value;
+    console.log('Stored password:', storedPassword);
+    console.log('Match?', password === storedPassword);
+    
+    return password === storedPassword;
+  } catch (error) {
+    console.error('Error checking admin password:', error);
+    // Fallback to default password if there's an error
+    return password === DEFAULT_PASSWORD;
+  }
 };
 
 // Change admin password
-export const changeAdminPassword = (newPassword: string): boolean => {
-  if (typeof window === 'undefined' || !window.localStorage) return false;
-  
+export const changeAdminPassword = async (newPassword: string): Promise<boolean> => {
   try {
-    localStorage.setItem(ADMIN_PASSWORD_KEY, newPassword);
+    const { error } = await supabase
+      .from('admin_settings')
+      .update({ value: newPassword })
+      .eq('key', 'admin_password');
+      
+    if (error) {
+      console.error('Error updating admin password in database:', error);
+      return false;
+    }
+    
     return true;
   } catch (error) {
     console.error('Error changing admin password:', error);
@@ -59,14 +94,11 @@ export const changeAdminPassword = (newPassword: string): boolean => {
 };
 
 // Reset admin password to default (admin123)
-export const resetAdminPassword = (): boolean => {
-  if (typeof window === 'undefined' || !window.localStorage) return false;
-  
-  try {
-    localStorage.setItem(ADMIN_PASSWORD_KEY, DEFAULT_PASSWORD);
-    return true;
-  } catch (error) {
-    console.error('Error resetting admin password:', error);
-    return false;
-  }
+export const resetAdminPassword = async (): Promise<boolean> => {
+  return await changeAdminPassword(DEFAULT_PASSWORD);
 };
+
+// Call initialization function when the file is imported
+if (typeof window !== 'undefined') {
+  initializeAdminPassword();
+}

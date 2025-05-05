@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Order, OrderStatus, OrderDB, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
+import { Json } from '@/integrations/supabase/types';
 
 // Fetch all orders from Supabase
 export const fetchOrdersFromSupabase = async (): Promise<Order[]> => {
@@ -35,9 +36,15 @@ export const createOrderInSupabase = async (order: Partial<Order>): Promise<Orde
     status: order.status || 'pending',
   });
   
+  // Ensure required fields are present
+  if (!dbOrder.id || !dbOrder.items || !dbOrder.status || typeof dbOrder.total !== 'number') {
+    console.error('Missing required fields for order creation:', dbOrder);
+    return null;
+  }
+  
   const { data, error } = await supabase
     .from('orders')
-    .insert([dbOrder])
+    .insert([dbOrder as any])
     .select()
     .single();
     
@@ -98,9 +105,11 @@ export const updateOrderInSupabase = async (id: string, updates: Partial<Order>)
     updated_at: new Date().toISOString(),
   });
   
+  console.log("Converted updates for database:", dbUpdates);
+  
   const { data, error } = await supabase
     .from('orders')
-    .update(dbUpdates)
+    .update(dbUpdates as any)
     .eq('id', id)
     .select()
     .single();

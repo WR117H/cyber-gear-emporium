@@ -1,127 +1,97 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { Lock, RefreshCw } from 'lucide-react';
-import { checkAdminPassword, setAdminAuthenticated, resetAdminPassword } from '@/utils/adminAuth';
+import { useToast } from '@/hooks/use-toast';
+import { Shield, Lock } from 'lucide-react';
+import { checkAdminPassword, setAdminAuthenticated } from '@/utils/adminAuth';
 
-export default function AdminLogin() {
+const AdminLogin = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showResetOption, setShowResetOption] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      if (checkAdminPassword(password)) {
+    try {
+      const isCorrect = await checkAdminPassword(password);
+      
+      if (isCorrect) {
         setAdminAuthenticated(true);
         toast({
           title: "Login successful",
-          description: "Welcome to admin panel"
+          description: "Welcome to the admin panel",
         });
         navigate('/admin/dashboard');
       } else {
         toast({
-          title: "Access denied",
-          description: "Incorrect password",
-          variant: "destructive"
+          title: "Authentication failed",
+          description: "The password you entered is incorrect",
+          variant: "destructive",
         });
-        setShowResetOption(true);
       }
+    } catch (error) {
+      console.error('Error during login:', error);
+      toast({
+        title: "Error",
+        description: "An error occurred during login. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 500);
-  };
-
-  const handleReset = () => {
-    if (resetAdminPassword()) {
-      toast({
-        title: "Password reset",
-        description: "Admin password has been reset to the default (admin123)"
-      });
-      setPassword('');
-    } else {
-      toast({
-        title: "Reset failed",
-        description: "Could not reset the password",
-        variant: "destructive"
-      });
     }
   };
-
-  // Check local storage on component mount
-  useEffect(() => {
-    const storedPassword = localStorage.getItem('admin_password');
-    if (!storedPassword) {
-      toast({
-        title: "First time setup",
-        description: "Use the default password: admin123"
-      });
-    }
-  }, [toast]);
 
   return (
-    <div className="bg-black min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md space-y-8 backdrop-blur-lg bg-black/40 p-8 rounded-xl border border-white/10">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="w-full max-w-md p-8 space-y-8 backdrop-blur-lg bg-black/40 rounded-xl border border-white/10">
         <div className="text-center">
-          <div className="mx-auto mb-6 w-12 h-12 relative">
-            <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-            <div className="relative flex items-center justify-center w-full h-full">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
+          <div className="h-20 w-20 bg-white/10 rounded-lg mx-auto mb-6 flex items-center justify-center">
+            <Shield className="h-10 w-10 text-white" />
           </div>
-          
-          <h2 className="text-2xl font-bold text-white mb-2">Admin Access</h2>
-          <p className="text-muted-foreground mb-8">Enter password to continue</p>
+          <h1 className="text-2xl font-bold text-white">Admin Access</h1>
+          <p className="text-gray-400 mt-2">Enter your password to access the admin panel</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium text-white">
               Password
             </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              placeholder="Enter admin password"
-              required
-            />
-            <p className="text-xs text-cyber-blue mt-1">Default: admin123</p>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter admin password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 bg-white/10 border-white/20 text-white"
+              />
+            </div>
           </div>
 
           <Button 
             type="submit" 
-            className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy" 
+            className="w-full bg-cyber-blue hover:bg-cyber-blue/90 text-cyber-navy transition-colors"
             disabled={isLoading}
           >
-            {isLoading ? "Verifying..." : "Access Admin Panel"}
+            {isLoading ? "Authenticating..." : "Access Admin Panel"}
           </Button>
-        </form>
 
-        {showResetOption && (
-          <div className="mt-4 text-center">
-            <p className="text-sm text-muted-foreground mb-2">Can't access? Reset to default password</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-cyber-blue border-cyber-blue/30"
-              onClick={handleReset}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reset Password
-            </Button>
+          <div className="text-center">
+            <p className="text-xs text-white/50">
+              Only authorized personnel should access this area.
+            </p>
           </div>
-        )}
+        </form>
       </div>
     </div>
   );
-}
+};
+
+export default AdminLogin;

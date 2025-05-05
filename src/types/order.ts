@@ -134,6 +134,10 @@ export function mapDatabaseOrderToClientOrder(dbOrder: OrderDB): Order {
 
 // Map client order to database order
 export function mapClientOrderToDatabaseOrder(clientOrder: Partial<Order>): Partial<OrderDB> {
+  // For shippingAddress and address, we need to ensure they are properly converted to Json
+  const shipping_address = clientOrder.shippingAddress || clientOrder.shipping_address;
+  const address = clientOrder.address;
+  
   const result: Partial<OrderDB> = {
     id: clientOrder.id,
     user_id: clientOrder.userId || clientOrder.user_id,
@@ -144,8 +148,8 @@ export function mapClientOrderToDatabaseOrder(clientOrder: Partial<Order>): Part
     updated_at: clientOrder.updatedAt || clientOrder.updated_at || new Date().toISOString(),
     payment_method: clientOrder.paymentMethod || clientOrder.payment_method,
     payment_status: clientOrder.payment_status,
-    shipping_address: clientOrder.shippingAddress || clientOrder.shipping_address as unknown as Json,
-    address: clientOrder.address as unknown as Json,
+    shipping_address: shipping_address as unknown as Json,
+    address: address as unknown as Json,
     tracking_number: clientOrder.trackingNumber || clientOrder.tracking_number,
     estimated_delivery: clientOrder.estimatedDelivery || clientOrder.estimated_delivery,
     notes: clientOrder.notes,
