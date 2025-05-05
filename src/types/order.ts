@@ -23,10 +23,11 @@ export interface OrderAddress {
   phone: string;
 }
 
-// Adapted to match the Supabase database schema
+// Define both database schema interface and client interface versions
+// This matches exactly the Supabase structure
 export interface Order {
   id: string;
-  user_id: string;   // Changed from userId to match Supabase
+  user_id: string;
   items: Array<{
     id: string;
     name: string;
@@ -38,23 +39,34 @@ export interface Order {
   }>;
   total: number;
   status: OrderStatus;
-  created_at: string; // Changed from createdAt to match Supabase
-  updated_at: string; // Changed from updatedAt to match Supabase
-  payment_method: string; // Changed from paymentMethod to match Supabase
+  created_at: string;
+  updated_at: string;
+  payment_method: string;
   payment_status: 'paid' | 'pending' | 'failed';
-  shipping_address: ShippingAddress; // Changed from shippingAddress to match Supabase
+  shipping_address: ShippingAddress;
   address: OrderAddress;
-  tracking_number?: string; // Changed from trackingNumber to match Supabase
-  estimated_delivery?: string; // Changed from estimatedDelivery to match Supabase
+  tracking_number?: string;
+  estimated_delivery?: string;
   notes?: string;
   date: string;
-  order_code?: string; // Changed from orderCode to match Supabase
+  order_code?: string;
+  
+  // For backwards compatibility, include client-side properties
+  userId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  paymentMethod?: string;
+  shippingAddress?: ShippingAddress;
+  trackingNumber?: string;
+  estimatedDelivery?: string;
+  orderCode?: string;
 }
 
 // For backwards compatibility, create a mapping function
-export function mapDatabaseOrderToClientOrder(dbOrder: Order): any {
+export function mapDatabaseOrderToClientOrder(dbOrder: Order): Order {
   return {
     ...dbOrder,
+    // Add client-side property aliases
     userId: dbOrder.user_id,
     createdAt: dbOrder.created_at,
     updatedAt: dbOrder.updated_at,
@@ -69,14 +81,15 @@ export function mapDatabaseOrderToClientOrder(dbOrder: Order): any {
 export function mapClientOrderToDatabaseOrder(clientOrder: any): Order {
   return {
     ...clientOrder,
-    user_id: clientOrder.userId,
-    created_at: clientOrder.createdAt,
-    updated_at: clientOrder.updatedAt,
-    payment_method: clientOrder.paymentMethod,
-    shipping_address: clientOrder.shippingAddress,
-    tracking_number: clientOrder.trackingNumber,
-    estimated_delivery: clientOrder.estimatedDelivery,
-    order_code: clientOrder.orderCode
+    // Map client properties to database properties
+    user_id: clientOrder.userId || clientOrder.user_id,
+    created_at: clientOrder.createdAt || clientOrder.created_at || new Date().toISOString(),
+    updated_at: clientOrder.updatedAt || clientOrder.updated_at || new Date().toISOString(),
+    payment_method: clientOrder.paymentMethod || clientOrder.payment_method,
+    shipping_address: clientOrder.shippingAddress || clientOrder.shipping_address,
+    tracking_number: clientOrder.trackingNumber || clientOrder.tracking_number,
+    estimated_delivery: clientOrder.estimatedDelivery || clientOrder.estimated_delivery,
+    order_code: clientOrder.orderCode || clientOrder.order_code
   };
 }
 
