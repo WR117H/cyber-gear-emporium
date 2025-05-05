@@ -1,5 +1,5 @@
 
-import { supabase } from './supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { Order, OrderStatus } from '@/types/order';
 import { useToast } from '@/hooks/use-toast';
 
