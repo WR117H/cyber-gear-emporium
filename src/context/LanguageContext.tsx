@@ -94,6 +94,26 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.documentElement.dir = 'ltr';
       document.documentElement.classList.remove('font-mirza');
     }
+    
+    // Important: Don't modify logo fonts or button positions
+    const logoElements = document.querySelectorAll('.site-logo');
+    logoElements.forEach(el => {
+      if (isRTL) {
+        // Remove font-mirza from logo when in Persian
+        el.classList.remove('font-mirza');
+      }
+    });
+    
+    // Prevent button repositioning
+    const buttonContainers = document.querySelectorAll('.fixed-button-container');
+    buttonContainers.forEach(container => {
+      if (isRTL) {
+        container.classList.add('rtl-fixed-position');
+      } else {
+        container.classList.remove('rtl-fixed-position');
+      }
+    });
+    
   }, [isRTL]);
 
   const toggleLanguage = () => {

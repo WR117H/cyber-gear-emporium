@@ -50,29 +50,35 @@
     overflow-x: hidden;
   }
   
-  /* Persian font sizing - reduced by 2px */
+  /* Persian font sizing - adjusted for larger size */
   .font-mirza {
-    @apply text-base;
+    @apply text-lg;
   }
   
   html[dir="rtl"] {
     @apply font-mirza;
   }
   
-  html[dir="rtl"] h1, 
-  html[dir="rtl"] h2, 
+  html[dir="rtl"] h1 {
+    @apply text-[130%];
+  }
+  
+  html[dir="rtl"] h2 {
+    @apply text-[125%]; 
+  }
+  
   html[dir="rtl"] h3, 
   html[dir="rtl"] h4, 
   html[dir="rtl"] h5, 
   html[dir="rtl"] h6 {
-    @apply text-[118%];
+    @apply text-[120%];
   }
   
   html[dir="rtl"] p, 
   html[dir="rtl"] span, 
   html[dir="rtl"] a, 
   html[dir="rtl"] button {
-    @apply text-[113%];
+    @apply text-[115%];
   }
 }
 
