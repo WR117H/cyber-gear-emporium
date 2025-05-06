@@ -49,14 +49,38 @@
     letter-spacing: -0.015em;
     overflow-x: hidden;
   }
+  
+  /* Persian font sizing */
+  .font-mirza {
+    @apply text-lg;
+  }
+  
+  html[dir="rtl"] {
+    @apply font-mirza;
+  }
+  
+  html[dir="rtl"] h1, 
+  html[dir="rtl"] h2, 
+  html[dir="rtl"] h3, 
+  html[dir="rtl"] h4, 
+  html[dir="rtl"] h5, 
+  html[dir="rtl"] h6 {
+    @apply text-[120%];
+  }
+  
+  html[dir="rtl"] p, 
+  html[dir="rtl"] span, 
+  html[dir="rtl"] a, 
+  html[dir="rtl"] button {
+    @apply text-[115%];
+  }
 }
 
 @layer components {
   .cyber-button {
     @apply bg-black border border-white text-white rounded-[14px] px-6 py-3 
            transition-all duration-300 hover:bg-white hover:text-black
-           focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50
-           active:transform active:scale-95;
+           focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50;
   }
   
   .cyber-card {

@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
-import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 import SearchBar from './SearchBar';
 import { useLanguage } from '@/context/LanguageContext';
@@ -94,7 +93,6 @@ export default function Navbar() {
             )}
 
             <LanguageToggle className="ml-3" />
-            <ThemeToggle className="ml-3" />
             
             {/* Mobile menu button */}
             <button 

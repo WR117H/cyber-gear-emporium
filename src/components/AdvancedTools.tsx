@@ -2,18 +2,20 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Shield, Cpu } from "lucide-react";
-import RGBText from './RGBText';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface AdvancedToolsProps {
   onToolSelect: (tool: string) => void;
 }
 
 const AdvancedTools: React.FC<AdvancedToolsProps> = ({ onToolSelect }) => {
+  const { isRTL } = useLanguage();
+  
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-4xl mx-auto text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-          Advanced Tools for <RGBText text="Ethical" colors={['#00FFFF', '#FF00FF', '#00FF00']} intervalMs={800} /> Hackers
+          Advanced Tools for <span className="text-cyber-blue">Ethical Hackers</span>
         </h2>
         <p className="text-lg text-gray-400">
           Our cutting-edge tools are designed for cybersecurity professionals and ethical hackers to test, analyze, and secure networks.

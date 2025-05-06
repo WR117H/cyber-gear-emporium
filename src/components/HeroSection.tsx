@@ -49,12 +49,13 @@ const HeroSection = () => {
           
           {/* Add animated text */}
           <div className="lg:w-1/2 flex justify-center items-center h-40 lg:h-auto">
-            <GooeyText 
-              texts={isRTL ? [t('ethical'), t('hacker')] : ["Ethical", "Hacker"]}
-              morphTime={1.5}
-              cooldownTime={0.75} 
-              className="font-bold text-cyber-blue"
-            />
+            <div className="font-bold text-cyber-blue text-6xl">
+              {isRTL ? (
+                <span>{t('ethical')} {t('hacker')}</span>
+              ) : (
+                <span>Ethical Hacker</span>
+              )}
+            </div>
           </div>
         </div>
       </div>

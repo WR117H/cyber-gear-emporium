@@ -10,16 +10,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white text-black hover:bg-white/90 shadow-md transition-colors duration-300",
+        default: "bg-white text-black hover:bg-white/90 shadow-md",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md",
         outline:
-          "border border-white bg-transparent text-white hover:bg-accent hover:text-accent-foreground hover:border-accent transition-colors duration-300",
+          "border border-white bg-transparent text-white hover:bg-accent hover:text-accent-foreground hover:border-accent",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-md",
-        ghost: "hover:bg-accent hover:text-accent-foreground transition-colors duration-300",
-        link: "text-primary underline-offset-4 hover:underline transition-all duration-300",
-        cyber: "bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy rounded-full shadow-[0_0_10px_rgba(0,255,255,0.4)] hover:shadow-[0_0_18px_rgba(0,255,255,0.7)] transition-all duration-300",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        cyber: "bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy rounded-full shadow-[0_0_10px_rgba(0,255,255,0.4)] hover:shadow-[0_0_18px_rgba(0,255,255,0.7)]",
         github: "bg-white text-black hover:bg-white/90 rounded-full shadow-md",
       },
       size: {
