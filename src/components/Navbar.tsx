@@ -55,8 +55,6 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-white hover:text-cyber-blue transition-colors">Home</Link>
-            <Link to="/shop" className="text-white hover:text-cyber-blue transition-colors">Shop</Link>
-            <Link to="/blog" className="text-white hover:text-cyber-blue transition-colors">Blog</Link>
             <Link to="/about" className="text-white hover:text-cyber-blue transition-colors">About</Link>
             <Link to="/contact" className="text-white hover:text-cyber-blue transition-colors">Contact</Link>
           </div>
@@ -110,8 +108,6 @@ export default function Navbar() {
           <div className="md:hidden py-4 mt-2 border-t border-white/10">
             <div className="flex flex-col space-y-3">
               <Link to="/" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Home</Link>
-              <Link to="/shop" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Shop</Link>
-              <Link to="/blog" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Blog</Link>
               <Link to="/about" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>About</Link>
               <Link to="/contact" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Contact</Link>
               

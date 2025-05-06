@@ -13,7 +13,7 @@ const AdvancedTools: React.FC<AdvancedToolsProps> = ({ onToolSelect }) => {
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-4xl mx-auto text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-          Advanced Tools for <RGBText text="Ethical" /> Hackers
+          Advanced Tools for <RGBText text="Ethical" colors={['#00FFFF', '#FF00FF', '#00FF00']} intervalMs={800} /> Hackers
         </h2>
         <p className="text-lg text-gray-400">
           Our cutting-edge tools are designed for cybersecurity professionals and ethical hackers to test, analyze, and secure networks.
