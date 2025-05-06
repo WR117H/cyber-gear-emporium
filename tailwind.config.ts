@@ -21,6 +21,7 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ['"Special Gothic Expanded One"', 'sans-serif'],
+				mirza: ['"Mirza"', 'cursive'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -63,6 +64,7 @@ export default {
 					green: '#39FF14',
 					dark: '#2A2A2A',
 					light: '#F5F5F5',
+					pink: '#FF00FF',
 				}
 			},
 			borderRadius: {

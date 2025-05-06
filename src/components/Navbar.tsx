@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
 import SearchBar from './SearchBar';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +18,7 @@ export default function Navbar() {
   const [userName, setUserName] = useState<string | null>(null);
   const { items } = useCart();
   const location = useLocation();
+  const { t, isRTL } = useLanguage();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
@@ -44,7 +47,7 @@ export default function Navbar() {
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <nav className="bg-black border-b border-white/10 py-4 sticky top-0 z-50 backdrop-blur-lg bg-opacity-70">
+    <nav className={`bg-black border-b border-white/10 py-4 sticky top-0 z-50 backdrop-blur-lg bg-opacity-70 ${isRTL ? 'font-mirza' : ''}`}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -54,9 +57,9 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-white hover:text-cyber-blue transition-colors">Home</Link>
-            <Link to="/about" className="text-white hover:text-cyber-blue transition-colors">About</Link>
-            <Link to="/contact" className="text-white hover:text-cyber-blue transition-colors">Contact</Link>
+            <Link to="/" className="text-white hover:text-cyber-blue transition-colors">{t('home')}</Link>
+            <Link to="/about" className="text-white hover:text-cyber-blue transition-colors">{t('about')}</Link>
+            <Link to="/contact" className="text-white hover:text-cyber-blue transition-colors">{t('contact')}</Link>
           </div>
 
           {/* Icons */}
@@ -64,7 +67,7 @@ export default function Navbar() {
             <button 
               onClick={toggleSearch} 
               className="text-white hover:text-cyber-blue p-2 transition-colors"
-              aria-label="Search"
+              aria-label={t('search')}
             >
               <Search />
             </button>
@@ -85,11 +88,12 @@ export default function Navbar() {
             ) : (
               <Link to="/login">
                 <Button className="ml-2 bg-cyber-blue hover:bg-cyber-blue/90 text-cyber-navy" size="sm">
-                  Login
+                  {t('login')}
                 </Button>
               </Link>
             )}
 
+            <LanguageToggle className="ml-3" />
             <ThemeToggle className="ml-3" />
             
             {/* Mobile menu button */}
@@ -107,15 +111,15 @@ export default function Navbar() {
         {isMenuOpen && (
           <div className="md:hidden py-4 mt-2 border-t border-white/10">
             <div className="flex flex-col space-y-3">
-              <Link to="/" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Home</Link>
-              <Link to="/about" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>About</Link>
-              <Link to="/contact" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>Contact</Link>
+              <Link to="/" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>{t('home')}</Link>
+              <Link to="/about" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>{t('about')}</Link>
+              <Link to="/contact" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>{t('contact')}</Link>
               
               {isLoggedIn && (
                 <div className="border-t border-white/10 pt-3 mt-2">
-                  <p className="text-sm text-white/70">Logged in as {userName}</p>
+                  <p className="text-sm text-white/70">{t('logged_in_as')} {userName}</p>
                   <Link to="/profile" className="text-cyber-blue hover:text-cyber-blue/70 py-2 transition-colors block" onClick={closeMenu}>
-                    View Profile
+                    {t('view_profile')}
                   </Link>
                 </div>
               )}
