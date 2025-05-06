@@ -3,7 +3,6 @@ import React from 'react';
 import { ArrowRight, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { GooeyText } from '@/components/ui/gooey-text';
 import { useLanguage } from '@/context/LanguageContext';
 
 const HeroSection = () => {
@@ -47,16 +46,8 @@ const HeroSection = () => {
             </div>
           </div>
           
-          {/* Add animated text */}
-          <div className="lg:w-1/2 flex justify-center items-center h-40 lg:h-auto">
-            <div className="font-bold text-cyber-blue text-6xl">
-              {isRTL ? (
-                <span>{t('ethical')} {t('hacker')}</span>
-              ) : (
-                <span>Ethical Hacker</span>
-              )}
-            </div>
-          </div>
+          {/* Remove the Ethical Hacker text section */}
+          <div className="lg:w-1/2"></div>
         </div>
       </div>
     </div>

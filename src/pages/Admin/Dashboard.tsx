@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -51,6 +50,7 @@ export default function Dashboard() {
           </Link>
         </div>
 
+        {/* Stats cards section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-secondary border-none">
             <CardHeader className="pb-2">
@@ -202,6 +202,48 @@ export default function Dashboard() {
               <Link to="/admin/settings" className="w-full">
                 <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
                   Store Settings
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          {/* New Translation Management Card */}
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-cyber-blue" />
+                Translation Management
+              </CardTitle>
+              <CardDescription>Manage multilingual content</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Create and update translations for site text in multiple languages.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/translations" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Manage Translations
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          {/* New Bilingual Content Editor Card */}
+          <Card className="bg-secondary border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-cyber-blue" />
+                Bilingual Content
+              </CardTitle>
+              <CardDescription>Create content in multiple languages</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Create and manage content in both English and Persian languages.</p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/admin/bilingual-content" className="w-full">
+                <Button className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy">
+                  Create Bilingual Content
                 </Button>
               </Link>
             </CardFooter>

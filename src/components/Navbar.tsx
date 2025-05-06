@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User, Search } from 'lucide-react';
@@ -6,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
-import LanguageToggle from './LanguageToggle';
 import SearchBar from './SearchBar';
+import LanguageToggle from './LanguageToggle';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navbar() {
@@ -17,7 +16,7 @@ export default function Navbar() {
   const [userName, setUserName] = useState<string | null>(null);
   const { items } = useCart();
   const location = useLocation();
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
@@ -28,7 +27,6 @@ export default function Navbar() {
     const checkAuth = async () => {
       const authenticated = await isAuthenticated();
       setIsLoggedIn(authenticated);
-      
       if (authenticated) {
         try {
           const userData = await getCurrentUser();
@@ -38,7 +36,6 @@ export default function Navbar() {
         }
       }
     };
-    
     checkAuth();
   }, [location.pathname]); // Re-check when route changes
 
@@ -46,31 +43,39 @@ export default function Navbar() {
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <nav className={`bg-black border-b border-white/10 py-4 sticky top-0 z-50 backdrop-blur-lg bg-opacity-70 ${isRTL ? 'font-mirza' : ''}`}>
+    <nav className="bg-black border-b border-white/10 py-4 sticky top-0 z-50 backdrop-blur-lg bg-opacity-70">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
+          {/* Logo - keeping the font the same in both languages */}
           <Link to="/" className="flex items-center" onClick={closeMenu}>
-            <span className="text-white font-bold text-xl md:text-2xl tracking-tight">CYBER<span className="text-cyber-blue">GEAR</span></span>
+            <span className="text-white font-bold text-xl md:text-2xl tracking-tight">
+              CYBER<span className="text-cyber-blue">GEAR</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-white hover:text-cyber-blue transition-colors">{t('home')}</Link>
-            <Link to="/about" className="text-white hover:text-cyber-blue transition-colors">{t('about')}</Link>
-            <Link to="/contact" className="text-white hover:text-cyber-blue transition-colors">{t('contact')}</Link>
+            <Link to="/" className="text-white hover:text-cyber-blue transition-colors">
+              {t('home')}
+            </Link>
+            <Link to="/about" className="text-white hover:text-cyber-blue transition-colors">
+              {t('about')}
+            </Link>
+            <Link to="/contact" className="text-white hover:text-cyber-blue transition-colors">
+              {t('contact')}
+            </Link>
           </div>
 
-          {/* Icons */}
+          {/* Right Side Actions */}
           <div className="flex items-center">
-            <button 
-              onClick={toggleSearch} 
+            <button
+              onClick={toggleSearch}
               className="text-white hover:text-cyber-blue p-2 transition-colors"
-              aria-label={t('search')}
+              aria-label="Search"
             >
               <Search />
             </button>
-            
+
             <Link to="/cart" className="text-white hover:text-cyber-blue p-2 relative transition-colors">
               <ShoppingCart />
               {cartItemCount > 0 && (
@@ -91,11 +96,10 @@ export default function Navbar() {
                 </Button>
               </Link>
             )}
-
-            <LanguageToggle className="ml-3" />
             
-            {/* Mobile menu button */}
-            <button 
+            <LanguageToggle className="ml-3" />
+
+            <button
               className="md:hidden text-white p-2 ml-2 focus:outline-none"
               onClick={toggleMenu}
               aria-label="Menu"
@@ -104,19 +108,29 @@ export default function Navbar() {
             </button>
           </div>
         </div>
-        
-        {/* Mobile Navigation */}
+
+        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 mt-2 border-t border-white/10">
             <div className="flex flex-col space-y-3">
-              <Link to="/" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>{t('home')}</Link>
-              <Link to="/about" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>{t('about')}</Link>
-              <Link to="/contact" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>{t('contact')}</Link>
-              
+              <Link to="/" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>
+                {t('home')}
+              </Link>
+              <Link to="/about" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>
+                {t('about')}
+              </Link>
+              <Link to="/contact" className="text-white hover:text-cyber-blue py-2 transition-colors" onClick={closeMenu}>
+                {t('contact')}
+              </Link>
+
               {isLoggedIn && (
                 <div className="border-t border-white/10 pt-3 mt-2">
                   <p className="text-sm text-white/70">{t('logged_in_as')} {userName}</p>
-                  <Link to="/profile" className="text-cyber-blue hover:text-cyber-blue/70 py-2 transition-colors block" onClick={closeMenu}>
+                  <Link
+                    to="/profile"
+                    className="text-cyber-blue hover:text-cyber-blue/70 py-2 transition-colors block"
+                    onClick={closeMenu}
+                  >
                     {t('view_profile')}
                   </Link>
                 </div>
@@ -124,8 +138,8 @@ export default function Navbar() {
             </div>
           </div>
         )}
-        
-        {/* Search Panel */}
+
+        {/* Search Overlay */}
         {isSearchOpen && (
           <div className="absolute left-0 right-0 bg-black border-b border-white/10 p-4 shadow-lg">
             <SearchBar onClose={toggleSearch} />

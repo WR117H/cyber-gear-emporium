@@ -29,6 +29,8 @@ import Article from "./pages/Article";
 import ArticleManager from "./pages/Admin/ArticleManager";
 import ArticleForm from "./pages/Admin/ArticleForm";
 import OrderManager from "./pages/Admin/OrderManager";
+import AdminTranslations from "./pages/Admin/AdminTranslations";
+import BilingualContentEditor from "./pages/Admin/BilinguaContentEditor";
 
 import CryptoJS from "crypto-js";
 
@@ -100,6 +102,17 @@ const App = () => (
                   <Route path="/admin/orders" element={
                     <ProtectedAdminRoute>
                       <OrderManager />
+                    </ProtectedAdminRoute>
+                  } />
+                  {/* New routes for translations and bilingual content */}
+                  <Route path="/admin/translations" element={
+                    <ProtectedAdminRoute>
+                      <AdminTranslations />
+                    </ProtectedAdminRoute>
+                  } />
+                  <Route path="/admin/bilingual-content" element={
+                    <ProtectedAdminRoute>
+                      <BilingualContentEditor />
                     </ProtectedAdminRoute>
                   } />
                   

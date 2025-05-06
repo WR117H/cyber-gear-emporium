@@ -1,7 +1,14 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-type Language = 'en' | 'fa';
+// Language types
+export type Language = 'en' | 'fa';
+
+// Translation record with language support flag
+export interface TranslationEntry {
+  en: string;
+  fa: string;
+}
 
 interface LanguageContextType {
   language: Language;
@@ -9,96 +16,77 @@ interface LanguageContextType {
   isRTL: boolean;
   toggleLanguage: () => void;
   t: (key: string) => string;
+  translations: Record<string, TranslationEntry>;
+  updateTranslation: (key: string, translations: { en: string; fa: string }) => void;
 }
 
 // Simple translation object
-const translations: Record<Language, Record<string, string>> = {
-  en: {
-    // Navigation
-    'home': 'Home',
-    'about': 'About',
-    'contact': 'Contact',
-    'login': 'Login',
-    'search': 'Search',
-    'profile': 'Profile',
-    'view_profile': 'View Profile',
-    'logged_in_as': 'Logged in as',
+const defaultTranslations: Record<string, TranslationEntry> = {
+  // Navigation
+  'home': { en: 'Home', fa: 'خانه' },
+  'about': { en: 'About', fa: 'درباره ما' },
+  'contact': { en: 'Contact', fa: 'تماس با ما' },
+  'login': { en: 'Login', fa: 'ورود' },
+  'search': { en: 'Search', fa: 'جستجو' },
+  'profile': { en: 'Profile', fa: 'پروفایل' },
+  'view_profile': { en: 'View Profile', fa: 'مشاهده پروفایل' },
+  'logged_in_as': { en: 'Logged in as', fa: 'وارد شده با نام' },
 
-    // Hero section
-    'hero_title': 'Advanced Tools for Ethical Hackers',
-    'hero_description': 'Equip yourself with cutting-edge penetration testing gear designed for security professionals. From wireless analyzers to custom hardware, we\'ve got the tools you need to secure networks.',
-    'browse_equipment': 'Browse Equipment',
-    'github': 'GitHub',
-
-    // Footer
-    'products': 'Products',
-    'network_tools': 'Network Tools',
-    'wireless_devices': 'Wireless Devices',
-    'hardware_kits': 'Hardware Kits',
-    'software_tools': 'Software Tools',
-    'information': 'Information',
-    'about_us': 'About Us',
-    'faq': 'FAQ',
-    'shipping_info': 'Shipping Info',
-    'legal': 'Legal',
-    'terms_of_service': 'Terms of Service',
-    'privacy_policy': 'Privacy Policy',
-    'refund_policy': 'Refund Policy',
-    'legal_notice': 'Legal Notice',
-    'all_rights_reserved': 'All rights reserved',
-
-    // Misc
-    'ethical': 'Ethical',
-    'hacker': 'Hacker',
+  // Hero section
+  'hero_title': { en: 'Advanced Tools for Ethical Hackers', fa: 'ابزارهای پیشرفته برای هکرهای اخلاقی' },
+  'hero_description': { 
+    en: 'Equip yourself with cutting-edge penetration testing gear designed for security professionals. From wireless analyzers to custom hardware, we\'ve got the tools you need to secure networks.', 
+    fa: 'خود را با تجهیزات تست نفوذ پیشرفته طراحی شده برای متخصصان امنیت مجهز کنید. از تحلیلگرهای بی‌سیم گرفته تا سخت‌افزارهای سفارشی، ما ابزارهایی که برای ایمن‌سازی شبکه‌ها نیاز دارید را فراهم کرده‌ایم.'
   },
-  fa: {
-    // Navigation
-    'home': 'خانه',
-    'about': 'درباره ما',
-    'contact': 'تماس با ما',
-    'login': 'ورود',
-    'search': 'جستجو',
-    'profile': 'پروفایل',
-    'view_profile': 'مشاهده پروفایل',
-    'logged_in_as': 'وارد شده با نام',
+  'browse_equipment': { en: 'Browse Equipment', fa: 'مشاهده تجهیزات' },
+  'github': { en: 'GitHub', fa: 'گیت‌هاب' },
 
-    // Hero section
-    'hero_title': 'ابزارهای پیشرفته برای هکرهای اخلاقی',
-    'hero_description': 'خود را با تجهیزات تست نفوذ پیشرفته طراحی شده برای متخصصان امنیت مجهز کنید. از تحلیلگرهای بی‌سیم گرفته تا سخت‌افزارهای سفارشی، ما ابزارهایی که برای ایمن‌سازی شبکه‌ها نیاز دارید را فراهم کرده‌ایم.',
-    'browse_equipment': 'مشاهده تجهیزات',
-    'github': 'گیت‌هاب',
+  // Footer
+  'products': { en: 'Products', fa: 'محصولات' },
+  'network_tools': { en: 'Network Tools', fa: 'ابزارهای شبکه' },
+  'wireless_devices': { en: 'Wireless Devices', fa: 'دستگاه‌های بی‌سیم' },
+  'hardware_kits': { en: 'Hardware Kits', fa: 'کیت‌های سخت‌افزاری' },
+  'software_tools': { en: 'Software Tools', fa: 'ابزارهای نرم‌افزاری' },
+  'information': { en: 'Information', fa: 'اطلاعات' },
+  'about_us': { en: 'About Us', fa: 'درباره ما' },
+  'faq': { en: 'FAQ', fa: 'سوالات متداول' },
+  'shipping_info': { en: 'Shipping Info', fa: 'اطلاعات ارسال' },
+  'legal': { en: 'Legal', fa: 'قانونی' },
+  'terms_of_service': { en: 'Terms of Service', fa: 'شرایط خدمات' },
+  'privacy_policy': { en: 'Privacy Policy', fa: 'سیاست حفظ حریم خصوصی' },
+  'refund_policy': { en: 'Refund Policy', fa: 'سیاست بازپرداخت' },
+  'legal_notice': { en: 'Legal Notice', fa: 'اطلاعیه قانونی' },
+  'all_rights_reserved': { en: 'All rights reserved', fa: 'تمامی حقوق محفوظ است' },
 
-    // Footer
-    'products': 'محصولات',
-    'network_tools': 'ابزارهای شبکه',
-    'wireless_devices': 'دستگاه‌های بی‌سیم',
-    'hardware_kits': 'کیت‌های سخت‌افزاری',
-    'software_tools': 'ابزارهای نرم‌افزاری',
-    'information': 'اطلاعات',
-    'about_us': 'درباره ما',
-    'faq': 'سوالات متداول',
-    'shipping_info': 'اطلاعات ارسال',
-    'legal': 'قانونی',
-    'terms_of_service': 'شرایط خدمات',
-    'privacy_policy': 'سیاست حفظ حریم خصوصی',
-    'refund_policy': 'سیاست بازپرداخت',
-    'legal_notice': 'اطلاعیه قانونی',
-    'all_rights_reserved': 'تمامی حقوق محفوظ است',
-
-    // Misc
-    'ethical': 'اخلاقی',
-    'hacker': 'هکر',
-  }
+  // Misc
+  'ethical': { en: 'Ethical', fa: 'اخلاقی' },
+  'hacker': { en: 'Hacker', fa: 'هکر' },
 };
+
+// Set up local storage key
+const TRANSLATIONS_STORAGE_KEY = 'cyberpunk_translations';
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
+  const [translations, setTranslations] = useState<Record<string, TranslationEntry>>(defaultTranslations);
   const isRTL = language === 'fa';
 
+  // Load translations from localStorage on initial load
   useEffect(() => {
-    // Apply RTL/LTR to the document
+    const savedTranslations = localStorage.getItem(TRANSLATIONS_STORAGE_KEY);
+    if (savedTranslations) {
+      try {
+        setTranslations(JSON.parse(savedTranslations));
+      } catch (error) {
+        console.error('Error loading translations from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Apply RTL/LTR to the document
+  useEffect(() => {
     if (isRTL) {
       document.documentElement.dir = 'rtl';
       document.documentElement.classList.add('font-mirza');
@@ -114,11 +102,37 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Translation function
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    if (!translations[key]) {
+      console.warn(`Translation key not found: ${key}`);
+      return key;
+    }
+    return translations[key][language] || key;
+  };
+
+  // Function to update translations
+  const updateTranslation = (key: string, newTranslations: { en: string; fa: string }) => {
+    const updatedTranslations = {
+      ...translations,
+      [key]: newTranslations
+    };
+    
+    // Update state
+    setTranslations(updatedTranslations);
+    
+    // Save to localStorage
+    localStorage.setItem(TRANSLATIONS_STORAGE_KEY, JSON.stringify(updatedTranslations));
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, isRTL, toggleLanguage, t }}>
+    <LanguageContext.Provider value={{ 
+      language, 
+      setLanguage, 
+      isRTL, 
+      toggleLanguage, 
+      t, 
+      translations,
+      updateTranslation
+    }}>
       {children}
     </LanguageContext.Provider>
   );
