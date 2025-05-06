@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -119,9 +118,8 @@ export default function BilingualContentEditor() {
       }
 
       if (contentType === 'product') {
-        // Create product
+        // Create product - without passing id to the Omit<Product, "id"> type
         await createProduct({
-          id,
           name: content.en.title, // Use English as default
           description: content.en.description, // Use English as default
           price: content.common.price || 0,
@@ -140,14 +138,13 @@ export default function BilingualContentEditor() {
         
         navigate('/admin/products');
       } else {
-        // Create article
+        // Create article - without passing id to the Omit<Article, "id"> type
         const slug = content.en.title
           .toLowerCase()
           .replace(/[^\w\s-]/g, '')
           .replace(/\s+/g, '-');
           
         await createArticle({
-          id,
           title: content.en.title, // Use English as default
           content: content.en.content || '',
           excerpt: content.en.description,
