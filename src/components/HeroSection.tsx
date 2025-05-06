@@ -22,7 +22,7 @@ const HeroSection = () => {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
               {t('hero_description')}
             </p>
-            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 fixed-button-container">
               <Button 
                 asChild
                 className="bg-cyber-blue text-cyber-navy hover:bg-cyber-blue/80"

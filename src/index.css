@@ -60,25 +60,25 @@
   }
   
   html[dir="rtl"] h1 {
-    @apply text-[130%];
+    @apply text-[145%]; /* Increased from 130% to 145% */
   }
   
   html[dir="rtl"] h2 {
-    @apply text-[125%]; 
+    @apply text-[135%]; /* Increased from 125% to 135% */
   }
   
   html[dir="rtl"] h3, 
   html[dir="rtl"] h4, 
   html[dir="rtl"] h5, 
   html[dir="rtl"] h6 {
-    @apply text-[120%];
+    @apply text-[125%]; /* Increased from 120% to 125% */
   }
   
   html[dir="rtl"] p, 
   html[dir="rtl"] span, 
   html[dir="rtl"] a, 
   html[dir="rtl"] button {
-    @apply text-[115%];
+    @apply text-[120%]; /* Increased from 115% to 120% */
   }
 }
 
