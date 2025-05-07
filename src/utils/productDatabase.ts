@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isSupabaseConfigured } from '@/utils/supabaseClient';
 import { Product } from '@/types/product';
 import { mockProducts } from '@/data/products';
 
