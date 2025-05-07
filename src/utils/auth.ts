@@ -107,23 +107,44 @@ export const signInWithGitHub = async () => {
       return { success: false, error: "GitHub login requires Supabase configuration" };
     }
     
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: `${window.location.origin}`,
-      }
-    });
+    // Check if GitHub provider is enabled first
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}`,
+        }
+      });
 
-    if (error) {
+      if (error) {
+        // If error contains "provider is not enabled", give a clearer error message
+        if (error.message.includes("provider is not enabled")) {
+          console.error("GitHub provider is not enabled in Supabase:", error);
+          toast({
+            title: "GitHub login unavailable",
+            description: "The GitHub provider is not enabled in your Supabase project. Please enable it in the Supabase dashboard.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "GitHub login failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Error during GitHub login:', error);
       toast({
         title: "GitHub login failed",
-        description: error.message,
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
       return { success: false, error: error.message };
     }
-
-    return { success: true, data };
   } catch (error: any) {
     console.error('Error during GitHub login:', error);
     toast({

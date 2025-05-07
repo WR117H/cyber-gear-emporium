@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -10,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { signUp, signInWithGitHub } from '@/utils/auth';
 import { Progress } from '@/components/ui/progress';
-import { Github, Check, AlertTriangle, Info } from 'lucide-react';
+import { Github, Check, AlertTriangle, Info, Loader2 } from 'lucide-react';
 
 // Password strength validator
 const checkPasswordStrength = (password: string): { score: number; feedback: string } => {
@@ -78,6 +77,7 @@ export default function Signup() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGitHubLoading, setIsGitHubLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: '' });
 
   const form = useForm<SignupFormValues>({
@@ -129,6 +129,7 @@ export default function Signup() {
 
   const handleGitHubSignup = async () => {
     try {
+      setIsGitHubLoading(true);
       await signInWithGitHub();
       // Note: The actual navigation happens via redirect from Supabase
       // No need to navigate manually here
@@ -138,6 +139,8 @@ export default function Signup() {
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsGitHubLoading(false);
     }
   };
 
@@ -262,7 +265,14 @@ export default function Signup() {
               className="w-full bg-cyber-blue hover:bg-cyber-blue/80 text-cyber-navy"
               disabled={isLoading}
             >
-              {isLoading ? "Creating Account..." : "Sign Up"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
             
             <div className="relative my-6 flex items-center justify-center">
@@ -279,9 +289,19 @@ export default function Signup() {
               variant="outline" 
               className="w-full border-white/20 hover:bg-white/10"
               onClick={handleGitHubSignup}
+              disabled={isGitHubLoading}
             >
-              <Github className="h-5 w-5 mr-2" />
-              Sign up with GitHub
+              {isGitHubLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Github className="h-5 w-5 mr-2" />
+                  Sign up with GitHub
+                </>
+              )}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">

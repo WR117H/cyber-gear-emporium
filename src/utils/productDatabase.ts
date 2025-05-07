@@ -1,9 +1,21 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types/product';
+import { mockProducts } from '@/data/products';
 
 // Mock database stored in localStorage (as fallback)
 const PRODUCTS_STORAGE_KEY = 'cyber_gear_products';
+
+// Helper to initialize local storage with mock data if empty
+const initializeLocalStorage = () => {
+  const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+  if (!storedProducts) {
+    console.log('Initializing local storage with mock products');
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
+    return mockProducts;
+  }
+  return JSON.parse(storedProducts);
+};
 
 // Helper to get all products
 export const fetchProducts = async (): Promise<Product[]> => {
@@ -16,22 +28,47 @@ export const fetchProducts = async (): Promise<Product[]> => {
     if (error) {
       console.error('Error fetching products from Supabase:', error);
       // Fallback to local storage
-      const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-      return storedProducts ? JSON.parse(storedProducts) : [];
+      return initializeLocalStorage();
     }
     
     if (data && data.length > 0) {
+      console.log(`Fetched ${data.length} products from Supabase`);
       return data as unknown as Product[];
     }
     
-    // If no data in Supabase, try local storage
-    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-    return storedProducts ? JSON.parse(storedProducts) : [];
+    // If no data in Supabase, use mock data and try to seed Supabase
+    console.log('No products in Supabase, using mock data');
+    const localProducts = initializeLocalStorage();
+    
+    // Try to seed Supabase with mock products if it's configured
+    if (isSupabaseConfigured()) {
+      try {
+        console.log('Attempting to seed Supabase with mock products');
+        await supabase.from('products').upsert(
+          mockProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            image: p.image,
+            category: p.category,
+            instock: p.inStock,
+            featured: p.featured,
+            isnew: p.isNew,
+            specifications: p.specifications,
+            compatiblewith: p.compatibleWith
+          }))
+        );
+      } catch (seedError) {
+        console.error('Error seeding Supabase with mock products:', seedError);
+      }
+    }
+    
+    return localProducts;
   } catch (error) {
     console.error('Error fetching products:', error);
     // Fallback to localStorage
-    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-    return storedProducts ? JSON.parse(storedProducts) : [];
+    return initializeLocalStorage();
   }
 };
 
