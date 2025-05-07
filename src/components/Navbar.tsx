@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { getCurrentUser, isAuthenticated } from '@/utils/auth';
 import SearchBar from './SearchBar';
-import LanguageToggle from './LanguageToggle';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navbar() {
@@ -97,8 +96,6 @@ export default function Navbar() {
               </Link>
             )}
             
-            <LanguageToggle className="ml-3" />
-
             <button
               className="md:hidden text-white p-2 ml-2 focus:outline-none"
               onClick={toggleMenu}

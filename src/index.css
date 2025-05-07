@@ -82,6 +82,32 @@
   }
 }
 
+/* Fix for article headers */
+.article-content h1 {
+  @apply text-3xl font-bold text-white my-6;
+}
+
+.article-content h2 {
+  @apply text-2xl font-bold text-white my-5;
+}
+
+.article-content h3 {
+  @apply text-xl font-bold text-white my-4;
+}
+
+.article-content p {
+  @apply my-4;
+}
+
+.article-content ul, 
+.article-content ol {
+  @apply pl-5 my-4;
+}
+
+.article-content blockquote {
+  @apply border-l-4 border-cyber-blue pl-4 italic my-4;
+}
+
 @layer components {
   .cyber-button {
     @apply bg-black border border-white text-white rounded-[14px] px-6 py-3 

@@ -197,7 +197,7 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
   }
   
   // Fallback to localStorage
-  const orders = await fetchOrders();
+  let orders = await fetchOrders();
   const orderIndex = orders.findIndex(order => order.id === id);
   
   if (orderIndex === -1) return null;
@@ -212,6 +212,7 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
   orders[orderIndex] = updatedOrder;
   saveOrders(orders);
   
+  console.log(`Order ${id} updated successfully in localStorage:`, updatedOrder);
   return updatedOrder;
 };
 

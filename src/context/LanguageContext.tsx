@@ -104,13 +104,20 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     });
     
-    // Prevent button repositioning
+    // Ensure buttons maintain their position in RTL mode
     const buttonContainers = document.querySelectorAll('.fixed-button-container');
     buttonContainers.forEach(container => {
       if (isRTL) {
+        // Don't reorder buttons, just fix the styles
         container.classList.add('rtl-fixed-position');
+        container.querySelectorAll('button, a').forEach(btn => {
+          btn.classList.add('rtl-preserve-position');
+        });
       } else {
         container.classList.remove('rtl-fixed-position');
+        container.querySelectorAll('button, a').forEach(btn => {
+          btn.classList.remove('rtl-preserve-position');
+        });
       }
     });
     
