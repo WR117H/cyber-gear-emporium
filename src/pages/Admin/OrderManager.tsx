@@ -45,7 +45,8 @@ export default function OrderManager() {
         const ordersData = await fetchOrders();
         // Sort by most recent first
         ordersData.sort((a, b) => 
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          new Date(b.updatedAt || b.updated_at || '').getTime() - 
+          new Date(a.updatedAt || a.updated_at || '').getTime()
         );
         setOrders(ordersData);
       } catch (error) {
@@ -78,9 +79,12 @@ export default function OrderManager() {
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
+      console.log(`Updating order ${orderId} status from Admin panel to ${newStatus}`);
+      
       const updatedOrder = await updateOrderStatus(orderId, newStatus);
       
       if (updatedOrder) {
+        // Update local state immediately to reflect the change
         setOrders(orders.map(order => 
           order.id === orderId ? updatedOrder : order
         ));
@@ -89,6 +93,18 @@ export default function OrderManager() {
           title: "Order updated",
           description: `Order status changed to ${newStatus.replace('_', ' ')}.`,
         });
+        
+        // Force refresh orders from storage to ensure sync
+        setTimeout(async () => {
+          const refreshedOrders = await fetchOrders();
+          // Sort by most recent first
+          refreshedOrders.sort((a, b) => 
+            new Date(b.updatedAt || b.updated_at || '').getTime() - 
+            new Date(a.updatedAt || a.updated_at || '').getTime()
+          );
+          setOrders(refreshedOrders);
+          console.log("Orders refreshed after status update");
+        }, 500);
       } else {
         toast({
           title: "Error",
@@ -223,8 +239,8 @@ export default function OrderManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.length > 0 ? (
-                  orders.map((order) => (
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order) => (
                     <TableRow key={order.id} className="bg-card/50">
                       <TableCell className="font-mono text-xs text-white">
                         {order.id}
@@ -242,7 +258,8 @@ export default function OrderManager() {
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(order.createdAt), 'MMM dd, yyyy')}
+                        {order.createdAt ? format(new Date(order.createdAt), 'MMM dd, yyyy') : 
+                         order.created_at ? format(new Date(order.created_at), 'MMM dd, yyyy') : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right font-medium text-white">
                         ${order.total.toFixed(2)}

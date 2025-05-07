@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { Order, OrderStatus, OrderDB, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 import { isSupabaseConfigured } from './supabaseClient';
@@ -200,16 +199,35 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
   let orders = await fetchOrders();
   const orderIndex = orders.findIndex(order => order.id === id);
   
-  if (orderIndex === -1) return null;
+  if (orderIndex === -1) {
+    console.error(`Order ${id} not found in localStorage`);
+    return null;
+  }
   
-  const updatedOrder = {
-    ...orders[orderIndex],
-    ...orderData,
-    updatedAt: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
+  // Make sure we preserve both status formats for compatibility
+  let updatedOrder: Order;
   
+  if (orderData.status) {
+    updatedOrder = {
+      ...orders[orderIndex],
+      ...orderData,
+      status: orderData.status, // Ensure status is updated
+      updatedAt: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  } else {
+    updatedOrder = {
+      ...orders[orderIndex],
+      ...orderData,
+      updatedAt: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+  
+  console.log(`Updated order data for ${id}:`, updatedOrder);
   orders[orderIndex] = updatedOrder;
+  
+  // Make sure to save the updated orders array
   saveOrders(orders);
   
   console.log(`Order ${id} updated successfully in localStorage:`, updatedOrder);
@@ -253,7 +271,16 @@ export const clearAllOrders = (): void => {
 // Update order status
 export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<Order | null> => {
   console.log(`updateOrderStatus called for id: ${id}, status: ${status}`);
-  return updateOrder(id, { status });
+  const result = await updateOrder(id, { status });
+  
+  // Additional debug logging
+  if (result) {
+    console.log(`Order ${id} status successfully updated to ${status}`);
+  } else {
+    console.error(`Failed to update order ${id} status to ${status}`);
+  }
+  
+  return result;
 };
 
 // Update order tracking info

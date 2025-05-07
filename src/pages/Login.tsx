@@ -8,26 +8,49 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { Star, ArrowLeft } from 'lucide-react';
-import { signIn } from '@/utils/auth';
+import { Star, ArrowLeft, Mail } from 'lucide-react';
+import { signIn, resetPassword } from '@/utils/auth';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
+    },
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
     },
   });
 
@@ -58,6 +81,31 @@ const Login = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onForgotPassword = async (data: ForgotPasswordFormValues) => {
+    setIsResetLoading(true);
+
+    try {
+      const result = await resetPassword(data.email);
+
+      if (result.success) {
+        setShowForgotDialog(false);
+        forgotPasswordForm.reset();
+        toast({
+          title: "Reset link sent",
+          description: "Check your email for password reset instructions"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Password reset failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetLoading(false);
     }
   };
 
@@ -112,7 +160,62 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Password</FormLabel>
+                    <div className="flex justify-between items-center">
+                      <FormLabel className="text-white">Password</FormLabel>
+                      <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="link" 
+                            className="text-xs text-cyber-blue p-0 h-auto font-normal"
+                            type="button"
+                          >
+                            Forgot password?
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md bg-black border-white/10">
+                          <DialogHeader>
+                            <DialogTitle className="text-white">Reset your password</DialogTitle>
+                            <DialogDescription>
+                              Enter your email address and we'll send you a link to reset your password.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Form {...forgotPasswordForm}>
+                            <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPassword)} className="space-y-4 pt-4">
+                              <FormField
+                                control={forgotPasswordForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-white">Email</FormLabel>
+                                    <FormControl>
+                                      <div className="relative">
+                                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+                                        <Input
+                                          placeholder="you@example.com"
+                                          className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                                          {...field}
+                                        />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <DialogFooter>
+                                <Button
+                                  type="submit"
+                                  variant="cyber"
+                                  className="w-full"
+                                  disabled={isResetLoading}
+                                >
+                                  {isResetLoading ? "Sending..." : "Send Reset Link"}
+                                </Button>
+                              </DialogFooter>
+                            </form>
+                          </Form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                     <FormControl>
                       <Input
                         type="password"

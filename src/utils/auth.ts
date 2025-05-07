@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -189,6 +188,49 @@ export const updateUserProfile = async (updates: any) => {
     return { success: true };
   } catch (error: any) {
     console.error('Error updating user profile:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Add reset password functionality
+export const resetPassword = async (email: string) => {
+  try {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase not configured: Using mock authentication for password reset');
+      toast({
+        title: "Development Mode",
+        description: "Supabase not configured. In a real environment, a reset link would be sent to your email.",
+      });
+      
+      return { success: true };
+    }
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      toast({
+        title: "Password reset failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
+
+    toast({
+      title: "Password reset email sent",
+      description: "Check your email for a password reset link",
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error during password reset:', error);
+    toast({
+      title: "Password reset failed",
+      description: "An unexpected error occurred",
+      variant: "destructive",
+    });
     return { success: false, error: error.message };
   }
 };
