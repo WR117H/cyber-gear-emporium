@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { Order, OrderStatus, OrderDB, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 import { isSupabaseConfigured } from './supabaseClient';
@@ -271,12 +270,7 @@ export const updateOrderStatus = async (id: string, status: OrderStatus): Promis
   
   try {
     // Ensure we're correctly passing the status property
-    const result = await updateOrder(id, { 
-      status: status,
-      // Make sure we update both standard and Supabase-compatible formats
-      // This ensures the status is picked up regardless of what the UI is looking at
-      status: status
-    });
+    const result = await updateOrder(id, { status });
     
     if (result) {
       console.log(`Order ${id} status successfully updated to ${status}:`, result);
