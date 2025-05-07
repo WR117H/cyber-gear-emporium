@@ -1,3 +1,4 @@
+
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -94,6 +95,46 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
+export const signInWithGitHub = async () => {
+  try {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase not configured: GitHub login requires proper Supabase setup');
+      toast({
+        title: "GitHub Login unavailable",
+        description: "Supabase not configured. GitHub login requires proper setup.",
+        variant: "destructive"
+      });
+      return { success: false, error: "GitHub login requires Supabase configuration" };
+    }
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}`,
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "GitHub login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('Error during GitHub login:', error);
+    toast({
+      title: "GitHub login failed",
+      description: "An unexpected error occurred",
+      variant: "destructive",
+    });
+    return { success: false, error: error.message };
+  }
+};
+
 export const signOut = async () => {
   try {
     if (!isSupabaseConfigured()) {
@@ -158,7 +199,6 @@ export const isAuthenticated = async () => {
   return !!user;
 };
 
-// Add the missing updateUserProfile function
 export const updateUserProfile = async (updates: any) => {
   try {
     if (!isSupabaseConfigured()) {
@@ -192,7 +232,7 @@ export const updateUserProfile = async (updates: any) => {
   }
 };
 
-// Add reset password functionality
+// Fixed reset password functionality with proper error handling
 export const resetPassword = async (email: string) => {
   try {
     if (!isSupabaseConfigured()) {
@@ -205,11 +245,12 @@ export const resetPassword = async (email: string) => {
       return { success: true };
     }
     
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
 
     if (error) {
+      console.error('Reset password error:', error);
       toast({
         title: "Password reset failed",
         description: error.message,
@@ -218,6 +259,7 @@ export const resetPassword = async (email: string) => {
       return { success: false, error: error.message };
     }
 
+    console.log('Reset password response:', data);
     toast({
       title: "Password reset email sent",
       description: "Check your email for a password reset link",

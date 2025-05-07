@@ -81,14 +81,24 @@ export default function OrderManager() {
     try {
       console.log(`Updating order ${orderId} status from Admin panel to ${newStatus}`);
       
+      // Display immediate feedback to the user
+      toast({
+        title: "Updating status...",
+        description: `Setting order status to ${newStatus.replace('_', ' ')}.`,
+      });
+      
+      // Update the UI optimistically
+      setOrders(prevOrders => prevOrders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+      
+      // Actually persist the change
       const updatedOrder = await updateOrderStatus(orderId, newStatus);
       
       if (updatedOrder) {
-        // Update local state immediately to reflect the change
-        setOrders(orders.map(order => 
-          order.id === orderId ? updatedOrder : order
-        ));
+        console.log("Order status updated successfully:", updatedOrder);
         
+        // Confirm success to the user
         toast({
           title: "Order updated",
           description: `Order status changed to ${newStatus.replace('_', ' ')}.`,
@@ -106,19 +116,30 @@ export default function OrderManager() {
           console.log("Orders refreshed after status update");
         }, 500);
       } else {
+        // Roll back the UI if there was an error
+        setOrders(prevOrders => [...prevOrders]); // Trigger re-render
+        
         toast({
           title: "Error",
-          description: "Failed to update order status.",
+          description: "Failed to update order status. Please try again.",
           variant: "destructive"
         });
+        
+        // Force refresh orders to restore correct state
+        const refreshedOrders = await fetchOrders();
+        setOrders(refreshedOrders);
       }
     } catch (error) {
       console.error('Error updating order status:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "An unexpected error occurred updating the status.",
         variant: "destructive"
       });
+      
+      // Refresh orders to restore correct state
+      const refreshedOrders = await fetchOrders();
+      setOrders(refreshedOrders);
     }
   };
 

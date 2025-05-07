@@ -1,20 +1,71 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, Link } from 'react-router-dom';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { signUp, signInWithGitHub } from '@/utils/auth';
+import { Progress } from '@/components/ui/progress';
+import { Github, Check, AlertTriangle, Info } from 'lucide-react';
 
-import { signUp } from '@/utils/auth';
+// Password strength validator
+const checkPasswordStrength = (password: string): { score: number; feedback: string } => {
+  let score = 0;
+  let feedback = '';
+  
+  // Length check
+  if (password.length >= 8) score += 1;
+  
+  // Contains number
+  if (/\d/.test(password)) score += 1;
+  
+  // Contains lowercase letter
+  if (/[a-z]/.test(password)) score += 1;
+  
+  // Contains uppercase letter
+  if (/[A-Z]/.test(password)) score += 1;
+  
+  // Contains special character
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  
+  // Give feedback based on score
+  switch (score) {
+    case 0:
+    case 1:
+      feedback = 'Very weak - use at least 8 characters';
+      break;
+    case 2:
+      feedback = 'Weak - add numbers and special characters';
+      break;
+    case 3:
+      feedback = 'Moderate - consider adding uppercase letters';
+      break;
+    case 4:
+      feedback = 'Strong - good password';
+      break;
+    case 5:
+      feedback = 'Very strong - excellent password';
+      break;
+  }
+  
+  return { score, feedback };
+};
+
+const passwordSchema = z.string()
+  .min(8, { message: "Password must be at least 8 characters" })
+  .refine(
+    (password) => checkPasswordStrength(password).score >= 3,
+    { message: "Password is too weak, add uppercase, numbers, or special characters" }
+  );
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: passwordSchema,
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   path: ["confirmPassword"],
@@ -27,6 +78,7 @@ export default function Signup() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: '' });
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -37,6 +89,17 @@ export default function Signup() {
       confirmPassword: ""
     }
   });
+
+  const watchedPassword = form.watch("password");
+  
+  // Update password strength whenever password changes
+  React.useEffect(() => {
+    if (watchedPassword) {
+      setPasswordStrength(checkPasswordStrength(watchedPassword));
+    } else {
+      setPasswordStrength({ score: 0, feedback: '' });
+    }
+  }, [watchedPassword]);
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
@@ -61,6 +124,32 @@ export default function Signup() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGitHubSignup = async () => {
+    try {
+      await signInWithGitHub();
+      // Note: The actual navigation happens via redirect from Supabase
+      // No need to navigate manually here
+    } catch (error: any) {
+      toast({
+        title: "GitHub signup failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getStrengthColor = (score: number) => {
+    switch(score) {
+      case 0: return 'bg-gray-200';
+      case 1: return 'bg-red-500';
+      case 2: return 'bg-orange-500';
+      case 3: return 'bg-yellow-500';
+      case 4: return 'bg-green-400';
+      case 5: return 'bg-green-600';
+      default: return 'bg-gray-200';
     }
   };
 
@@ -123,6 +212,27 @@ export default function Signup() {
                       {...field}
                     />
                   </FormControl>
+                  {watchedPassword && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Progress 
+                          value={(passwordStrength.score / 5) * 100} 
+                          className={`h-2 ${getStrengthColor(passwordStrength.score)}`} 
+                        />
+                        <span className="text-xs">{(passwordStrength.score / 5) * 100}%</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-xs">
+                        {passwordStrength.score < 3 ? (
+                          <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                        ) : passwordStrength.score >= 4 ? (
+                          <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        ) : (
+                          <Info className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        )}
+                        <span className="text-white/70">{passwordStrength.feedback}</span>
+                      </div>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -153,6 +263,25 @@ export default function Signup() {
               disabled={isLoading}
             >
               {isLoading ? "Creating Account..." : "Sign Up"}
+            </Button>
+            
+            <div className="relative my-6 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative px-4 text-sm text-muted-foreground bg-black/10">
+                OR
+              </div>
+            </div>
+            
+            <Button
+              type="button" 
+              variant="outline" 
+              className="w-full border-white/20 hover:bg-white/10"
+              onClick={handleGitHubSignup}
+            >
+              <Github className="h-5 w-5 mr-2" />
+              Sign up with GitHub
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">

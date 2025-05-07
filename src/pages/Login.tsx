@@ -8,8 +8,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { Star, ArrowLeft, Mail } from 'lucide-react';
-import { signIn, resetPassword } from '@/utils/auth';
+import { Star, ArrowLeft, Mail, Github } from 'lucide-react';
+import { signIn, resetPassword, signInWithGitHub } from '@/utils/auth';
 import { 
   Dialog,
   DialogContent,
@@ -81,6 +81,20 @@ const Login = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    try {
+      await signInWithGitHub();
+      // Note: The actual navigation happens via redirect from Supabase
+      // No need to navigate manually here
+    } catch (error: any) {
+      toast({
+        title: "GitHub login failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
     }
   };
 
@@ -160,62 +174,7 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex justify-between items-center">
-                      <FormLabel className="text-white">Password</FormLabel>
-                      <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="link" 
-                            className="text-xs text-cyber-blue p-0 h-auto font-normal"
-                            type="button"
-                          >
-                            Forgot password?
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md bg-black border-white/10">
-                          <DialogHeader>
-                            <DialogTitle className="text-white">Reset your password</DialogTitle>
-                            <DialogDescription>
-                              Enter your email address and we'll send you a link to reset your password.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <Form {...forgotPasswordForm}>
-                            <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPassword)} className="space-y-4 pt-4">
-                              <FormField
-                                control={forgotPasswordForm.control}
-                                name="email"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-white">Email</FormLabel>
-                                    <FormControl>
-                                      <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
-                                        <Input
-                                          placeholder="you@example.com"
-                                          className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                                          {...field}
-                                        />
-                                      </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <DialogFooter>
-                                <Button
-                                  type="submit"
-                                  variant="cyber"
-                                  className="w-full"
-                                  disabled={isResetLoading}
-                                >
-                                  {isResetLoading ? "Sending..." : "Send Reset Link"}
-                                </Button>
-                              </DialogFooter>
-                            </form>
-                          </Form>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                    <FormLabel className="text-white">Password</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -237,12 +196,87 @@ const Login = () => {
               >
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>
+              
+              <div className="relative my-6 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative px-4 text-sm text-muted-foreground bg-black/40">
+                  OR
+                </div>
+              </div>
+              
+              <Button
+                type="button" 
+                variant="outline" 
+                className="w-full border-white/20 hover:bg-white/10"
+                onClick={handleGitHubLogin}
+              >
+                <Github className="h-5 w-5 mr-2" />
+                Continue with GitHub
+              </Button>
 
-              <div className="text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link to="/signup" className="text-cyber-blue hover:underline">
-                  Sign up
-                </Link>
+              <div className="text-center space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="text-cyber-blue hover:underline">
+                    Sign up
+                  </Link>
+                </div>
+                
+                <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="link" 
+                      className="text-xs text-cyber-blue p-0 h-auto font-normal w-full"
+                      type="button"
+                    >
+                      Forgot your password?
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md bg-black border-white/10">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">Reset your password</DialogTitle>
+                      <DialogDescription>
+                        Enter your email address and we'll send you a link to reset your password.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Form {...forgotPasswordForm}>
+                      <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPassword)} className="space-y-4 pt-4">
+                        <FormField
+                          control={forgotPasswordForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-white">Email</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+                                  <Input
+                                    placeholder="you@example.com"
+                                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                                    {...field}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <DialogFooter>
+                          <Button
+                            type="submit"
+                            variant="cyber"
+                            className="w-full"
+                            disabled={isResetLoading}
+                          >
+                            {isResetLoading ? "Sending..." : "Send Reset Link"}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </form>
           </Form>

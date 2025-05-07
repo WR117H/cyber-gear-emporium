@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { Order, OrderStatus, OrderDB, mapDatabaseOrderToClientOrder, mapClientOrderToDatabaseOrder } from '@/types/order';
 import { isSupabaseConfigured } from './supabaseClient';
@@ -204,27 +205,23 @@ export const updateOrder = async (id: string, orderData: Partial<Order>): Promis
     return null;
   }
   
-  // Make sure we preserve both status formats for compatibility
-  let updatedOrder: Order;
+  // Make sure we preserve both status formats for compatibility and update timestamps
+  const updatedOrder: Order = {
+    ...orders[orderIndex],
+    ...orderData,
+    updatedAt: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
   
+  // Special case handling for status
   if (orderData.status) {
-    updatedOrder = {
-      ...orders[orderIndex],
-      ...orderData,
-      status: orderData.status, // Ensure status is updated
-      updatedAt: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  } else {
-    updatedOrder = {
-      ...orders[orderIndex],
-      ...orderData,
-      updatedAt: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    console.log(`Explicitly setting status to ${orderData.status}`);
+    updatedOrder.status = orderData.status; // Ensure status is properly set
   }
   
   console.log(`Updated order data for ${id}:`, updatedOrder);
+  
+  // Replace the order in the array
   orders[orderIndex] = updatedOrder;
   
   // Make sure to save the updated orders array
@@ -268,19 +265,34 @@ export const clearAllOrders = (): void => {
   console.log("All orders cleared from localStorage");
 };
 
-// Update order status
+// Update order status with improved error handling and consistency
 export const updateOrderStatus = async (id: string, status: OrderStatus): Promise<Order | null> => {
   console.log(`updateOrderStatus called for id: ${id}, status: ${status}`);
-  const result = await updateOrder(id, { status });
   
-  // Additional debug logging
-  if (result) {
-    console.log(`Order ${id} status successfully updated to ${status}`);
-  } else {
-    console.error(`Failed to update order ${id} status to ${status}`);
+  try {
+    // Ensure we're correctly passing the status property
+    const result = await updateOrder(id, { 
+      status: status,
+      // Make sure we update both standard and Supabase-compatible formats
+      // This ensures the status is picked up regardless of what the UI is looking at
+      status: status
+    });
+    
+    if (result) {
+      console.log(`Order ${id} status successfully updated to ${status}:`, result);
+      // Double check that status actually changed
+      if (result.status !== status) {
+        console.warn(`Warning: Status mismatch after update. Expected ${status} but got ${result.status}`);
+      }
+      return result;
+    } else {
+      console.error(`Failed to update order ${id} status to ${status}`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Error updating status for order ${id}:`, error);
+    return null;
   }
-  
-  return result;
 };
 
 // Update order tracking info
@@ -290,7 +302,12 @@ export const updateOrderTracking = async (
   estimatedDelivery?: string
 ): Promise<Order | null> => {
   console.log(`updateOrderTracking called for id: ${id}, tracking: ${trackingNumber}`);
-  return updateOrder(id, { trackingNumber, tracking_number: trackingNumber, estimatedDelivery, estimated_delivery: estimatedDelivery });
+  return updateOrder(id, { 
+    trackingNumber, 
+    tracking_number: trackingNumber,
+    estimatedDelivery, 
+    estimated_delivery: estimatedDelivery 
+  });
 };
 
 // Function to get statistics for admin dashboard

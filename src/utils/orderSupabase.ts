@@ -99,6 +99,11 @@ export const getOrderByIdFromSupabase = async (id: string): Promise<Order | null
 export const updateOrderInSupabase = async (id: string, updates: Partial<Order>): Promise<Order | null> => {
   console.log(`Updating order ${id} in Supabase with:`, updates);
   
+  // Add extra logging for status updates
+  if (updates.status) {
+    console.log(`Explicitly setting status to: ${updates.status}`);
+  }
+  
   // Convert client order format to database format
   const dbUpdates = mapClientOrderToDatabaseOrder({
     ...updates,
@@ -107,20 +112,44 @@ export const updateOrderInSupabase = async (id: string, updates: Partial<Order>)
   
   console.log("Converted updates for database:", dbUpdates);
   
-  const { data, error } = await supabase
-    .from('orders')
-    .update(dbUpdates as any)
-    .eq('id', id)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .update(dbUpdates as any)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Error updating order in Supabase:', error);
+      return null;
+    }
     
-  if (error) {
-    console.error('Error updating order in Supabase:', error);
+    if (updates.status && data.status !== updates.status) {
+      console.warn(`Warning: Status mismatch in Supabase update. Expected ${updates.status} but got ${data.status}`);
+      
+      // Try a direct update specifically for the status
+      const statusUpdateResult = await supabase
+        .from('orders')
+        .update({ status: updates.status, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (statusUpdateResult.error) {
+        console.error('Error in follow-up status update:', statusUpdateResult.error);
+      } else {
+        console.log('Status updated in follow-up query:', statusUpdateResult.data);
+        return mapDatabaseOrderToClientOrder(statusUpdateResult.data as OrderDB);
+      }
+    }
+    
+    console.log('Order updated successfully:', data);
+    return data ? mapDatabaseOrderToClientOrder(data as OrderDB) : null;
+  } catch (error) {
+    console.error('Exception during order update in Supabase:', error);
     return null;
   }
-  
-  console.log('Order updated successfully:', data);
-  return data ? mapDatabaseOrderToClientOrder(data as OrderDB) : null;
 };
 
 // Delete an order from Supabase
