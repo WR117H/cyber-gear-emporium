@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,8 +8,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { signUp, signInWithGitHub } from '@/utils/auth';
+import { signUp, signInWithGitHub, isAuthenticated } from '@/utils/auth';
 import { Progress } from '@/components/ui/progress';
+import { 
+  Alert,
+  AlertDescription,
+} from "@/components/ui/alert";
 import { Github, Check, AlertTriangle, Info, Loader2 } from 'lucide-react';
 
 // Password strength validator
@@ -79,6 +84,19 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: '' });
+  const [gitHubError, setGitHubError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const isLoggedIn = await isAuthenticated();
+      if (isLoggedIn) {
+        navigate('/');
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -128,17 +146,15 @@ export default function Signup() {
   };
 
   const handleGitHubSignup = async () => {
+    setGitHubError(null);
     try {
       setIsGitHubLoading(true);
-      await signInWithGitHub();
-      // Note: The actual navigation happens via redirect from Supabase
-      // No need to navigate manually here
+      const result = await signInWithGitHub();
+      if (!result.success && result.error) {
+        setGitHubError(result.error);
+      }
     } catch (error: any) {
-      toast({
-        title: "GitHub signup failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
+      setGitHubError(error.message || "An unexpected error occurred");
     } finally {
       setIsGitHubLoading(false);
     }
@@ -159,9 +175,21 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
       <div className="absolute inset-0 bg-black z-[-1]"></div>
-      <div className="w-full max-w-md p-6 bg-white/5 rounded-xl border border-white/20 backdrop-blur">
+      <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+      <div className="w-full max-w-md p-8 bg-black/60 rounded-xl border border-white/20 backdrop-blur">
         <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
-        <p className="text-muted-foreground mb-8">Sign up to get started</p>
+        <p className="text-muted-foreground mb-6">Sign up to get started</p>
+
+        {gitHubError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="ml-2">
+              {gitHubError.includes("provider is not enabled") 
+                ? "GitHub signup is not available. Please contact the administrator to enable it."
+                : gitHubError}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -222,7 +250,7 @@ export default function Signup() {
                           value={(passwordStrength.score / 5) * 100} 
                           className={`h-2 ${getStrengthColor(passwordStrength.score)}`} 
                         />
-                        <span className="text-xs">{(passwordStrength.score / 5) * 100}%</span>
+                        <span className="text-xs text-white/70">{(passwordStrength.score / 5) * 100}%</span>
                       </div>
                       <div className="flex items-start gap-2 text-xs">
                         {passwordStrength.score < 3 ? (

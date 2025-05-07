@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from '@/utils/supabaseClient';
 import { Product } from '@/types/product';
 import { mockProducts } from '@/data/products';
@@ -6,65 +5,57 @@ import { mockProducts } from '@/data/products';
 // Mock database stored in localStorage (as fallback)
 const PRODUCTS_STORAGE_KEY = 'cyber_gear_products';
 
-// Helper to initialize local storage with mock data if empty
+/**
+ * Helper to initialize local storage with mock data if empty
+ * @returns {Product[]} Array of products
+ */
 const initializeLocalStorage = () => {
-  const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-  if (!storedProducts) {
-    console.log('Initializing local storage with mock products');
-    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
+  try {
+    const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (!storedProducts) {
+      console.log('Initializing local storage with mock products');
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(mockProducts));
+      return mockProducts;
+    }
+    return JSON.parse(storedProducts);
+  } catch (error) {
+    console.error('Error accessing localStorage:', error);
     return mockProducts;
   }
-  return JSON.parse(storedProducts);
 };
 
-// Helper to get all products
+/**
+ * Helper to get all products, with fallback to local storage
+ * @returns {Promise<Product[]>} Array of products
+ */
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
-    // Try to fetch from Supabase
-    const { data, error } = await supabase
-      .from('products')
-      .select('*');
+    // Try to fetch from Supabase if configured
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*');
+        
+      if (error) {
+        console.error('Error fetching products from Supabase:', error);
+        return initializeLocalStorage();
+      }
       
-    if (error) {
-      console.error('Error fetching products from Supabase:', error);
-      // Fallback to local storage
+      if (data && data.length > 0) {
+        console.log(`Fetched ${data.length} products from Supabase`);
+        return data as unknown as Product[];
+      }
+      
+      // If Supabase is configured but no data, seed it with mock products
+      console.log('No products in Supabase, seeding with mock data');
+      const localProducts = initializeLocalStorage();
+      await seedSupabaseWithMockProducts();
+      return localProducts;
+    } else {
+      // If Supabase is not configured, use local storage
+      console.log('Supabase not configured, using local storage');
       return initializeLocalStorage();
     }
-    
-    if (data && data.length > 0) {
-      console.log(`Fetched ${data.length} products from Supabase`);
-      return data as unknown as Product[];
-    }
-    
-    // If no data in Supabase, use mock data and try to seed Supabase
-    console.log('No products in Supabase, using mock data');
-    const localProducts = initializeLocalStorage();
-    
-    // Try to seed Supabase with mock products if it's configured
-    if (isSupabaseConfigured()) {
-      try {
-        console.log('Attempting to seed Supabase with mock products');
-        await supabase.from('products').upsert(
-          mockProducts.map(p => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            price: p.price,
-            image: p.image,
-            category: p.category,
-            instock: p.inStock,
-            featured: p.featured,
-            isnew: p.isNew,
-            specifications: p.specifications,
-            compatiblewith: p.compatibleWith
-          }))
-        );
-      } catch (seedError) {
-        console.error('Error seeding Supabase with mock products:', seedError);
-      }
-    }
-    
-    return localProducts;
   } catch (error) {
     console.error('Error fetching products:', error);
     // Fallback to localStorage
@@ -72,9 +63,48 @@ export const fetchProducts = async (): Promise<Product[]> => {
   }
 };
 
+// Helper function to seed Supabase with mock products
+const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
+  if (!isSupabaseConfigured()) return false;
+  
+  try {
+    console.log('Attempting to seed Supabase with mock products');
+    const { error } = await supabase.from('products').upsert(
+      mockProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        image: p.image,
+        category: p.category,
+        instock: p.inStock,
+        featured: p.featured,
+        isnew: p.isNew,
+        specifications: p.specifications,
+        compatiblewith: p.compatibleWith
+      }))
+    );
+    
+    if (error) {
+      console.error('Error seeding Supabase with mock products:', error);
+      return false;
+    }
+    
+    console.log('Successfully seeded Supabase with mock products');
+    return true;
+  } catch (seedError) {
+    console.error('Exception seeding Supabase with mock products:', seedError);
+    return false;
+  }
+};
+
 // Helper to save all products in localStorage (fallback)
 const saveProducts = (products: Product[]): void => {
-  localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+  try {
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+  } catch (error) {
+    console.error('Error saving products to localStorage:', error);
+  }
 };
 
 // Create a new product

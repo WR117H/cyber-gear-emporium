@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,12 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { Star, ArrowLeft, Mail, Github } from 'lucide-react';
-import { signIn, resetPassword, signInWithGitHub } from '@/utils/auth';
+import { Star, ArrowLeft, Mail, Github, AlertTriangle } from 'lucide-react';
+import { signIn, resetPassword, signInWithGitHub, isAuthenticated } from '@/utils/auth';
+import { 
+  Alert,
+  AlertDescription,
+} from "@/components/ui/alert";
 import { 
   Dialog,
   DialogContent,
@@ -38,6 +42,19 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const [gitHubError, setGitHubError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const isLoggedIn = await isAuthenticated();
+      if (isLoggedIn) {
+        navigate('/');
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -85,16 +102,14 @@ const Login = () => {
   };
 
   const handleGitHubLogin = async () => {
+    setGitHubError(null);
     try {
-      await signInWithGitHub();
-      // Note: The actual navigation happens via redirect from Supabase
-      // No need to navigate manually here
+      const result = await signInWithGitHub();
+      if (!result.success && result.error) {
+        setGitHubError(result.error);
+      }
     } catch (error: any) {
-      toast({
-        title: "GitHub login failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
+      setGitHubError(error.message || "An unexpected error occurred");
     }
   };
 
@@ -139,15 +154,26 @@ const Login = () => {
             </Link>
 
             <div className="mx-auto mb-6 w-12 h-12 relative">
-              <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
+              <div className="absolute inset-0 bg-cyber-blue/30 rounded-full blur-lg"></div>
               <div className="relative flex items-center justify-center w-full h-full">
-                <Star className="w-8 h-8 text-white" />
+                <Star className="w-8 h-8 text-cyber-blue" />
               </div>
             </div>
 
             <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
             <p className="text-muted-foreground mb-8">Sign in to your account</p>
           </div>
+
+          {gitHubError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="ml-2">
+                {gitHubError.includes("provider is not enabled") 
+                  ? "GitHub login is not available. Please contact the administrator to enable it."
+                  : gitHubError}
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
