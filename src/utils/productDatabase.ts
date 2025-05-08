@@ -10,9 +10,8 @@ const PRODUCTS_STORAGE_KEY = 'cyber_gear_products';
  * Helper to check if Supabase is configured
  */
 export const isSupabaseConfigured = (): boolean => {
-  const supabaseUrl = supabase.getUrl();
-  const supabaseKey = supabase.getAuth().getAccessToken();
-  return !!supabaseUrl && !!supabaseKey;
+  // Check if Supabase URL and key are available (without using getUrl/getAuth)
+  return !!supabase && !!process.env.SUPABASE_URL && !!process.env.SUPABASE_ANON_KEY;
 };
 
 /**
@@ -117,6 +116,7 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
       console.log('Error checking table existence:', tableCheckError);
     }
     
+    // Explicitly type the compatible with field to fix the type error
     // Attempt to insert or update the mock products
     const { error } = await supabase.from('products').upsert(
       mockProducts.map(p => ({
@@ -130,7 +130,7 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
         featured: p.featured,
         isnew: p.isNew,
         specifications: p.specifications,
-        compatiblewith: p.compatibleWith || [] // Ensure it's always an array even if undefined
+        compatiblewith: (p.compatibleWith || []) as string[] // Explicitly type as string array
       }))
     );
     
