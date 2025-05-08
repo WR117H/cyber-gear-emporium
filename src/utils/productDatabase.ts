@@ -116,7 +116,7 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
       console.log('Error checking table existence:', tableCheckError);
     }
     
-    // Fix the type error by providing a more explicit type assertion
+    // Fix the type error by explicitly typing the products array for upsert
     const productsToUpsert = mockProducts.map(p => {
       // Create a new object with the correct field names for Supabase
       return {
@@ -130,7 +130,8 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
         featured: p.featured,
         isnew: p.isNew,
         specifications: p.specifications,
-        compatiblewith: p.compatibleWith ? p.compatibleWith : []
+        // Explicitly cast to string[] and provide an empty array as fallback
+        compatiblewith: (p.compatibleWith || []) as string[]
       };
     });
     
