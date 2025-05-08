@@ -1,10 +1,19 @@
 
-import { supabase, isSupabaseConfigured } from '@/utils/supabaseClient';
+import { supabase } from '@/utils/supabaseClient';
 import { Product } from '@/types/product';
 import { mockProducts } from '@/data/products';
 
 // Mock database stored in localStorage (as fallback)
 const PRODUCTS_STORAGE_KEY = 'cyber_gear_products';
+
+/**
+ * Helper to check if Supabase is configured
+ */
+export const isSupabaseConfigured = (): boolean => {
+  const supabaseUrl = supabase.getUrl();
+  const supabaseKey = supabase.getAuth().getAccessToken();
+  return !!supabaseUrl && !!supabaseKey;
+};
 
 /**
  * Helper to initialize local storage with mock data if empty
@@ -121,7 +130,7 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
         featured: p.featured,
         isnew: p.isNew,
         specifications: p.specifications,
-        compatiblewith: p.compatibleWith
+        compatiblewith: p.compatibleWith || [] // Ensure it's always an array even if undefined
       }))
     );
     
