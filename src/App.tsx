@@ -31,6 +31,7 @@ import ArticleForm from "./pages/Admin/ArticleForm";
 import OrderManager from "./pages/Admin/OrderManager";
 import AdminTranslations from "./pages/Admin/AdminTranslations";
 import BilingualContentEditor from "./pages/Admin/BilinguaContentEditor";
+import ResetPassword from "./pages/ResetPassword";
 
 import CryptoJS from "crypto-js";
 
@@ -58,6 +59,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/order/:id" element={<OrderTracking />} />
                   <Route path="/articles" element={<Articles />} />
                   <Route path="/article/:slug" element={<Article />} />

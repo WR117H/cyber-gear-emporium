@@ -1,4 +1,3 @@
-
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -107,53 +106,45 @@ export const signInWithGitHub = async () => {
       return { success: false, error: "GitHub login requires Supabase configuration" };
     }
     
-    // First check if GitHub provider is enabled in Supabase
+    // First, directly check if GitHub provider is enabled in Supabase
     try {
-      // We'll make a preliminary request to check if the provider is enabled
-      const { data: authSettings } = await supabase.from('admin_settings').select('*').eq('key', 'github_provider_enabled').single();
-      
-      if (!authSettings || authSettings.value !== 'true') {
-        console.error('GitHub provider is not enabled in Supabase');
-        toast({
-          title: "GitHub login unavailable",
-          description: "GitHub provider is not enabled in your Supabase project. Please enable it in the Supabase dashboard.",
-          variant: "destructive",
-        });
-        return { success: false, error: "GitHub provider not enabled" };
-      }
-    } catch (checkError) {
-      // If we can't check the settings, we'll still try the auth flow but expect it might fail
-      console.warn('Could not check GitHub provider status:', checkError);
-    }
-    
-    // Proceed with GitHub authentication
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: `${window.location.origin}`,
-      }
-    });
+      // Make a preliminary attempt to start the GitHub OAuth flow
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}`,
+        }
+      });
 
-    if (error) {
-      // Specific handling for "provider is not enabled" error
-      if (error.message.includes("provider is not enabled")) {
-        console.error("GitHub provider is not enabled in Supabase:", error);
-        toast({
-          title: "GitHub login unavailable",
-          description: "The GitHub provider is not enabled in your Supabase project. Please enable it in the Supabase dashboard.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "GitHub login failed",
-          description: error.message,
-          variant: "destructive",
-        });
+      if (error) {
+        if (error.message.includes("provider is not enabled")) {
+          console.error("GitHub provider is not enabled in Supabase:", error);
+          toast({
+            title: "GitHub login unavailable",
+            description: "The GitHub provider is not enabled in your Supabase project. Please enable it in the Supabase dashboard.",
+            variant: "destructive",
+          });
+          return { success: false, error: error.message };
+        } else {
+          toast({
+            title: "GitHub login failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          return { success: false, error: error.message };
+        }
       }
+
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Error during GitHub login:', error);
+      toast({
+        title: "GitHub login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
       return { success: false, error: error.message };
     }
-
-    return { success: true, data };
   } catch (error: any) {
     console.error('Error during GitHub login:', error);
     toast({
@@ -262,7 +253,7 @@ export const updateUserProfile = async (updates: any) => {
   }
 };
 
-// Fixed reset password functionality with proper error handling
+// 2. Fix the password reset functionality with proper redirection
 export const resetPassword = async (email: string) => {
   try {
     if (!isSupabaseConfigured()) {
@@ -275,6 +266,7 @@ export const resetPassword = async (email: string) => {
       return { success: true };
     }
     
+    // Update the redirect path to point to a specific reset-password page
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });

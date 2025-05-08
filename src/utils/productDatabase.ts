@@ -1,3 +1,4 @@
+
 import { supabase, isSupabaseConfigured } from '@/utils/supabaseClient';
 import { Product } from '@/types/product';
 import { mockProducts } from '@/data/products';
@@ -32,6 +33,30 @@ export const fetchProducts = async (): Promise<Product[]> => {
   try {
     // Try to fetch from Supabase if configured
     if (isSupabaseConfigured()) {
+      // First check if products table exists and has data
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .limit(1);
+          
+        if (error) {
+          console.error('Error checking products table in Supabase:', error);
+          throw new Error('Could not check products table');
+        }
+        
+        // If we can query the table but it's empty, seed it
+        if (data && data.length === 0) {
+          console.log('Products table exists but is empty, seeding with mock data');
+          await seedSupabaseWithMockProducts();
+        }
+      } catch (checkError) {
+        console.error('Error checking products table:', checkError);
+        console.log('Using local storage as fallback');
+        return initializeLocalStorage();
+      }
+    
+      // Now try to fetch all products
       const { data, error } = await supabase
         .from('products')
         .select('*');
@@ -46,8 +71,8 @@ export const fetchProducts = async (): Promise<Product[]> => {
         return data as unknown as Product[];
       }
       
-      // If Supabase is configured but no data, seed it with mock products
-      console.log('No products in Supabase, seeding with mock data');
+      // If there's still no data after our check, seed again just to be sure
+      console.log('No products in Supabase after check, seeding again with mock data');
       const localProducts = initializeLocalStorage();
       await seedSupabaseWithMockProducts();
       return localProducts;
@@ -69,6 +94,21 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
   
   try {
     console.log('Attempting to seed Supabase with mock products');
+    
+    // First check if table exists, if not create it
+    try {
+      const { error: tableCheckError } = await supabase.rpc('table_exists', { 
+        table_name: 'products' 
+      });
+      
+      if (tableCheckError) {
+        console.log('Could not check if table exists, attempting insert anyway');
+      }
+    } catch (tableCheckError) {
+      console.log('Error checking table existence:', tableCheckError);
+    }
+    
+    // Attempt to insert or update the mock products
     const { error } = await supabase.from('products').upsert(
       mockProducts.map(p => ({
         id: p.id,
