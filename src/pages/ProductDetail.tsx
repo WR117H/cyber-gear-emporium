@@ -1,15 +1,16 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { mockProducts } from '@/data/products';
 import { Product } from '@/types/product';
 import { ShoppingCart, ArrowLeft, Shield, Truck, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/context/CartContext';
+import { getProductById } from '@/utils/productDatabase';
 import {
   Tabs,
   TabsContent,
@@ -25,10 +26,16 @@ const ProductDetail = () => {
   const { addItem } = useCart();
   
   useEffect(() => {
-    const foundProduct = mockProducts.find(p => p.id === id);
-    if (foundProduct) {
-      setProduct(foundProduct);
-    }
+    const loadProduct = async () => {
+      if (id) {
+        const foundProduct = await getProductById(id);
+        if (foundProduct) {
+          setProduct(foundProduct);
+        }
+      }
+    };
+    
+    loadProduct();
   }, [id]);
   
   const handleAddToCart = () => {
