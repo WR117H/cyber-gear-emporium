@@ -130,7 +130,7 @@ const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
         featured: p.featured,
         isnew: p.isNew,
         specifications: p.specifications,
-        // Explicitly cast to string[] and provide an empty array as fallback
+        // Fix: Explicitly type as string[] and provide an empty array as fallback
         compatiblewith: (p.compatibleWith || []) as string[]
       };
     });
