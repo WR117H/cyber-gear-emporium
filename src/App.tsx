@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
@@ -23,8 +24,8 @@ import AdminTranslations from '@/pages/Admin/AdminTranslations';
 import NotFound from '@/pages/NotFound';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/context/CartContext';
-import { LanguageContextProvider } from '@/context/LanguageContext';
-import { TONConnectUIProvider } from '@tonconnect/ui-react';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import BilingualContentEditor from '@/pages/Admin/BilinguaContentEditor';
 import EnhancedProductForm from '@/pages/Admin/EnhancedProductForm';
@@ -32,8 +33,8 @@ import EnhancedProductForm from '@/pages/Admin/EnhancedProductForm';
 function App() {
   return (
     <BrowserRouter>
-      <LanguageContextProvider>
-        <TONConnectUIProvider>
+      <LanguageProvider>
+        <TonConnectUIProvider>
           <CartProvider>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -58,25 +59,29 @@ function App() {
               
               {/* Admin routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route element={<ProtectedAdminRoute />}>
-                <Route path="/admin/dashboard" element={<Dashboard />} />
-                <Route path="/admin/products" element={<ProductManager />} />
-                <Route path="/admin/products/new" element={<EnhancedProductForm />} />
-                <Route path="/admin/products/:id" element={<EnhancedProductForm />} />
-                <Route path="/admin/articles" element={<ArticleManager />} />
-                <Route path="/admin/articles/new" element={<ArticleForm />} />
-                <Route path="/admin/articles/:id" element={<ArticleForm />} />
-                <Route path="/admin/orders" element={<OrderManager />} />
-                <Route path="/admin/translations" element={<AdminTranslations />} />
-                <Route path="/admin/bilingual" element={<BilingualContentEditor />} />
-              </Route>
+              <Route path="/admin/*" element={
+                <ProtectedAdminRoute>
+                  <Routes>
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="products" element={<ProductManager />} />
+                    <Route path="products/new" element={<EnhancedProductForm />} />
+                    <Route path="products/:id" element={<EnhancedProductForm />} />
+                    <Route path="articles" element={<ArticleManager />} />
+                    <Route path="articles/new" element={<ArticleForm />} />
+                    <Route path="articles/:id" element={<ArticleForm />} />
+                    <Route path="orders" element={<OrderManager />} />
+                    <Route path="translations" element={<AdminTranslations />} />
+                    <Route path="bilingual" element={<BilingualContentEditor />} />
+                  </Routes>
+                </ProtectedAdminRoute>
+              } />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
           </CartProvider>
-        </TONConnectUIProvider>
-      </LanguageContextProvider>
+        </TonConnectUIProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }
