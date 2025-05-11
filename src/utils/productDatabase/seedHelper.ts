@@ -1,14 +1,27 @@
 
 import { supabase } from '@/utils/supabaseClient';
-import { Product } from '@/types/product';
 import { mockProducts } from '@/data/products';
+import { isSupabaseConfigured } from './config';
 
-/**
- * Seeds the Supabase products table with mock products
- */
+// Helper function to seed Supabase with mock products
 export const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
+  if (!isSupabaseConfigured()) return false;
+  
   try {
     console.log('Attempting to seed Supabase with mock products');
+    
+    // First check if table exists, if not create it
+    try {
+      const { error: tableCheckError } = await supabase.rpc('table_exists', { 
+        table_name: 'products' 
+      });
+      
+      if (tableCheckError) {
+        console.log('Could not check if table exists, attempting insert anyway');
+      }
+    } catch (tableCheckError) {
+      console.log('Error checking table existence:', tableCheckError);
+    }
     
     // Fix the type error by explicitly typing the products array for upsert
     const productsToUpsert = mockProducts.map(p => {
@@ -40,8 +53,8 @@ export const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
     
     console.log('Successfully seeded Supabase with mock products');
     return true;
-  } catch (error) {
-    console.error('Exception seeding Supabase with mock products:', error);
+  } catch (seedError) {
+    console.error('Exception seeding Supabase with mock products:', seedError);
     return false;
   }
 };

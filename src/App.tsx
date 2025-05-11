@@ -31,6 +31,14 @@ import BilingualContentEditor from '@/pages/Admin/BilinguaContentEditor';
 import EnhancedProductForm from '@/pages/Admin/EnhancedProductForm';
 
 function App() {
+  // Create a mock session for the Account component
+  const mockSession = {
+    user: {
+      id: 'mock-user-id',
+      email: 'user@example.com'
+    }
+  };
+
   return (
     <BrowserRouter>
       <LanguageProvider>
@@ -44,7 +52,7 @@ function App() {
               {/* Auth routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/account" element={<Account />} />
+              <Route path="/account" element={<Account session={mockSession} />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               
