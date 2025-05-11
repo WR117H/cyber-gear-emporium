@@ -60,7 +60,30 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
       return products.find(product => product.id === id);
     }
     
-    return data as unknown as Product;
+    // Transform Supabase data to match our Product interface
+    const product = data as any;
+    
+    // Create a fully typed Product object
+    const typedProduct: Product = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+      inStock: product.instock || 0,
+      featured: product.featured || false,
+      isNew: product.isnew || false,
+      specifications: product.specifications || {},
+      compatibleWith: (product.compatiblewith || []) as string[],
+      // New fields
+      images: product.images || [],
+      article: product.article || '',
+      videoLinks: product.videolinks || [],
+      community: product.community || { enabled: false, comments: [] }
+    };
+    
+    return typedProduct;
   } catch (error) {
     console.error('Error getting product by ID:', error);
     // Fallback to local storage
@@ -72,10 +95,26 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 // Update a product
 export const updateProduct = async (id: string, productData: Partial<Product>): Promise<Product | null> => {
   try {
+    // Format the data for Supabase (adjusting field names)
+    const supabaseData: any = {
+      ...productData,
+      // Convert camelCase to lowercase field names for Supabase
+      instock: productData.inStock,
+      isnew: productData.isNew,
+      compatiblewith: productData.compatibleWith as string[],
+      videolinks: productData.videoLinks
+    };
+    
+    // Remove fields that don't match Supabase schema
+    delete supabaseData.inStock;
+    delete supabaseData.isNew;
+    delete supabaseData.compatibleWith;
+    delete supabaseData.videoLinks;
+    
     // Try to update in Supabase
     const { data, error } = await supabase
       .from('products')
-      .update(productData as any)
+      .update(supabaseData)
       .eq('id', id)
       .select()
       .single();
@@ -99,7 +138,30 @@ export const updateProduct = async (id: string, productData: Partial<Product>): 
       return updatedProduct;
     }
     
-    return data as unknown as Product;
+    // Transform Supabase data to match our Product interface
+    const product = data as any;
+    
+    // Create a fully typed Product object
+    const typedProduct: Product = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+      inStock: product.instock || 0,
+      featured: product.featured || false,
+      isNew: product.isnew || false,
+      specifications: product.specifications || {},
+      compatibleWith: (product.compatiblewith || []) as string[],
+      // New fields
+      images: product.images || [],
+      article: product.article || '',
+      videoLinks: product.videolinks || [],
+      community: product.community || { enabled: false, comments: [] }
+    };
+    
+    return typedProduct;
   } catch (error) {
     console.error('Error updating product:', error);
     

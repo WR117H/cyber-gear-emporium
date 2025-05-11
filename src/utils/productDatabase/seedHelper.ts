@@ -1,12 +1,9 @@
 
 import { supabase } from '@/utils/supabaseClient';
 import { mockProducts } from '@/data/products';
-import { isSupabaseConfigured } from './config';
 
 // Helper function to seed Supabase with mock products
 export const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
-  if (!isSupabaseConfigured()) return false;
-  
   try {
     console.log('Attempting to seed Supabase with mock products');
     
@@ -38,7 +35,12 @@ export const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
         isnew: p.isNew,
         specifications: p.specifications,
         // Fix: Explicitly type as string[] and provide an empty array as fallback
-        compatiblewith: (p.compatibleWith || []) as string[]
+        compatiblewith: (p.compatibleWith || []) as string[],
+        // Add new fields with defaults
+        images: [],
+        article: '',
+        videolinks: [],
+        community: { enabled: false, comments: [] }
       };
     });
     
