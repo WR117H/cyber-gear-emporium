@@ -1,6 +1,7 @@
 
 import { supabase } from '@/utils/supabaseClient';
 import { mockProducts } from '@/data/products';
+import { Product } from '@/types/product';
 
 // Constants
 export const PRODUCTS_STORAGE_KEY = 'cyber_gear_products';
@@ -17,7 +18,7 @@ export const isSupabaseConfigured = (): boolean => {
  * Helper to initialize local storage with mock data if empty
  * @returns {Product[]} Array of products
  */
-export const initializeLocalStorage = () => {
+export const initializeLocalStorage = (): Product[] => {
   try {
     const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
     if (!storedProducts) {
@@ -35,7 +36,7 @@ export const initializeLocalStorage = () => {
 /**
  * Helper to save all products in localStorage (fallback)
  */
-export const saveProducts = (products: any[]): void => {
+export const saveProducts = (products: Product[]): void => {
   try {
     localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
   } catch (error) {

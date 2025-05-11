@@ -25,6 +25,7 @@ export const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
     
     // Fix the type error by explicitly typing the products array for upsert
     const productsToUpsert = mockProducts.map(p => {
+      // Create a new object with the correct field names for Supabase
       return {
         id: p.id,
         name: p.name,
