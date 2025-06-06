@@ -1,11 +1,24 @@
 
-// This is file with demos of your component
-// Each export is one usecase for your component
+import { Squares } from "@/components/ui/squares-background"
 
-import { IconHover3D } from "@/components/ui/icon-3d-hover";
+export function SquaresDemo() {
+  return (
+    <div className="space-y-8">
+      <div className="relative h-[400px] rounded-lg overflow-hidden bg-[#060606]">
+        <Squares 
+          direction="diagonal"
+          speed={0.5}
+          squareSize={40}
+          borderColor="#333" 
+          hoverFillColor="#222"
+        />
+      </div>
+    </div>
+  )
+}
 
 const DemoOne = () => {
-  return <IconHover3D />;
+  return <SquaresDemo />;
 };
 
 export { DemoOne };
