@@ -9,6 +9,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card } from "@/components/ui/card";
+import { Squares } from "@/components/ui/squares-background";
 import { fetchProducts } from '@/utils/productDatabase';
 import { Product } from '@/types/product';
 
@@ -42,8 +43,17 @@ const NewReleasesSlider = () => {
 
   if (isLoading) {
     return (
-      <section className="py-7 px-4 bg-black">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-7 px-4 bg-black relative">
+        <div className="absolute inset-0 z-0">
+          <Squares 
+            direction="diagonal"
+            speed={0.3}
+            squareSize={60}
+            borderColor="#1a1a1a" 
+            hoverFillColor="#2a2a2a"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <h2 className="text-5xl font-bold text-white mb-5">New Releases</h2>
           <div className="text-white">Loading new products...</div>
         </div>
@@ -52,8 +62,17 @@ const NewReleasesSlider = () => {
   }
 
   return (
-    <section className="py-7 px-4 bg-black">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-7 px-4 bg-black relative">
+      <div className="absolute inset-0 z-0">
+        <Squares 
+          direction="diagonal"
+          speed={0.3}
+          squareSize={60}
+          borderColor="#1a1a1a" 
+          hoverFillColor="#2a2a2a"
+        />
+      </div>
+      <div className="max-w-7xl mx-auto relative z-10">
         <h2 className="text-5xl font-bold text-white mb-5">New Releases</h2>
         
         <Carousel className="w-full">

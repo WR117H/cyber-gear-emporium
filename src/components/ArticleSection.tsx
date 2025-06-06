@@ -4,6 +4,7 @@ import { Article } from '@/types/article';
 import { fetchArticles } from '@/utils/articleDatabase';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Squares } from '@/components/ui/squares-background';
 import { ArrowRight } from 'lucide-react';
 
 export default function ArticleSection() {
@@ -26,8 +27,17 @@ export default function ArticleSection() {
 
   if (isLoading) {
     return (
-      <section className="bg-gradient-to-b from-black to-cyber-navy py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-black py-20 relative">
+        <div className="absolute inset-0 z-0">
+          <Squares 
+            direction="diagonal"
+            speed={0.3}
+            squareSize={60}
+            borderColor="#1a1a1a" 
+            hoverFillColor="#2a2a2a"
+          />
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
           <h2 className="text-3xl font-bold text-white mb-8">Loading articles...</h2>
         </div>
       </section>
@@ -39,8 +49,17 @@ export default function ArticleSection() {
   }
 
   return (
-    <section className="bg-gradient-to-b from-black to-cyber-navy py-20">
-      <div className="container mx-auto px-4">
+    <section className="bg-black py-20 relative">
+      <div className="absolute inset-0 z-0">
+        <Squares 
+          direction="diagonal"
+          speed={0.3}
+          squareSize={60}
+          borderColor="#1a1a1a" 
+          hoverFillColor="#2a2a2a"
+        />
+      </div>
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
           <div>
             <h2 className="text-3xl font-bold text-white">Latest Articles</h2>
