@@ -48,6 +48,38 @@
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.015em;
     overflow-x: hidden;
+    position: relative;
+  }
+  
+  /* Bubble gradients */
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  body::before {
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255, 0, 255, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(0, 255, 0, 0.15) 0%, transparent 50%);
+    filter: blur(80px);
+    animation: bubble-float 20s ease-in-out infinite;
+  }
+  
+  body::after {
+    background: 
+      radial-gradient(circle at 60% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 10% 60%, rgba(255, 0, 255, 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 90% 40%, rgba(0, 255, 0, 0.1) 0%, transparent 60%);
+    filter: blur(100px);
+    animation: bubble-float 25s ease-in-out infinite reverse;
   }
   
   /* Persian font sizing - adjusted for larger size */
@@ -129,5 +161,55 @@
     @apply bg-white text-black font-medium rounded-[14px] py-3 px-6 w-full
            hover:bg-white/90 
            focus:outline-none focus:ring-2 focus:ring-white;
+  }
+  
+  /* Scroll animations */
+  .scroll-fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .scroll-slide-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-slide-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .scroll-slide-right {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: all 0.8s ease-out;
+  }
+  
+  .scroll-slide-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Keyframes for bubble animations */
+@keyframes bubble-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  75% {
+    transform: translate(40px, 10px) scale(1.05);
   }
 }

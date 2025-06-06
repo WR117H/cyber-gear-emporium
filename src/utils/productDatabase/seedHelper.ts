@@ -10,19 +10,6 @@ export const seedSupabaseWithMockProducts = async (): Promise<boolean> => {
   try {
     console.log('Attempting to seed Supabase with mock products');
     
-    // First check if table exists, if not create it
-    try {
-      const { error: tableCheckError } = await supabase.rpc('table_exists', { 
-        table_name: 'products' 
-      } as { table_name: string });  // Type assertion to fix the error
-      
-      if (tableCheckError) {
-        console.log('Could not check if table exists, attempting insert anyway');
-      }
-    } catch (tableCheckError) {
-      console.log('Error checking table existence:', tableCheckError);
-    }
-    
     // Fix the type error by explicitly typing the products array for upsert
     const productsToUpsert = mockProducts.map(p => {
       // Create a new object with the correct field names for Supabase

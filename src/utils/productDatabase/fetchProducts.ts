@@ -70,20 +70,26 @@ export const fetchProducts = async (): Promise<Product[]> => {
 // Get featured products
 export const getFeaturedProducts = async (): Promise<Product[]> => {
   try {
-    // Try to fetch from Supabase
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('featured', true);
+    if (isSupabaseConfigured()) {
+      // Try to fetch from Supabase
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('featured', true);
+        
+      if (error) {
+        console.error('Error fetching featured products from Supabase:', error);
+        // Fallback to local storage
+        const products = await fetchProducts();
+        return products.filter(product => product.featured);
+      }
       
-    if (error) {
-      console.error('Error fetching featured products from Supabase:', error);
+      return data as unknown as Product[];
+    } else {
       // Fallback to local storage
       const products = await fetchProducts();
       return products.filter(product => product.featured);
     }
-    
-    return data as unknown as Product[];
   } catch (error) {
     console.error('Error getting featured products:', error);
     // Fallback to local storage
@@ -95,20 +101,26 @@ export const getFeaturedProducts = async (): Promise<Product[]> => {
 // Get products by category
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
-    // Try to fetch from Supabase
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('category', category);
+    if (isSupabaseConfigured()) {
+      // Try to fetch from Supabase
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category', category);
+        
+      if (error) {
+        console.error('Error fetching products by category from Supabase:', error);
+        // Fallback to local storage
+        const products = await fetchProducts();
+        return products.filter(product => product.category === category);
+      }
       
-    if (error) {
-      console.error('Error fetching products by category from Supabase:', error);
+      return data as unknown as Product[];
+    } else {
       // Fallback to local storage
       const products = await fetchProducts();
       return products.filter(product => product.category === category);
     }
-    
-    return data as unknown as Product[];
   } catch (error) {
     console.error('Error getting products by category:', error);
     // Fallback to local storage
@@ -120,17 +132,35 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
 // Search products
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
-    // Try to search in Supabase using ILIKE for case-insensitive search
-    if (query) {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`);
+    if (isSupabaseConfigured()) {
+      // Try to search in Supabase using ILIKE for case-insensitive search
+      if (query) {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`);
+          
+        if (error) {
+          console.error('Error searching products in Supabase:', error);
+          // Fallback to local storage
+          const products = await fetchProducts();
+          const lowerQuery = query.toLowerCase();
+          return products.filter(product => 
+            product.name.toLowerCase().includes(lowerQuery) ||
+            product.description.toLowerCase().includes(lowerQuery) ||
+            product.category.toLowerCase().includes(lowerQuery)
+          );
+        }
         
-      if (error) {
-        console.error('Error searching products in Supabase:', error);
-        // Fallback to local storage
-        const products = await fetchProducts();
+        return data as unknown as Product[];
+      } else {
+        // If no query, return all products
+        return fetchProducts();
+      }
+    } else {
+      // Fallback to local storage search
+      const products = await fetchProducts();
+      if (query) {
         const lowerQuery = query.toLowerCase();
         return products.filter(product => 
           product.name.toLowerCase().includes(lowerQuery) ||
@@ -138,11 +168,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
           product.category.toLowerCase().includes(lowerQuery)
         );
       }
-      
-      return data as unknown as Product[];
-    } else {
-      // If no query, return all products
-      return fetchProducts();
+      return products;
     }
   } catch (error) {
     console.error('Error searching products:', error);
