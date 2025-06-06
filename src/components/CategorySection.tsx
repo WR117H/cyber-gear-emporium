@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Wifi, Server, Database, Lock } from 'lucide-react';
+import { IconHover3D } from '@/components/ui/icon-3d-hover';
 
 const categories = [
   {
@@ -36,8 +37,32 @@ const categories = [
 
 const CategorySection = () => {
   return (
-    <section className="py-12 px-4 sm:px-6 lg:px-8" id="categories">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden" id="categories">
+      {/* Enhanced bubble gradients for this section */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div 
+          className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-30 blur-3xl animate-pulse"
+          style={{
+            background: 'radial-gradient(circle, rgba(0,255,255,0.4) 0%, transparent 70%)'
+          }}
+        />
+        <div 
+          className="absolute bottom-10 right-10 w-80 h-80 rounded-full opacity-25 blur-3xl animate-pulse"
+          style={{
+            background: 'radial-gradient(circle, rgba(255,0,255,0.3) 0%, transparent 70%)',
+            animationDelay: '2s'
+          }}
+        />
+        <div 
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full opacity-20 blur-3xl animate-pulse"
+          style={{
+            background: 'radial-gradient(circle, rgba(0,255,0,0.3) 0%, transparent 70%)',
+            animationDelay: '4s'
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Product Categories</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -45,30 +70,22 @@ const CategorySection = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {categories.map((category) => {
             const Icon = category.icon;
             
             return (
               <Link key={category.id} to={category.path} className="block">
-                <div className="cyber-card h-full p-6 flex flex-col items-center text-center group">
-                  <div className="bg-cyber-blue/10 p-3 rounded-full mb-4 group-hover:bg-cyber-blue/20 transition-colors">
-                    <Icon className="h-8 w-8 text-cyber-blue" />
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold mb-2 text-cyber-light">{category.name}</h3>
-                  
-                  <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
-                  
-                  <div className="mt-auto">
-                    <span className="text-cyber-blue inline-flex items-center text-sm font-medium">
-                      Browse Category
-                      <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
+                <IconHover3D
+                  heading={category.name}
+                  text={category.description}
+                  className="w-full"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                  }}
+                />
               </Link>
             );
           })}
